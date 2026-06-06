@@ -252,10 +252,16 @@ Each phase is independently deployable and ends with explicit acceptance criteri
 
 ---
 
-## OPEN DECISIONS BEFORE PHASE 1
-1. **A1** — Seed all 3 parents + 13 collections (10 empty) with 60 products in their 3 collections? (recommended)
-2. **A2** — Can you provide the WordPress live-URL export for the redirect map, or should we derive identity redirects from slugs?
-3. **A3** — Migrate product images into Supabase Storage at seed, or reference existing WP URLs first?
-4. **A4–A9** — Confirm WebP-via-Supabase-transforms, Upstash rate limiting, client-provided accounts/keys, Tailwind rebuild, pnpm/Node 20, invite-based admin password.
+## LOCKED DECISIONS (confirmed by client 2026-06-06)
+1. **A1 ✅ Seed all 3 parents + 13 collections.** Full URL structure; the 10 data-less collections seed empty and `noindex` until populated; 60 CSV products assigned to their 3 collections (Sofa Chair, Sofa Cum Bed, 2 Seater Sofas).
+2. **A2 ✅ Client will provide WordPress live-URL export.** Redirect map built from that export. Phase 6 ships the redirect importer + manager; the actual map is loaded in Phase 14 once the export is supplied. (Blocking input for Migration.)
+3. **A3 ✅ Reference existing WordPress image URLs at launch.** No image migration to Supabase Storage at seed; Storage migration deferred to post-launch. `next.config.ts` image domains must allowlist the WP image host. New uploads (dashboard) still go to Supabase Storage.
+4. **A4 ✅ WebP/thumbnails via Supabase transforms + `next/image`** (no in-function `sharp`).
 
-**No application code will be written until this plan is approved.**
+### Defaults proceeding unless vetoed (A5, A7, A8 — not explicitly selected, low-risk/reversible)
+- **A5** Rate limiting via Upstash Redis free tier (graceful no-op if env unset).
+- **A7** Tailwind rebuild of the inline-styled prototypes (Roadmap mandates migration from inline styles).
+- **A8** pnpm + Node 20 + TS strict; Super Admin seeded by email only, password via Supabase invite/reset.
+- **A6** Client provides Supabase/Vercel/Cloudflare/Resend/GA4 accounts, keys, and DNS access.
+
+**STATUS: Plan ready. Awaiting explicit "approved — begin Phase 1" before writing application code.**
