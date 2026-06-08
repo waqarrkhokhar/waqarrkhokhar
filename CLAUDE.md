@@ -46,8 +46,19 @@ decisions (A1–A9), and the 16-phase breakdown.
 - `pnpm db:seed` — seed the database (needs real Supabase keys in `.env.local`)
 
 ## Status
-Phases 1 (Foundation) and 2 (Authentication & Roles) complete.
-Phases 3–16 pending.
+Phases 1 (Foundation), 2 (Authentication & Roles), and 3 (CMS Core) complete.
+Phases 4–16 pending.
+
+## Shared UI / helpers (Phase 3) — reuse these in later phases
+- UI primitives in `components/ui/`: `Button`, `Field`/`Input`/`Textarea`/
+  `Select`, `Badge` (+`statusTone`), `Skeleton`, `EmptyState`, `Modal`/
+  `ConfirmDialog`, `Toast` (`ToastProvider` + `useToast`).
+- `components/dashboard/shared/DashTable.tsx`: generic table (pagination,
+  sorting, selection, bulk actions, loading/empty). Used by all list views.
+- Server helpers: `lib/activity.ts` (`logActivity`), `lib/settings.ts`
+  (`getSetting`/`getSettings`/`setSetting`), `lib/api/respond.ts`
+  (`ok`/`created`/`action`/`paginated`/`parseListParams`).
+- `ToastProvider` + `NotificationBell` are mounted in `DashShell`.
 
 ## Auth notes (Phase 2)
 - Login `/dashboard/login`; reset `/dashboard/reset-password`; auth API under

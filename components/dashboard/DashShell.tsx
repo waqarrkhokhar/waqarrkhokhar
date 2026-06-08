@@ -7,6 +7,8 @@ import type { CurrentUser } from "@/lib/auth/session";
 import { can, type Capability } from "@/lib/auth/permissions";
 import ThemeToggle from "./ThemeToggle";
 import SignOutButton from "./SignOutButton";
+import NotificationBell from "./NotificationBell";
+import { ToastProvider } from "@/components/ui/Toast";
 
 type NavItem = {
   label: string;
@@ -49,6 +51,7 @@ export default function DashShell({
   const items = NAV.filter((n) => !n.cap || can(user.role, n.cap));
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-cream text-charcoal dark:bg-navy dark:text-cream">
       {/* Sidebar */}
       <aside
@@ -128,9 +131,13 @@ export default function DashShell({
             ☰
           </button>
           <h1 className="font-heading text-xl font-semibold">Dashboard</h1>
+          <div className="ml-auto">
+            <NotificationBell />
+          </div>
         </header>
         <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
+    </ToastProvider>
   );
 }
