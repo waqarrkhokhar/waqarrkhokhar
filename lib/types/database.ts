@@ -64,7 +64,7 @@ export interface Database {
         focus_keyword: string | null;
         canonical_url: string | null;
         og_image: string | null;
-        robots: string;
+        robots: string | null;
         sort_order: number;
         status: CatalogStatus;
       } & Timestamps & WithUpdated>;
@@ -83,7 +83,7 @@ export interface Database {
         focus_keyword: string | null;
         canonical_url: string | null;
         og_image: string | null;
-        robots: string;
+        robots: string | null;
         schema_enabled: boolean;
         sort_order: number;
         is_featured: boolean;
@@ -117,7 +117,7 @@ export interface Database {
         og_title: string | null;
         og_description: string | null;
         og_image: string | null;
-        robots: string;
+        robots: string | null;
         whatsapp_message_template: string | null;
         published_at: string | null;
       } & Timestamps & WithUpdated>;

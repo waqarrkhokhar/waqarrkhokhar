@@ -21,7 +21,7 @@ type NavItem = {
 // as each phase ships, so the menu never contains dead links.
 const NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", ready: true },
-  { label: "Products", href: "/dashboard/products", cap: "products" },
+  { label: "Products", href: "/dashboard/products", cap: "products", ready: true },
   { label: "Collections", href: "/dashboard/collections", cap: "categories" },
   { label: "Categories", href: "/dashboard/categories", cap: "categories" },
   { label: "Reviews", href: "/dashboard/reviews", cap: "reviews" },

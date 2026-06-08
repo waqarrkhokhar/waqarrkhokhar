@@ -39,7 +39,7 @@ export async function logActivity(params: {
   entityType: ActivityEntity;
   entityId?: string | null;
   entityName?: string | null;
-  details?: Json;
+  details?: Record<string, unknown> | Json | null;
 }) {
   try {
     const db = createAdminClient();
@@ -50,7 +50,7 @@ export async function logActivity(params: {
       entity_type: params.entityType,
       entity_id: params.entityId ?? null,
       entity_name: params.entityName ?? null,
-      details: params.details ?? null,
+      details: (params.details ?? null) as Json,
     });
   } catch {
     // Logging must never break the primary operation.

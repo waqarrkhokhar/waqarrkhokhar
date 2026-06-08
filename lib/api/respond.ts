@@ -35,6 +35,7 @@ export function parseListParams(url: URL) {
     Math.max(1, parseInt(url.searchParams.get("limit") || "20", 10) || 20),
   );
   const sort = url.searchParams.get("sort") || "created_at";
-  const order = url.searchParams.get("order") === "asc" ? "asc" : "desc";
+  const order: "asc" | "desc" =
+    url.searchParams.get("order") === "asc" ? "asc" : "desc";
   return { page, limit, sort, order, offset: (page - 1) * limit };
 }

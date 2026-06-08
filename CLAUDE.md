@@ -46,8 +46,19 @@ decisions (A1–A9), and the 16-phase breakdown.
 - `pnpm db:seed` — seed the database (needs real Supabase keys in `.env.local`)
 
 ## Status
-Phases 1 (Foundation), 2 (Authentication & Roles), and 3 (CMS Core) complete.
-Phases 4–16 pending.
+Phases 1–4 complete (Foundation, Auth & Roles, CMS Core, Product Management).
+Phases 5–16 pending.
+
+## Product module notes (Phase 4)
+- API: `app/api/products/*` (list/create, [id] get/patch/delete-archive,
+  duplicate, bulk, health, export), `app/api/products/[id]/images/*`,
+  `app/api/media/upload`, `app/api/catalog` (dropdown data).
+- Helpers: `lib/products/{schema,query,revalidate}.ts`, `lib/slug.ts`,
+  `lib/seo/score.ts`, `lib/api/client.ts` (client fetch).
+- UI: `components/dashboard/products/*` (ProductList, ProductEditor with
+  Basic/Media/Classification/SEO tabs, ProductImages).
+- Deferred by design (no dead-ends): CSV **import** → Phase 14 (Migration);
+  editor **Reviews tab** → Phase 9; storefront **Preview** → Phase 13.
 
 ## Shared UI / helpers (Phase 3) — reuse these in later phases
 - UI primitives in `components/ui/`: `Button`, `Field`/`Input`/`Textarea`/
