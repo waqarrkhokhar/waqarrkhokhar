@@ -46,8 +46,18 @@ decisions (A1–A9), and the 16-phase breakdown.
 - `pnpm db:seed` — seed the database (needs real Supabase keys in `.env.local`)
 
 ## Status
-Phases 1–4 complete (Foundation, Auth & Roles, CMS Core, Product Management).
-Phases 5–16 pending.
+Phases 1–5 complete (Foundation, Auth & Roles, CMS Core, Product Management,
+Collection & Category Management). Phases 6–16 pending.
+
+## Catalog module notes (Phase 5)
+- API: `app/api/parents/*`, `app/api/collections/*` (+ `[id]/products`,
+  `[id]/reorder`). `lib/catalog/{query,schema}.ts`.
+- One category per product (`products.category_id`): assigning = set
+  category_id; removing = NULL; reorder = `products.sort_order`.
+- Parent slug `/x/`; collection slug nests `/parent/child/`. Parent delete
+  cascades collections; products survive (SET NULL). Deletes are Admin-only.
+- UI: `components/dashboard/catalog/*` (ParentManager modal, CollectionList,
+  CollectionEditor Basic/Media/Content/Products/SEO, CollectionProducts).
 
 ## Product module notes (Phase 4)
 - API: `app/api/products/*` (list/create, [id] get/patch/delete-archive,

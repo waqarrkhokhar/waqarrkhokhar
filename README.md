@@ -48,5 +48,6 @@ Verify the database connection: open `http://localhost:3000/api/health`.
 - Phase 2 — Authentication & Roles: ✅ complete
 - Phase 3 — CMS Core (shared UI, DashTable, activity/settings helpers): ✅ complete
 - Phase 4 — Product Management (API + list + tabbed editor + images): ✅ complete
+- Phase 5 — Collection & Category Management (parents + collections CRUD): ✅ complete
 
 See `docs/IMPLEMENTATION-PLAN.md` for the full 16-phase plan.

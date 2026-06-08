@@ -9,6 +9,7 @@ const SORTABLE = new Set([
   "name",
   "price",
   "sale_price",
+  "sort_order",
 ]);
 
 export type ProductListParams = {
