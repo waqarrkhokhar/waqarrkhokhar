@@ -1,16 +1,31 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { findRedirect } from "@/lib/redirects/lookup";
 
 /**
  * Middleware responsibilities:
+ *  • Phase 6 — storefront redirect lookups (301/302) against the DB.
  *  • Phase 2 — refresh the auth session cookie + gate the dashboard.
- *  • Phase 6 — redirect lookups + 404 logging will be added here later.
  *
  * Dashboard pages require a logged-in user; the login page itself is public.
  */
 export async function middleware(request: NextRequest) {
-  const { response, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
+  const isStorefront =
+    !pathname.startsWith("/dashboard") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next");
+
+  // Redirect engine: check storefront paths against the redirects table.
+  if (isStorefront) {
+    const hit = await findRedirect(pathname);
+    if (hit) {
+      const url = new URL(hit.target, request.url);
+      return NextResponse.redirect(url, hit.type === 302 ? 302 : 301);
+    }
+  }
+
+  const { response, user } = await updateSession(request);
 
   const isDashboard = pathname.startsWith("/dashboard");
   const isLogin = pathname === "/dashboard/login";

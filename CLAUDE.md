@@ -46,8 +46,20 @@ decisions (A1–A9), and the 16-phase breakdown.
 - `pnpm db:seed` — seed the database (needs real Supabase keys in `.env.local`)
 
 ## Status
-Phases 1–5 complete (Foundation, Auth & Roles, CMS Core, Product Management,
-Collection & Category Management). Phases 6–16 pending.
+Phases 1–5 complete. Phase 6 (SEO System) — migration-safety infrastructure
+done: redirects, 404 monitor, sitemaps, robots. Remaining Phase 6 (per-page
+JSON-LD, generateMetadata, bulk SEO editor, schema manager) is bundled with the
+storefront in Phase 13 (no public pages exist yet to attach them to).
+Phases 7–16 pending.
+
+## SEO infra notes (Phase 6)
+- `/api/redirects/*` (CRUD + `/import` CSV), `/api/errors/*` (404 log+resolve).
+- `middleware.ts` checks `lib/redirects/lookup.ts` for storefront paths (301/302,
+  fail-open if Supabase unset). 404 logging endpoint is public via service role.
+- `/sitemap.xml` index + `/sitemap-{pages,products,collections,blog}.xml`,
+  `/robots.txt` — all `force-dynamic`, 1h cache. Helper `lib/seo/sitemap.ts`.
+- UI: `components/dashboard/seo/*` (SeoHub tabs: RedirectManager, Monitor404).
+- PENDING INPUT: WordPress live-URL export to populate the redirect map (A2).
 
 ## Catalog module notes (Phase 5)
 - API: `app/api/parents/*`, `app/api/collections/*` (+ `[id]/products`,

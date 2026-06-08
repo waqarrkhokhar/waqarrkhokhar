@@ -28,7 +28,7 @@ const NAV: NavItem[] = [
   { label: "Blog", href: "/dashboard/blog", cap: "blog" },
   { label: "Pages", href: "/dashboard/pages", cap: "pages" },
   { label: "Media", href: "/dashboard/media", cap: "media" },
-  { label: "SEO", href: "/dashboard/seo", cap: "seo" },
+  { label: "SEO", href: "/dashboard/seo", cap: "seo", ready: true },
   { label: "Promotions", href: "/dashboard/promotions", cap: "promotions" },
   { label: "WhatsApp Leads", href: "/dashboard/leads", cap: "leads" },
   { label: "Analytics", href: "/dashboard/analytics", cap: "analytics" },
