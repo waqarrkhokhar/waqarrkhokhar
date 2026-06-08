@@ -50,7 +50,7 @@ Phases 1–5 complete. Phase 6 (SEO System) — migration-safety infrastructure
 done: redirects, 404 monitor, sitemaps, robots. Remaining Phase 6 (per-page
 JSON-LD, generateMetadata, bulk SEO editor, schema manager) is bundled with the
 storefront in Phase 13 (no public pages exist yet to attach them to).
-Phase 7 (Homepage Builder) complete. Phases 8–16 pending.
+Phases 7 (Homepage Builder) and 8 (Blog System) complete. Phases 9–16 pending.
 
 ## Homepage Builder notes (Phase 7)
 - `/api/settings` (GET all / PATCH key) — cap `settings`. `homepage_config`
