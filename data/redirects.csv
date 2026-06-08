@@ -1,0 +1,4 @@
+source_url,target_url,type
+/cart/,/,301
+/shop/,/sofas/,301
+/portfolio/,/about-us/,301
