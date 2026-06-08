@@ -41,11 +41,12 @@ export type UserStatus = "active" | "suspended" | "invited";
 type Timestamps = { created_at: string };
 type WithUpdated = { updated_at: string };
 
-// Helper to build the standard { Row; Insert; Update } table shape.
+// Helper to build the standard table shape supabase-js expects.
 type Table<Row> = {
   Row: Row;
   Insert: Partial<Row>;
   Update: Partial<Row>;
+  Relationships: [];
 };
 
 export interface Database {
@@ -259,7 +260,8 @@ export interface Database {
         last_login: string | null;
         status: UserStatus;
         notification_prefs: Json;
-      } & Timestamps>;
+        created_at: string;
+      }>;
 
       activity_logs: Table<{
         id: string;
@@ -302,9 +304,11 @@ export interface Database {
           avg_rating: number;
           review_count: number;
         };
+        Relationships: [];
       };
     };
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Functions: { [_ in never]: never };
+    Enums: { [_ in never]: never };
+    CompositeTypes: { [_ in never]: never };
   };
 }

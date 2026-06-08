@@ -46,4 +46,17 @@ decisions (A1–A9), and the 16-phase breakdown.
 - `pnpm db:seed` — seed the database (needs real Supabase keys in `.env.local`)
 
 ## Status
-Phase 1 (Foundation) complete. Phases 2–16 pending.
+Phases 1 (Foundation) and 2 (Authentication & Roles) complete.
+Phases 3–16 pending.
+
+## Auth notes (Phase 2)
+- Login `/dashboard/login`; reset `/dashboard/reset-password`; auth API under
+  `app/api/auth/*`. Session via httpOnly cookies (`@supabase/ssr`).
+- `middleware.ts` refreshes the session and gates `/dashboard/*`.
+- Server guards in `lib/auth/`: `getCurrentUser`, `requireAuth`,
+  `requireCapability`; permission matrix in `lib/auth/permissions.ts`.
+- Authenticated dashboard pages live in the `app/dashboard/(panel)/` route
+  group (sidebar + theme); login/reset stay outside it.
+- Version pin: `@supabase/supabase-js@2.45.6` + `@supabase/ssr@0.5.2` (do not
+  bump to supabase-js 2.107 — its stricter type engine breaks the ssr 0.5.2
+  server client typings against the hand-written Database types).

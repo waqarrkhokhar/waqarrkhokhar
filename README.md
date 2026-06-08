@@ -44,5 +44,7 @@ Verify the database connection: open `http://localhost:3000/api/health`.
 
 ## Build progress
 
-Phase 1 — Foundation: ✅ complete. See `docs/IMPLEMENTATION-PLAN.md` for the
-full 16-phase plan.
+- Phase 1 — Foundation: ✅ complete
+- Phase 2 — Authentication & Roles: ✅ complete
+
+See `docs/IMPLEMENTATION-PLAN.md` for the full 16-phase plan.
