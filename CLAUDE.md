@@ -22,6 +22,13 @@ decisions (A1–A9), and the 16-phase breakdown.
 
 ## Build rules
 - Mobile-first, SEO-first, scalable.
+- **Design fidelity is a hard requirement.** The storefront must match the
+  storefront prototype (`ComfyClub Prototype.html` + `cc-*.jsx`) and the
+  dashboard must match `ComfyClub Dashboard.html` + `dash-*.jsx` — exact
+  layout, sections, components, spacing, colours, and interactions, not a
+  simplified version.
+- **Design ⊇ docs.** If something appears in the design/prototype but is not in
+  the written spec, build it anyway. The design is itself a requirement.
 - Everything CMS-managed — NO hardcoded categories, products, SEO, banners, or
   navigation.
 - Every workflow needs a start AND an end. No dead-ends, no placeholders left
