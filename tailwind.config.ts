@@ -20,6 +20,8 @@ const config: Config = {
         gold: "#C9A84C",
         cream: "#F7F4EE",
         charcoal: "#2C2C2C",
+        whatsapp: "#25D366",
+        sale: "#e74c3c",
         // Dashboard admin palette (from the design prototype)
         panel: "#f5f6fa", // light canvas
         line: "#e8e8ee", // card borders
