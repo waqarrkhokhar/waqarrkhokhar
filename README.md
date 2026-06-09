@@ -55,5 +55,6 @@ Verify the database connection: open `http://localhost:3000/api/health`.
 - Phase 9 — Reviews (moderation, manual reviews, ratings, editor tab): ✅ complete
 - Phase 10 — Promotions (API, manager, tracking, cron auto-expire): ✅ complete
 - Phase 11 — WhatsApp Leads (capture API, pipeline, stats, CSV export): ✅ complete
+- Phase 12 — Analytics (GA4/GTM injection, settings, product search + search analytics): ✅ complete
 
 See `docs/IMPLEMENTATION-PLAN.md` for the full 16-phase plan.

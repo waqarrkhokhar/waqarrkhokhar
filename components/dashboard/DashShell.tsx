@@ -45,7 +45,7 @@ const NAV: Section[] = [
   { kind: "leaf", item: { label: "Promotions", href: "/dashboard/promotions", cap: "promotions", ready: true } },
   { kind: "leaf", item: { label: "WhatsApp Leads", href: "/dashboard/leads", cap: "leads", ready: true } },
   { kind: "leaf", item: { label: "Reviews", href: "/dashboard/reviews", cap: "reviews", ready: true } },
-  { kind: "leaf", item: { label: "Analytics", href: "/dashboard/analytics", cap: "analytics" } },
+  { kind: "leaf", item: { label: "Analytics", href: "/dashboard/analytics", cap: "analytics", ready: true } },
   {
     kind: "group",
     label: "Settings",

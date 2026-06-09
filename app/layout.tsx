@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -36,14 +37,30 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({
+/** Read GA4/GTM IDs from settings (safe — returns empty if unavailable). */
+async function getAnalyticsIds(): Promise<{ ga4Id?: string; gtmId?: string }> {
+  try {
+    const { getSettings } = await import("@/lib/settings");
+    const s = await getSettings(["ga4_id", "gtm_id"]);
+    return {
+      ga4Id: typeof s.ga4_id === "string" && s.ga4_id ? s.ga4_id : undefined,
+      gtmId: typeof s.gtm_id === "string" && s.gtm_id ? s.gtm_id : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { ga4Id, gtmId } = await getAnalyticsIds();
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <body className="font-body">{children}</body>
+      <GoogleAnalytics ga4Id={ga4Id} gtmId={gtmId} />
     </html>
   );
 }
