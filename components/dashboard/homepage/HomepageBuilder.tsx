@@ -72,7 +72,7 @@ function ListEditor<T extends Record<string, string>>({
   return (
     <div className="space-y-3">
       {items.map((item, i) => (
-        <div key={i} className="rounded-xl border border-black/5 p-3 dark:border-white/10">
+        <div key={i} className="rounded-xl border border-line p-3 dark:border-white/10">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs text-charcoal/50 dark:text-cream/50">#{i + 1}</span>
             <div className="flex gap-2 text-xs">
@@ -118,7 +118,7 @@ function ListEditor<T extends Record<string, string>>({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-black/5 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+    <section className="rounded-xl border border-line bg-white shadow-card p-5 dark:border-white/10 dark:bg-white/5">
       <h3 className="mb-3 font-heading text-lg font-semibold">{title}</h3>
       {children}
     </section>
@@ -167,7 +167,7 @@ export default function HomepageBuilder() {
       <Section title="Sections (order & visibility)">
         <ul className="space-y-2">
           {visible.map((key, i) => (
-            <li key={key} className="flex items-center justify-between rounded-lg border border-black/5 px-3 py-2 text-sm dark:border-white/10">
+            <li key={key} className="flex items-center justify-between rounded-lg border border-line px-3 py-2 text-sm dark:border-white/10">
               <span>{label(key)}</span>
               <div className="flex gap-2 text-xs">
                 <button onClick={() => upd("section_order", move(visible, i, -1))}>▲</button>

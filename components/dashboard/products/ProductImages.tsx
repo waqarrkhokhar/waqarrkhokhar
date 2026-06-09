@@ -124,7 +124,7 @@ export default function ProductImages({
           {sorted.map((img, i) => (
             <div
               key={img.id}
-              className="overflow-hidden rounded-xl border border-black/5 dark:border-white/10"
+              className="overflow-hidden rounded-xl border border-line dark:border-white/10"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img.url} alt={img.alt_text ?? ""} className="h-32 w-full object-cover" />

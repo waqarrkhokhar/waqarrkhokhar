@@ -45,7 +45,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
   return (
     <ul className="space-y-3">
       {rows.map((r) => (
-        <li key={r.id} className="rounded-xl border border-black/5 p-3 dark:border-white/10">
+        <li key={r.id} className="rounded-xl border border-line p-3 dark:border-white/10">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">{r.name} {r.city ? `· ${r.city}` : ""}</p>

@@ -62,7 +62,7 @@ export default function ProductPinPicker({
         {ids.map((id) => (
           <li
             key={id}
-            className="flex items-center justify-between rounded-lg border border-black/5 px-3 py-1.5 text-sm dark:border-white/10"
+            className="flex items-center justify-between rounded-lg border border-line px-3 py-1.5 text-sm dark:border-white/10"
           >
             <span>{labels[id] ?? id}</span>
             <button onClick={() => remove(id)} className="text-xs text-red-500 hover:underline">

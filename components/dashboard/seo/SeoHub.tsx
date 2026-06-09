@@ -18,7 +18,7 @@ export default function SeoHub() {
     <div className="space-y-6">
       <h2 className="font-heading text-2xl font-semibold">SEO</h2>
 
-      <div className="flex gap-1 border-b border-black/5 dark:border-white/10">
+      <div className="flex gap-1 border-b border-line dark:border-white/10">
         {TABS.map((t) => (
           <button
             key={t.id}

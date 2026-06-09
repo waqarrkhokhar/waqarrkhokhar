@@ -15,9 +15,20 @@ const config: Config = {
     extend: {
       colors: {
         navy: "#0F1D35",
+        navyLight: "#162744",
+        navyHover: "#1d3356",
         gold: "#C9A84C",
         cream: "#F7F4EE",
         charcoal: "#2C2C2C",
+        // Dashboard admin palette (from the design prototype)
+        panel: "#f5f6fa", // light canvas
+        line: "#e8e8ee", // card borders
+        ink: "#3a3f51", // primary text
+        muted: "#8b8fa7", // secondary text
+      },
+      boxShadow: {
+        card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+        pop: "0 12px 40px rgba(0,0,0,0.12)",
       },
       fontFamily: {
         heading: ["var(--font-cormorant)", "Cormorant Garamond", "serif"],

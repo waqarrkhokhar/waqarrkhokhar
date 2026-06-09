@@ -84,9 +84,9 @@ export function DashTable<T>({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-black/5 bg-white dark:border-white/10 dark:bg-white/5">
+      <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-card dark:border-white/10 dark:bg-white/5">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/5 text-xs uppercase tracking-wide text-charcoal/50 dark:border-white/10 dark:text-cream/50">
+          <thead className="border-b border-line text-xs uppercase tracking-wide text-charcoal/50 dark:border-white/10 dark:text-cream/50">
             <tr>
               {selectable && (
                 <th className="w-10 px-4 py-3">

@@ -258,7 +258,7 @@ export default function ProductEditor({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-black/5 dark:border-white/10">
+      <div className="flex gap-1 border-b border-line dark:border-white/10">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -436,7 +436,7 @@ export default function ProductEditor({
             </div>
 
             {/* Google preview */}
-            <div className="rounded-xl border border-black/5 p-4 dark:border-white/10">
+            <div className="rounded-xl border border-line p-4 dark:border-white/10">
               <p className="mb-2 text-xs uppercase tracking-wide text-charcoal/40 dark:text-cream/40">
                 Google preview
               </p>
@@ -453,7 +453,7 @@ export default function ProductEditor({
           </div>
 
           {/* SEO score */}
-          <div className="rounded-xl border border-black/5 p-4 dark:border-white/10">
+          <div className="rounded-xl border border-line p-4 dark:border-white/10">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-medium">SEO score</span>
               <span

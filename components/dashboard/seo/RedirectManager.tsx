@@ -105,7 +105,7 @@ export default function RedirectManager() {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={add} className="flex flex-wrap items-end gap-2 rounded-xl border border-black/5 p-4 dark:border-white/10">
+      <form onSubmit={add} className="flex flex-wrap items-end gap-2 rounded-xl border border-line p-4 dark:border-white/10">
         <div className="flex-1 min-w-40">
           <label className="text-xs text-charcoal/60 dark:text-cream/60">From (old URL)</label>
           <Input placeholder="/old-url/" value={source} onChange={(e) => setSource(e.target.value)} />

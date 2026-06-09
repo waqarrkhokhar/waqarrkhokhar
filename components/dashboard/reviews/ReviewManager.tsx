@@ -213,7 +213,7 @@ function AddReviewModal({ open, onClose, onDone }: { open: boolean; onClose: () 
             </form>
             {results.map((p) => (
               <button key={p.id} onClick={() => { setProductId(p.id); setProductName(p.name); }}
-                className="block w-full rounded-lg border border-black/5 px-3 py-1.5 text-left text-sm hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10">
+                className="block w-full rounded-lg border border-line px-3 py-1.5 text-left text-sm hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10">
                 {p.name}
               </button>
             ))}

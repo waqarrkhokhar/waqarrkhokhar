@@ -210,7 +210,7 @@ export default function CollectionEditor({
         </div>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b border-black/5 dark:border-white/10">
+      <div className="flex gap-1 overflow-x-auto border-b border-line dark:border-white/10">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -329,7 +329,7 @@ export default function CollectionEditor({
               Enable schema markup (CollectionPage + FAQ)
             </label>
           </div>
-          <div className="rounded-xl border border-black/5 p-4 dark:border-white/10">
+          <div className="rounded-xl border border-line p-4 dark:border-white/10">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-medium">SEO score</span>
               <span className={`text-2xl font-bold ${score.score >= 70 ? "text-green-600" : score.score >= 40 ? "text-amber-500" : "text-red-500"}`}>

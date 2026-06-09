@@ -194,7 +194,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
 
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <div>
-          <div className="mb-4 flex gap-1 overflow-x-auto border-b border-black/5 dark:border-white/10">
+          <div className="mb-4 flex gap-1 overflow-x-auto border-b border-line dark:border-white/10">
             {TABS.map((t) => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 className={`whitespace-nowrap px-4 py-2 text-sm font-medium ${tab === t.id ? "border-b-2 border-gold text-navy dark:text-gold" : "text-charcoal/60 dark:text-cream/60"}`}>
@@ -237,7 +237,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
           {tab === "faq" && (
             <div className="space-y-3">
               {faqs.map((q, i) => (
-                <div key={i} className="rounded-xl border border-black/5 p-3 dark:border-white/10">
+                <div key={i} className="rounded-xl border border-line p-3 dark:border-white/10">
                   <div className="mb-2 flex justify-end">
                     <button onClick={() => setFaqs(faqs.filter((_, x) => x !== i))} className="text-xs text-red-500">Remove</button>
                   </div>
@@ -252,7 +252,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
           {tab === "links" && (
             <div className="space-y-3">
               {links.map((l, i) => (
-                <div key={i} className="grid gap-2 rounded-xl border border-black/5 p-3 dark:border-white/10 sm:grid-cols-3">
+                <div key={i} className="grid gap-2 rounded-xl border border-line p-3 dark:border-white/10 sm:grid-cols-3">
                   <Field label="Type"><Input value={l.type} onChange={(e) => setLinks(links.map((x, j) => j === i ? { ...x, type: e.target.value } : x))} /></Field>
                   <Field label="Name"><Input value={l.name} onChange={(e) => setLinks(links.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} /></Field>
                   <Field label="URL"><Input value={l.url} onChange={(e) => setLinks(links.map((x, j) => j === i ? { ...x, url: e.target.value } : x))} /></Field>
@@ -273,7 +273,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
                 <Field label="Focus keyword"><Input value={f.focus_keyword} onChange={(e) => set("focus_keyword", e.target.value)} /></Field>
                 <Field label="Canonical URL"><Input value={f.canonical_url} onChange={(e) => set("canonical_url", e.target.value)} /></Field>
               </div>
-              <div className="rounded-xl border border-black/5 p-4 dark:border-white/10">
+              <div className="rounded-xl border border-line p-4 dark:border-white/10">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium">SEO score</span>
                   <span className={`text-2xl font-bold ${score.score >= 70 ? "text-green-600" : score.score >= 40 ? "text-amber-500" : "text-red-500"}`}>{score.score}</span>
@@ -292,7 +292,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
         </div>
 
         {/* Sidebar */}
-        <aside className="space-y-4 rounded-xl border border-black/5 p-4 dark:border-white/10">
+        <aside className="space-y-4 rounded-xl border border-line p-4 dark:border-white/10">
           <Field label="Status">
             <Select value={f.status} onChange={(e) => set("status", e.target.value)}>
               <option value="draft">Draft</option>

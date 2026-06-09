@@ -87,7 +87,7 @@ export default function CollectionProducts({ collectionId }: { collectionId: str
             {assigned.map((p, i) => (
               <li
                 key={p.id}
-                className="flex items-center gap-2 rounded-lg border border-black/5 p-2 dark:border-white/10"
+                className="flex items-center gap-2 rounded-lg border border-line p-2 dark:border-white/10"
               >
                 <div className="flex flex-col text-xs">
                   <button onClick={() => move(i, -1)} aria-label="Up">▲</button>
@@ -130,7 +130,7 @@ export default function CollectionProducts({ collectionId }: { collectionId: str
           {results.map((p) => (
             <li
               key={p.id}
-              className="flex items-center gap-2 rounded-lg border border-black/5 p-2 dark:border-white/10"
+              className="flex items-center gap-2 rounded-lg border border-line p-2 dark:border-white/10"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.name}</p>

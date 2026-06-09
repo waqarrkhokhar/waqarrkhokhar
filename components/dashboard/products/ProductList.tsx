@@ -174,7 +174,7 @@ export default function ProductList() {
           ].map((c) => (
             <div
               key={c.label}
-              className="rounded-xl border border-black/5 bg-white p-4 dark:border-white/10 dark:bg-white/5"
+              className="rounded-xl border border-line bg-white shadow-card p-4 dark:border-white/10 dark:bg-white/5"
             >
               <p className="text-2xl font-semibold">{c.value}</p>
               <p className="text-xs text-charcoal/60 dark:text-cream/60">{c.label}</p>
