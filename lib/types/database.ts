@@ -307,7 +307,9 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: { [_ in never]: never };
+    Functions: {
+      refresh_product_ratings: { Args: Record<string, never>; Returns: undefined };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

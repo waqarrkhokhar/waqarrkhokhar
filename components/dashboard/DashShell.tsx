@@ -25,7 +25,7 @@ const NAV: NavItem[] = [
   { label: "Products", href: "/dashboard/products", cap: "products", ready: true },
   { label: "Collections", href: "/dashboard/collections", cap: "categories", ready: true },
   { label: "Categories", href: "/dashboard/categories", cap: "categories", ready: true },
-  { label: "Reviews", href: "/dashboard/reviews", cap: "reviews" },
+  { label: "Reviews", href: "/dashboard/reviews", cap: "reviews", ready: true },
   { label: "Blog", href: "/dashboard/blog", cap: "blog", ready: true },
   { label: "Pages", href: "/dashboard/pages", cap: "pages" },
   { label: "Media", href: "/dashboard/media", cap: "media" },

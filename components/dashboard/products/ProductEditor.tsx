@@ -13,9 +13,10 @@ import { computeSeoScore, countWords } from "@/lib/seo/score";
 import { slugify } from "@/lib/slug";
 import type { Catalog } from "./types";
 import ProductImages, { type ProductImage } from "./ProductImages";
+import ProductReviews from "./ProductReviews";
 
 type Mode = "create" | "edit";
-type Tab = "basic" | "media" | "classification" | "seo";
+type Tab = "basic" | "media" | "classification" | "seo" | "reviews";
 
 type Form = {
   name: string;
@@ -213,6 +214,7 @@ export default function ProductEditor({
     { id: "media", label: "Media" },
     { id: "classification", label: "Classification" },
     { id: "seo", label: "SEO" },
+    ...(mode === "edit" ? [{ id: "reviews" as Tab, label: "Reviews" }] : []),
   ];
 
   return (
@@ -475,6 +477,8 @@ export default function ProductEditor({
           </div>
         </div>
       )}
+
+      {tab === "reviews" && mode === "edit" && <ProductReviews productId={productId!} />}
 
       <ConfirmDialog
         open={confirmArchive}

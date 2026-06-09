@@ -52,5 +52,6 @@ Verify the database connection: open `http://localhost:3000/api/health`.
 - Phase 6 — SEO infrastructure (redirects, 404 monitor, sitemaps, robots): ✅ complete
 - Phase 7 — Homepage Builder (settings-driven sections, hero, pins): ✅ complete
 - Phase 8 — Blog System (API + Markdown editor, FAQ, links, SEO): ✅ complete
+- Phase 9 — Reviews (moderation, manual reviews, ratings, editor tab): ✅ complete
 
 See `docs/IMPLEMENTATION-PLAN.md` for the full 16-phase plan.
