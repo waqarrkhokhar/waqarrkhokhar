@@ -57,7 +57,7 @@ Phases 1–5 complete. Phase 6 (SEO System) — migration-safety infrastructure
 done: redirects, 404 monitor, sitemaps, robots. Remaining Phase 6 (per-page
 JSON-LD, generateMetadata, bulk SEO editor, schema manager) is bundled with the
 storefront in Phase 13 (no public pages exist yet to attach them to).
-Phases 7–10 complete (Homepage, Blog, Reviews, Promotions). Phases 11–16 pending. Scope expanded to include prototype-only extras (Custom Fields, Structure/Metadata/Schema/Sitemap/Robots managers, Header/Footer Builder, Content Blocks, etc.) per owner request.
+Phases 7–11 complete (Homepage, Blog, Reviews, Promotions, WhatsApp Leads). Phases 11–16 pending. Scope expanded to include prototype-only extras (Custom Fields, Structure/Metadata/Schema/Sitemap/Robots managers, Header/Footer Builder, Content Blocks, etc.) per owner request.
 
 ## Homepage Builder notes (Phase 7)
 - `/api/settings` (GET all / PATCH key) — cap `settings`. `homepage_config`
