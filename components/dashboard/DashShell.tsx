@@ -42,7 +42,7 @@ const NAV: Section[] = [
     ],
   },
   { kind: "leaf", item: { label: "Media Library", href: "/dashboard/media", cap: "media" } },
-  { kind: "leaf", item: { label: "Promotions", href: "/dashboard/promotions", cap: "promotions" } },
+  { kind: "leaf", item: { label: "Promotions", href: "/dashboard/promotions", cap: "promotions", ready: true } },
   { kind: "leaf", item: { label: "WhatsApp Leads", href: "/dashboard/leads", cap: "leads" } },
   { kind: "leaf", item: { label: "Reviews", href: "/dashboard/reviews", cap: "reviews", ready: true } },
   { kind: "leaf", item: { label: "Analytics", href: "/dashboard/analytics", cap: "analytics" } },
