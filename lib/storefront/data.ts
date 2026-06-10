@@ -78,7 +78,7 @@ type RawProduct = {
   is_trending: boolean;
   is_featured: boolean;
   created_at: string;
-  category: { name: string } | null;
+  category: { name: string; slug: string } | null;
   product_images: { url: string; is_primary: boolean; sort_order: number }[];
 };
 
@@ -109,7 +109,7 @@ export async function getHomepageData() {
         .from("products")
         .select(
           `id, name, slug, price, sale_price, category_id, is_trending, is_featured, created_at,
-           category:categories(name),
+           category:categories(name, slug),
            product_images(url, is_primary, sort_order)`,
         )
         .eq("status", "published")
@@ -177,5 +177,16 @@ export async function getHomepageData() {
     }))
     .filter((c) => c.count > 0 || c.image);
 
-  return { config, trending, offers, categories: cats };
+  // Feature row: products from the "2 Seater Sofas" collection (design's
+  // dedicated section). Falls back gracefully if that collection is empty.
+  const featureSlug = "/seater-sofas/2-seater-sofas/";
+  const featureCat = (categories ?? []).find((c) => c.slug === featureSlug);
+  const feature = {
+    title: featureCat?.name ?? "2 Seater Sofas",
+    subtitle: "Compact luxury for every space",
+    link: featureSlug,
+    products: raw.filter((p) => p.category?.slug === featureSlug).slice(0, 4).map((p) => toStoreProduct(p, ratingMap.get(p.id))),
+  };
+
+  return { config, trending, offers, categories: cats, feature };
 }

@@ -13,16 +13,16 @@ export function SectionHeading({
   viewAll?: string;
 }) {
   return (
-    <div className="mb-4 flex items-end justify-between px-5 sm:px-10">
-      <div>
-        <h2 className="font-heading text-[26px] font-semibold text-charcoal">{title}</h2>
-        {subtitle && <p className="text-sm text-charcoal/55">{subtitle}</p>}
+    <div className="mb-4 px-5">
+      <div className="flex items-baseline justify-between">
+        <h2 className="m-0 font-heading text-[22px] font-semibold text-charcoal">{title}</h2>
+        {viewAll && (
+          <Link href={viewAll} className="whitespace-nowrap text-[13px] font-semibold tracking-wide text-gold">
+            View All →
+          </Link>
+        )}
       </div>
-      {viewAll && (
-        <Link href={viewAll} className="whitespace-nowrap text-[13px] font-medium uppercase tracking-wide text-gold hover:underline">
-          View All →
-        </Link>
-      )}
+      {subtitle && <p className="mt-1 text-sm leading-snug text-[#999]">{subtitle}</p>}
     </div>
   );
 }
@@ -32,54 +32,62 @@ export function ProductRow({
   subtitle,
   viewAll,
   products,
+  background,
 }: {
   title: string;
   subtitle?: string;
   viewAll?: string;
   products: StoreProduct[];
+  background?: "white" | "cream";
 }) {
   if (products.length === 0) return null;
   return (
-    <section className="py-8">
+    <section className={`py-8 ${background === "cream" ? "bg-cream" : ""}`}>
       <SectionHeading title={title} subtitle={subtitle} viewAll={viewAll} />
-      <div className="grid grid-cols-2 gap-4 px-5 sm:gap-6 sm:px-10 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 px-5">
         {products.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
       </div>
     </section>
   );
 }
 
-export function TrustedBy({ clients }: { clients: string[] }) {
+export function TrustedBy({ clients }: { clients: { name: string; href?: string | null }[] }) {
   if (clients.length === 0) return null;
   return (
-    <section className="bg-cream px-5 py-7 text-center">
-      <p className="mb-4 text-[11px] uppercase tracking-[2.5px] text-charcoal/40">Trusted By</p>
-      <div className="mx-auto flex max-w-4xl flex-wrap justify-center gap-x-6 gap-y-3">
-        {clients.map((c) => (
-          <span key={c} className="font-heading text-sm font-semibold text-navy/55 transition hover:text-navy">{c}</span>
-        ))}
+    <div className="bg-cream px-5 pb-7 pt-6 text-center">
+      <div className="mb-4 text-[11px] uppercase tracking-[2.5px] text-[#999]">Trusted By</div>
+      <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-3">
+        {clients.map((c) =>
+          c.href ? (
+            <a key={c.name} href={c.href} target="_blank" rel="nofollow noopener noreferrer" className="whitespace-nowrap font-heading text-sm font-semibold text-navy/55 transition hover:text-navy">
+              {c.name}
+            </a>
+          ) : (
+            <span key={c.name} className="whitespace-nowrap font-heading text-sm font-semibold text-navy/55">{c.name}</span>
+          ),
+        )}
       </div>
-    </section>
+    </div>
   );
 }
 
 export function LimitedOffers({ products }: { products: StoreProduct[] }) {
   if (products.length === 0) return null;
-  const maxDisc = Math.max(...products.map((p) => p.price && p.sale_price ? Math.round((1 - p.sale_price / p.price) * 100) : 0));
+  const maxDisc = Math.max(...products.map((p) => (p.price && p.sale_price ? Math.round((1 - p.sale_price / p.price) * 100) : 0)));
   return (
     <section className="bg-navy py-9">
-      <div className="mb-4 px-5 sm:px-10">
-        <p className="text-[11px] uppercase tracking-[3px] text-gold">Don&apos;t Miss Out</p>
-        <h2 className="font-heading text-[26px] font-semibold text-white">Limited-Time Offers</h2>
-        <p className="text-sm text-white/45">Up to {maxDisc}% off. While stocks last</p>
+      <div className="mb-4 px-5">
+        <div className="mb-1 text-[11px] uppercase tracking-[3px] text-gold">Don&apos;t Miss Out</div>
+        <h2 className="m-0 font-heading text-[22px] font-semibold text-white">Limited-Time Offers</h2>
+        <p className="mt-1 text-[13.5px] text-white/45">Up to {maxDisc}% off. While stocks last</p>
       </div>
-      <div className="grid grid-cols-2 gap-4 px-5 sm:gap-6 sm:px-10 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 px-5">
         {products.slice(0, 4).map((p) => {
           const disc = p.price && p.sale_price ? Math.round((1 - p.sale_price / p.price) * 100) : 0;
           return (
             <div key={p.id} className="relative rounded-lg bg-white p-2.5">
               {disc > 0 && (
-                <span className="absolute right-4 top-4 z-10 rounded-sm bg-sale px-2 py-0.5 text-[11px] font-bold text-white">-{disc}%</span>
+                <span className="absolute right-4 top-4 z-[2] rounded-sm bg-sale px-2 py-0.5 text-[11px] font-bold text-white">-{disc}%</span>
               )}
               <ProductCard product={p} />
             </div>
@@ -90,18 +98,32 @@ export function LimitedOffers({ products }: { products: StoreProduct[] }) {
   );
 }
 
-export function WhyComfyClub({ items }: { items: { title: string; desc: string }[] }) {
+function WhyIcon({ type }: { type?: string }) {
+  const common = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "#C9A84C", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (type === "materials")
+    return <svg {...common}><path d="M12 2 2 7l10 5 10-5-10-5Z" /><path d="m2 17 10 5 10-5" /><path d="m2 12 10 5 10-5" /></svg>;
+  if (type === "ship")
+    return <svg {...common}><path d="M10 17h4V5H2v12h3" /><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1" /><circle cx="7.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /></svg>;
+  if (type === "support")
+    return <svg {...common}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>;
+  // craft (default)
+  return <svg {...common}><path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9" /><path d="M17.64 15 22 10.64" /><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h.86c.85 0 1.65.34 2.25.93l1.25 1.25" /></svg>;
+}
+
+export function WhyComfyClub({ items }: { items: { icon?: string; title: string; desc: string }[] }) {
   if (items.length === 0) return null;
   return (
-    <section className="px-5 py-10 sm:px-10">
-      <h2 className="mb-6 font-heading text-[26px] font-semibold text-charcoal">Why ComfyClub</h2>
-      <div className="flex flex-col gap-6 md:flex-row md:flex-wrap">
+    <section className="px-5 py-10">
+      <h2 className="mb-5 font-heading text-[22px] font-semibold text-charcoal">Why ComfyClub</h2>
+      <div className="flex flex-col gap-[22px] md:flex-row md:flex-wrap">
         {items.map((it) => (
           <div key={it.title} className="flex flex-1 items-start gap-4 md:min-w-[220px]">
-            <div className="flex h-13 w-13 flex-shrink-0 items-center justify-center rounded-full bg-navy text-gold" style={{ height: 52, width: 52 }}>★</div>
-            <div>
-              <h3 className="font-heading text-[17px] font-semibold text-charcoal">{it.title}</h3>
-              <p className="text-sm leading-relaxed text-charcoal/60">{it.desc}</p>
+            <div className="flex flex-shrink-0 items-center justify-center rounded-full bg-navy" style={{ width: 52, height: 52 }}>
+              <WhyIcon type={it.icon} />
+            </div>
+            <div className="pt-0.5">
+              <div className="font-heading text-[17px] font-semibold leading-tight text-charcoal">{it.title}</div>
+              <div className="mt-1 text-sm leading-relaxed text-[#777]">{it.desc}</div>
             </div>
           </div>
         ))}
@@ -113,18 +135,15 @@ export function WhyComfyClub({ items }: { items: { title: string; desc: string }
 export function HowItWorks({ steps }: { steps: { step: string; title: string; desc: string }[] }) {
   if (steps.length === 0) return null;
   return (
-    <section className="bg-cream px-5 py-12 sm:px-10">
-      <div className="mb-6">
-        <h2 className="font-heading text-[26px] font-semibold text-charcoal">How It Works</h2>
-        <p className="text-sm text-charcoal/55">From selection to delivery. A seamless experience</p>
-      </div>
-      <div className="flex flex-col gap-6 md:flex-row md:flex-wrap">
+    <section className="bg-cream px-5 py-12">
+      <SectionHeading title="How It Works" subtitle="From selection to delivery. A seamless experience" />
+      <div className="mt-2 flex flex-col gap-6 md:flex-row md:flex-wrap">
         {steps.map((s) => (
           <div key={s.step} className="flex flex-1 items-start gap-4 md:min-w-[220px]">
-            <span className="font-heading text-[28px] font-bold leading-none text-gold/40">{s.step}</span>
+            <span className="font-heading text-[28px] font-bold leading-none text-gold/40" style={{ minWidth: 40 }}>{s.step}</span>
             <div>
-              <h3 className="font-heading text-[17px] font-semibold text-charcoal">{s.title}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-charcoal/55">{s.desc}</p>
+              <div className="font-heading text-[17px] font-semibold text-charcoal">{s.title}</div>
+              <div className="mt-[3px] text-sm leading-relaxed text-[#888]">{s.desc}</div>
             </div>
           </div>
         ))}
@@ -136,14 +155,15 @@ export function HowItWorks({ steps }: { steps: { step: string; title: string; de
 export function NeedHelpCTA() {
   return (
     <section className="bg-navy px-6 py-10 text-center">
-      <h2 className="font-heading text-[26px] font-semibold text-white">Need Help Choosing?</h2>
-      <p className="mt-1 text-sm text-white/50">Our furniture experts are a message away</p>
+      <div className="mb-1.5 font-heading text-[22px] font-semibold text-white">Need Help Choosing?</div>
+      <p className="mb-5 text-[13.5px] text-white/50">Our furniture experts are a message away</p>
       <a
         href={waLink("Hi, I'd like help choosing furniture.")}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-5 inline-flex items-center gap-2 rounded border border-gold px-8 py-3.5 text-[13px] font-semibold tracking-wide text-gold transition hover:bg-gold hover:text-navy"
+        className="inline-flex items-center gap-2 rounded border border-gold px-8 py-3.5 text-[13px] font-semibold tracking-wide text-gold"
       >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.5-1.4-3.5-3.1-.3-.5.3-.4.8-1.4.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5 4.4 1.9.8 2.6.9 3.5.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2" /></svg>
         Chat on WhatsApp
       </a>
     </section>

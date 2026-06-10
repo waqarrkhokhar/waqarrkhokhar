@@ -26,7 +26,7 @@ export default function CategorySlider({ categories }: { categories: StoreCatego
             )}
             <div className="absolute inset-0 flex flex-col justify-end p-3.5" style={{ background: "linear-gradient(transparent 40%, rgba(15,29,53,0.75))" }}>
               <p className="font-heading text-[17px] font-semibold text-white">{c.name}</p>
-              <p className="text-xs text-white/60">{c.count} item{c.count === 1 ? "" : "s"}</p>
+              <p className="text-xs text-white/60">{c.count} designs</p>
             </div>
           </Link>
         ))}
