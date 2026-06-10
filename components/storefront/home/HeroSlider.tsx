@@ -40,6 +40,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
             key={i}
             src={s.image}
             alt=""
+            referrerPolicy="no-referrer"
             className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
             style={{ opacity: i === active ? 0.5 : 0 }}
           />

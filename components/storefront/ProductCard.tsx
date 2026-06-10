@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import type { StoreProduct } from "@/lib/storefront/data";
 import { waLink, formatPrice } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/analytics";
@@ -22,7 +21,6 @@ export function whatsappOrder(product: { id?: string; name: string }, type = "or
 }
 
 export default function ProductCard({ product }: { product: StoreProduct }) {
-  const [loaded, setLoaded] = useState(false);
   const onSale = !!(product.sale_price && product.price && product.sale_price < product.price);
   const href = `/product/${product.slug}/`;
 
@@ -35,8 +33,8 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
             <img
               src={product.image}
               alt={product.name}
-              onLoad={() => setLoaded(true)}
-              className={`h-full w-full object-contain transition duration-500 group-hover:scale-[1.04] ${loaded ? "opacity-100" : "opacity-0"}`}
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.04]"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-charcoal/30">No image</div>
