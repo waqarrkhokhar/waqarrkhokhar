@@ -44,7 +44,7 @@ export function ProductRow({
   return (
     <section className={`py-8 ${background === "cream" ? "bg-cream" : ""}`}>
       <SectionHeading title={title} subtitle={subtitle} viewAll={viewAll} />
-      <div className="grid grid-cols-2 gap-4 px-5">
+      <div className="grid grid-cols-2 gap-4 px-5 md:grid-cols-4 md:gap-6 md:px-10">
         {products.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
       </div>
     </section>
@@ -81,7 +81,7 @@ export function LimitedOffers({ products }: { products: StoreProduct[] }) {
         <h2 className="m-0 font-heading text-[22px] font-semibold text-white">Limited-Time Offers</h2>
         <p className="mt-1 text-[13.5px] text-white/45">Up to {maxDisc}% off. While stocks last</p>
       </div>
-      <div className="grid grid-cols-2 gap-4 px-5">
+      <div className="grid grid-cols-2 gap-4 px-5 md:grid-cols-4 md:gap-6 md:px-10">
         {products.slice(0, 4).map((p) => {
           const disc = p.price && p.sale_price ? Math.round((1 - p.sale_price / p.price) * 100) : 0;
           return (

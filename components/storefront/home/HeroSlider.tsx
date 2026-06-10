@@ -29,7 +29,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
 
   return (
     <section
-      className="relative h-[520px] overflow-hidden bg-navy"
+      className="relative h-[520px] overflow-hidden bg-navy md:h-[600px] lg:h-[700px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -48,11 +48,11 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
 
       {/* Content */}
       <div
-        className="absolute inset-x-0 bottom-0 px-6 pb-9 pt-10"
+        className="absolute inset-x-0 bottom-0 px-6 pb-9 pt-10 md:px-12 md:pb-12 md:pt-[60px] lg:max-w-[600px]"
         style={{ background: "linear-gradient(transparent, rgba(15,29,53,0.85))" }}
       >
         <p className="mb-2 text-[11px] uppercase tracking-[4px] text-gold">{slide.subtitle}</p>
-        <h1 className="m-0 whitespace-pre-line font-heading text-[38px] font-semibold leading-[1.15] text-white">
+        <h1 className="m-0 whitespace-pre-line font-heading text-[38px] font-semibold leading-[1.15] text-white md:text-[52px] lg:text-[60px]">
           {slide.title}
         </h1>
         <p className="mt-2.5 text-sm leading-relaxed text-white/65">{slide.desc}</p>
