@@ -80,8 +80,8 @@ export default async function CategoryPage({ params }: { params: { path: string[
 
       {/* Intro content (collection) */}
       {page.intro_content && (
-        <div className="mx-auto max-w-3xl px-5 pt-8 text-[14.5px] leading-relaxed text-charcoal/75 md:px-10">
-          <div className="whitespace-pre-line">{page.intro_content}</div>
+        <div className="mx-auto max-w-3xl px-5 pt-8 md:px-10">
+          <div className="rich-text" dangerouslySetInnerHTML={{ __html: page.intro_content }} />
         </div>
       )}
 

@@ -119,7 +119,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
 
           {p.short_description && (
-            <p className="mt-4 text-[15px] leading-relaxed text-charcoal/75">{p.short_description}</p>
+            <div
+              className="rich-text mt-4"
+              dangerouslySetInnerHTML={{ __html: p.short_description }}
+            />
           )}
 
           {/* Order CTAs */}
@@ -141,17 +144,21 @@ export default async function ProductPage({ params }: { params: { slug: string }
           {p.long_description && (
             <div className="mt-8 border-t border-line pt-6">
               <h2 className="mb-2 font-heading text-[18px] font-semibold text-charcoal">Details</h2>
-              <div className="whitespace-pre-line text-[14.5px] leading-relaxed text-charcoal/75">{p.long_description}</div>
+              <div className="rich-text" dangerouslySetInnerHTML={{ __html: p.long_description }} />
             </div>
           )}
           {p.features && (
             <div className="mt-6">
               <h2 className="mb-2 font-heading text-[18px] font-semibold text-charcoal">Features</h2>
-              <ul className="list-inside list-disc space-y-1 text-[14.5px] leading-relaxed text-charcoal/75">
-                {p.features.split(/\n|;/).map((f) => f.trim()).filter(Boolean).map((f, i) => (
-                  <li key={i}>{f}</li>
-                ))}
-              </ul>
+              {/<[a-z][\s\S]*>/i.test(p.features) ? (
+                <div className="rich-text" dangerouslySetInnerHTML={{ __html: p.features }} />
+              ) : (
+                <ul className="list-inside list-disc space-y-1 text-[14.5px] leading-relaxed text-charcoal/75">
+                  {p.features.split(/\n|;/).map((f) => f.trim()).filter(Boolean).map((f, i) => (
+                    <li key={i}>{f}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </div>
