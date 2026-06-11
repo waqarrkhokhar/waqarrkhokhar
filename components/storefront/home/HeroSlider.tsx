@@ -113,7 +113,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
         href="https://share.google/JuOpyMoYl9RjLjtRs"
         target="_blank"
         rel="noopener noreferrer"
-        className="absolute bottom-9 right-4 z-[5] flex items-center gap-2 rounded-lg bg-black/50 px-3.5 py-2 backdrop-blur"
+        className="absolute right-4 top-4 z-[5] flex items-center gap-2 rounded-lg bg-black/50 px-3.5 py-2 backdrop-blur lg:bottom-9 lg:top-auto"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
