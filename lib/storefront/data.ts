@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/types/database";
+import { cleanHtml, parseProductBody, stripTagsPlain, type Dimensions } from "@/lib/storefront/html";
 
 export type NavParent = {
   id: string;
@@ -210,9 +211,14 @@ export type ProductDetail = {
   sku: string | null;
   price: number | null;
   sale_price: number | null;
+  /** Cleaned short description HTML (under the price). */
   short_description: string | null;
-  long_description: string | null;
-  features: string | null;
+  /** Description-tab HTML (intro + sections, minus Features/Dimensions). */
+  description_html: string;
+  /** Bullet list for the Features tab. */
+  features: string[];
+  /** Parsed dimensions for the grid (or null). */
+  dimensions: Dimensions | null;
   whatsapp_message_template: string | null;
   meta_title: string | null;
   meta_description: string | null;
@@ -276,6 +282,16 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
     related = ((rel ?? []) as unknown as RawProduct[]).map((r) => toStoreProduct(r));
   }
 
+  // Split the WooCommerce body into the prototype's sections; fall back to the
+  // separate `features` column if the body had no "Key Features" block.
+  const parsed = parseProductBody(row.long_description);
+  const featureFallback = row.features
+    ? cleanHtml(row.features)
+        .split(/\n|;|<br\s*\/?>/i)
+        .map((f) => f.replace(/<[^>]+>/g, "").trim())
+        .filter(Boolean)
+    : [];
+
   return {
     id: row.id,
     name: row.name,
@@ -283,9 +299,10 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
     sku: row.sku,
     price: row.price,
     sale_price: row.sale_price,
-    short_description: row.short_description,
-    long_description: row.long_description,
-    features: row.features,
+    short_description: cleanHtml(row.short_description) || null,
+    description_html: parsed.descriptionHtml,
+    features: parsed.features.length ? parsed.features : featureFallback,
+    dimensions: parsed.dimensions,
     whatsapp_message_template: row.whatsapp_message_template,
     meta_title: row.meta_title,
     meta_description: row.meta_description,
@@ -345,8 +362,8 @@ export async function getCategoryPage(path: string): Promise<CategoryPage | null
       type: "collection",
       name: c.name,
       slug: c.slug,
-      description: c.description,
-      intro_content: c.intro_content,
+      description: c.description ? stripTagsPlain(cleanHtml(c.description)) : null,
+      intro_content: cleanHtml(c.intro_content) || null,
       banner_image: c.banner_image,
       meta_title: c.meta_title,
       meta_description: c.meta_description,
@@ -407,7 +424,7 @@ export async function getCategoryPage(path: string): Promise<CategoryPage | null
     type: "parent",
     name: parent.name,
     slug: parent.slug,
-    description: parent.description,
+    description: parent.description ? stripTagsPlain(parent.description) : null,
     intro_content: null,
     banner_image: parent.banner_image,
     meta_title: parent.meta_title,

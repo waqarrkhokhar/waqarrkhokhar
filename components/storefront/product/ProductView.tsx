@@ -150,10 +150,14 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
 
   const onSale = !!(p.sale_price && p.price && p.sale_price < p.price);
   const images = p.images.length ? p.images : [{ url: "", alt: null }];
-  const featureList = p.features
-    ? /<[a-z][\s\S]*>/i.test(p.features)
-      ? null // HTML — render via rich-text
-      : p.features.split(/\n|;/).map((f) => f.trim()).filter(Boolean)
+  const featureList = p.features;
+  const dims = p.dimensions
+    ? [
+        { label: "Width", value: p.dimensions.width },
+        { label: "Depth", value: p.dimensions.depth },
+        { label: "Height", value: p.dimensions.height },
+        { label: "Seat Height", value: p.dimensions.seatHeight },
+      ].filter((d) => d.value)
     : [];
 
   const orderMsg = `Hi, I'm interested in ${p.name}${p.sku ? ` (${p.sku})` : ""}. Can you share more details?`;
@@ -281,12 +285,27 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
           <div className="px-5 py-5 md:px-0">
             {tab === "description" && (
               <div>
-                {p.long_description ? (
-                  <div className="rich-text" dangerouslySetInnerHTML={{ __html: p.long_description }} />
+                {p.description_html ? (
+                  <div className="rich-text" dangerouslySetInnerHTML={{ __html: p.description_html }} />
                 ) : p.short_description ? (
                   <div className="rich-text" dangerouslySetInnerHTML={{ __html: p.short_description }} />
                 ) : (
                   <p className="text-[13px] text-[#999]">Contact us on WhatsApp for full details about this piece.</p>
+                )}
+
+                {/* Dimensions grid */}
+                {dims.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="mb-2.5 font-heading text-[15px] font-semibold text-charcoal">Dimensions</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {dims.map((d) => (
+                        <div key={d.label} className="rounded bg-cream px-3 py-2.5">
+                          <div className="text-[10px] uppercase tracking-wide text-[#999]">{d.label}</div>
+                          <div className="mt-0.5 text-sm font-semibold text-charcoal">{d.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -294,9 +313,7 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
             {tab === "features" && (
               <div>
                 <h2 className="mb-4 font-heading text-lg font-semibold text-charcoal">Key Features</h2>
-                {featureList === null ? (
-                  <div className="rich-text" dangerouslySetInnerHTML={{ __html: p.features as string }} />
-                ) : featureList.length > 0 ? (
+                {featureList.length > 0 ? (
                   <ul className="flex flex-col gap-2.5">
                     {featureList.map((f, i) => (
                       <li key={i} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-[#666]">
