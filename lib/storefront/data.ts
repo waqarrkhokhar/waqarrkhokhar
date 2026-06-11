@@ -190,3 +190,256 @@ export async function getHomepageData() {
 
   return { config, trending, offers, categories: cats, feature };
 }
+
+// ── Product detail ──────────────────────────────────────────────────────────
+export type ProductImage = { url: string; alt: string | null };
+export type ProductReview = {
+  id: string;
+  name: string;
+  city: string | null;
+  rating: number;
+  text: string;
+  image_url: string | null;
+  admin_reply: string | null;
+  created_at: string;
+};
+export type ProductDetail = {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string | null;
+  price: number | null;
+  sale_price: number | null;
+  short_description: string | null;
+  long_description: string | null;
+  features: string | null;
+  whatsapp_message_template: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image: string | null;
+  images: ProductImage[];
+  category: { name: string; slug: string; parent_name: string; parent_slug: string } | null;
+  rating: number | null;
+  review_count: number;
+  reviews: ProductReview[];
+  related: StoreProduct[];
+};
+
+/** Full product detail for /product/[slug]/. Returns null if not found. */
+export async function getProductDetail(slug: string): Promise<ProductDetail | null> {
+  const supabase = createClient();
+  const { data: p } = await supabase
+    .from("products")
+    .select(
+      `id, name, slug, sku, price, sale_price, short_description, long_description,
+       features, whatsapp_message_template, meta_title, meta_description, og_image, category_id,
+       category:categories(name, slug, parent:parent_categories(name, slug)),
+       product_images(url, alt_text, is_primary, sort_order)`,
+    )
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (!p) return null;
+  const row = p as any;
+
+  const imgs = (row.product_images ?? []) as { url: string; alt_text: string | null; is_primary: boolean; sort_order: number }[];
+  const images: ProductImage[] = [...imgs]
+    .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order)
+    .map((i) => ({ url: i.url, alt: i.alt_text }));
+
+  const [{ data: ratingRow }, { data: reviewRows }] = await Promise.all([
+    supabase.from("product_ratings").select("avg_rating, review_count").eq("product_id", row.id).maybeSingle(),
+    supabase
+      .from("reviews")
+      .select("id, name, city, rating, text, image_url, admin_reply, created_at")
+      .eq("product_id", row.id)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+
+  // Related: same category, excluding this product.
+  let related: StoreProduct[] = [];
+  if (row.category_id) {
+    const { data: rel } = await supabase
+      .from("products")
+      .select(
+        `id, name, slug, price, sale_price, category_id,
+         category:categories(name, slug),
+         product_images(url, is_primary, sort_order)`,
+      )
+      .eq("category_id", row.category_id)
+      .eq("status", "published")
+      .neq("id", row.id)
+      .limit(4);
+    related = ((rel ?? []) as unknown as RawProduct[]).map((r) => toStoreProduct(r));
+  }
+
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    sku: row.sku,
+    price: row.price,
+    sale_price: row.sale_price,
+    short_description: row.short_description,
+    long_description: row.long_description,
+    features: row.features,
+    whatsapp_message_template: row.whatsapp_message_template,
+    meta_title: row.meta_title,
+    meta_description: row.meta_description,
+    og_image: row.og_image,
+    images,
+    category: row.category
+      ? {
+          name: row.category.name,
+          slug: row.category.slug,
+          parent_name: row.category.parent?.name ?? "",
+          parent_slug: row.category.parent?.slug ?? "",
+        }
+      : null,
+    rating: ratingRow ? Number(ratingRow.avg_rating) : null,
+    review_count: ratingRow?.review_count ?? 0,
+    reviews: (reviewRows ?? []) as ProductReview[],
+    related,
+  };
+}
+
+// ── Category / collection listing ───────────────────────────────────────────
+export type CategoryPage = {
+  type: "parent" | "collection";
+  name: string;
+  slug: string;
+  description: string | null;
+  intro_content: string | null;
+  banner_image: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  breadcrumb: { name: string; slug: string }[];
+  products: StoreProduct[];
+  /** For a parent: its child collections (with counts) to show as cards. */
+  children: StoreCategory[];
+};
+
+/** Resolve a storefront path to a parent or collection listing. null if unknown. */
+export async function getCategoryPage(path: string): Promise<CategoryPage | null> {
+  const slug = path.startsWith("/") ? path : `/${path}`;
+  const supabase = createClient();
+
+  // Try a child collection first (most specific).
+  const { data: collection } = await supabase
+    .from("categories")
+    .select(
+      `id, name, slug, description, intro_content, banner_image, meta_title, meta_description,
+       parent:parent_categories(name, slug)`,
+    )
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (collection) {
+    const c = collection as any;
+    const products = await productsForCategory(supabase, c.id);
+    return {
+      type: "collection",
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+      intro_content: c.intro_content,
+      banner_image: c.banner_image,
+      meta_title: c.meta_title,
+      meta_description: c.meta_description,
+      breadcrumb: c.parent ? [{ name: c.parent.name, slug: c.parent.slug }, { name: c.name, slug: c.slug }] : [{ name: c.name, slug: c.slug }],
+      products,
+      children: [],
+    };
+  }
+
+  // Otherwise a parent category.
+  const { data: parent } = await supabase
+    .from("parent_categories")
+    .select("id, name, slug, description, banner_image, meta_title, meta_description")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (!parent) return null;
+
+  const { data: childRows } = await supabase
+    .from("categories")
+    .select("id, name, slug, banner_image, sort_order")
+    .eq("parent_id", parent.id)
+    .eq("status", "published")
+    .order("sort_order");
+
+  // Products across all child collections of this parent.
+  const childIds = (childRows ?? []).map((c) => c.id);
+  let products: StoreProduct[] = [];
+  const children: StoreCategory[] = [];
+  if (childIds.length) {
+    products = await productsForCategory(supabase, childIds);
+    const counts = new Map<string, number>();
+    const imgFor = new Map<string, string>();
+    for (const p of products) {
+      // products carry category_name not id; recount via separate cheap query below
+      void p;
+    }
+    // Count per child collection.
+    const { data: countRows } = await supabase
+      .from("products")
+      .select("category_id")
+      .in("category_id", childIds)
+      .eq("status", "published");
+    for (const r of countRows ?? []) counts.set(r.category_id as string, (counts.get(r.category_id as string) ?? 0) + 1);
+    for (const c of childRows ?? []) {
+      children.push({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        image: c.banner_image ?? imgFor.get(c.id) ?? products.find((p) => p.category_name === c.name)?.image ?? null,
+        count: counts.get(c.id) ?? 0,
+      });
+    }
+  }
+
+  return {
+    type: "parent",
+    name: parent.name,
+    slug: parent.slug,
+    description: parent.description,
+    intro_content: null,
+    banner_image: parent.banner_image,
+    meta_title: parent.meta_title,
+    meta_description: parent.meta_description,
+    breadcrumb: [{ name: parent.name, slug: parent.slug }],
+    products,
+    children,
+  };
+}
+
+async function productsForCategory(supabase: any, categoryId: string | string[]): Promise<StoreProduct[]> {
+  let q = supabase
+    .from("products")
+    .select(
+      `id, name, slug, price, sale_price, category_id,
+       category:categories(name, slug),
+       product_images(url, is_primary, sort_order)`,
+    )
+    .eq("status", "published")
+    .order("sort_order");
+  q = Array.isArray(categoryId) ? q.in("category_id", categoryId) : q.eq("category_id", categoryId);
+  const { data } = await q.limit(200);
+  const raw = (data ?? []) as unknown as RawProduct[];
+
+  const ids = raw.map((p) => p.id);
+  const ratingMap = new Map<string, { avg: number; count: number }>();
+  if (ids.length) {
+    const { data: ratings } = await supabase
+      .from("product_ratings")
+      .select("product_id, avg_rating, review_count")
+      .in("product_id", ids);
+    for (const r of ratings ?? []) ratingMap.set(r.product_id, { avg: Number(r.avg_rating), count: r.review_count });
+  }
+  return raw.map((p) => toStoreProduct(p, ratingMap.get(p.id)));
+}
