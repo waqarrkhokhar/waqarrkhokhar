@@ -34,11 +34,30 @@ function ReviewForm({ product }: { product: { id: string; name: string } }) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [text, setText] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const valid = name.trim().length >= 2 && rating > 0 && text.trim().length >= 5;
+
+  async function uploadPhoto(file: File) {
+    setUploading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/reviews/upload", { method: "POST", body: fd });
+      const j = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(j?.error?.message || "Could not upload photo.");
+      setImage(j.data?.url ?? j.url ?? null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not upload photo.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function submit() {
     if (!valid || busy) return;
@@ -54,6 +73,7 @@ function ReviewForm({ product }: { product: { id: string; name: string } }) {
           city: city.trim() || null,
           rating,
           text: text.trim(),
+          image_url: image,
         }),
       });
       if (!res.ok) {
@@ -132,9 +152,38 @@ function ReviewForm({ product }: { product: { id: string; name: string } }) {
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} placeholder="Share your experience with this product..." className="w-full resize-y rounded-md border border-[#e0e0e0] px-3.5 py-2.5 text-[13px] outline-none focus:border-navy" />
       </div>
 
+      {/* Photo (optional) */}
+      <div className="mb-4">
+        <label className="mb-1.5 block text-xs font-medium text-charcoal">Photo (optional)</label>
+        {image ? (
+          <div className="flex items-center gap-3 rounded-md bg-cream p-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt="" referrerPolicy="no-referrer" className="h-12 w-12 rounded object-cover" />
+            <span className="flex-1 text-xs text-charcoal">Photo added</span>
+            <button onClick={() => setImage(null)} className="text-[11px] text-sale">Remove</button>
+          </div>
+        ) : (
+          <label className={`flex w-full cursor-pointer flex-col items-center rounded-md border-2 border-dashed border-[#e0e0e0] px-3.5 py-3.5 text-center text-xs text-[#999] ${uploading ? "opacity-60" : ""}`}>
+            <span className="mb-1 text-lg opacity-40">📷</span>
+            {uploading ? "Uploading…" : "Tap to add a photo"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadPhoto(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        )}
+      </div>
+
       {error && <div className="mb-3 rounded bg-sale/10 px-3 py-2 text-xs text-sale">{error}</div>}
 
-      <button onClick={submit} disabled={!valid || busy} className={`w-full rounded-md px-5 py-3.5 text-sm font-semibold transition ${valid && !busy ? "bg-navy text-white" : "cursor-default bg-[#ddd] text-[#999]"}`}>
+      <button onClick={submit} disabled={!valid || busy || uploading} className={`w-full rounded-md px-5 py-3.5 text-sm font-semibold transition ${valid && !busy && !uploading ? "bg-navy text-white" : "cursor-default bg-[#ddd] text-[#999]"}`}>
         {busy ? "Submitting…" : "Submit Review"}
       </button>
       <div className="mt-2 text-center text-[11px] text-[#bbb]">Your review will be published after approval</div>
@@ -371,6 +420,10 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
                 </div>
                 {r.city && <div className="mt-0.5 text-[10px] text-[#aaa]">{r.city}</div>}
                 <p className="mt-2 text-xs leading-relaxed text-[#666]">{r.text}</p>
+                {r.image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.image_url} alt="" referrerPolicy="no-referrer" className="mt-2.5 h-20 w-20 rounded object-cover" />
+                )}
                 {r.admin_reply && (
                   <div className="mt-2.5 rounded bg-cream px-3 py-2 text-xs text-charcoal/70">
                     <span className="font-semibold text-navy">ComfyClub:</span> {r.admin_reply}
