@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
-import { Button } from "@/components/ui/Button";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { DashPageHeader, DashBtn, DashBadge } from "@/components/dashboard/shared/Dash";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -35,9 +33,7 @@ export default function CollectionList() {
     setRows(res.data.data);
   }, [toast]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   async function remove() {
     if (!toDelete) return;
@@ -50,43 +46,38 @@ export default function CollectionList() {
 
   const columns: Column<Collection>[] = [
     {
-      key: "name",
-      header: "Collection",
+      key: "name", header: "Collection",
       render: (c) => (
         <div>
-          <p className="font-medium">{c.name}</p>
-          <p className="text-xs text-charcoal/50 dark:text-cream/50">{c.slug}</p>
+          <p className="font-medium text-navy dark:text-cream">{c.name}</p>
+          <p className="text-[11px] text-muted">{c.slug}</p>
         </div>
       ),
     },
-    { key: "parent", header: "Parent", render: (c) => c.parent?.name ?? "—" },
+    { key: "parent", header: "Parent", render: (c) => c.parent ? <DashBadge status="active" label={c.parent.name} /> : "—" },
     { key: "products_count", header: "Products", render: (c) => c.products_count },
-    { key: "status", header: "Status", render: (c) => <Badge tone={statusTone(c.status)}>{c.status}</Badge> },
+    { key: "is_featured", header: "Featured", render: (c) => (c.is_featured ? "⭐" : "—") },
+    { key: "status", header: "Status", render: (c) => <DashBadge status={c.status === "published" ? "published" : "draft"} label={c.status} /> },
     {
-      key: "actions",
-      header: "",
+      key: "actions", header: "", className: "w-28",
       render: (c) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setToDelete(c);
-          }}
-          className="text-sm text-red-500 hover:underline"
-        >
-          Delete
-        </button>
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => router.push(`/dashboard/collections/${c.id}`)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
+          <button onClick={() => window.open(c.slug, "_blank")} title="View Live" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🌐</button>
+          <button onClick={() => setToDelete(c)} title="Delete" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
+        </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-2xl font-semibold">Collections</h2>
-        <Link href="/dashboard/collections/new">
-          <Button size="sm">+ New Collection</Button>
-        </Link>
-      </div>
+    <div>
+      <DashPageHeader
+        title="Collections"
+        subtitle={`${rows.length} collections — used across products, SEO & nav`}
+        breadcrumbs={[{ label: "Catalog" }, { label: "Collections" }]}
+        actions={<DashBtn icon="+" href="/dashboard/collections/new">Add Collection</DashBtn>}
+      />
 
       <DashTable
         columns={columns}
