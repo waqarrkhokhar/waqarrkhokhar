@@ -415,7 +415,12 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
             {visibleReviews.map((r) => (
               <div key={r.id} className="mb-2.5 rounded-lg bg-white p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-semibold text-charcoal">{r.name}</span>
+                  <span className="flex items-center gap-1.5 text-[13px] font-semibold text-charcoal">
+                    {r.name}
+                    {r.is_featured && (
+                      <span className="rounded-full bg-gold/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gold">Featured</span>
+                    )}
+                  </span>
                   <Stars rating={r.rating} />
                 </div>
                 {r.city && <div className="mt-0.5 text-[10px] text-[#aaa]">{r.city}</div>}

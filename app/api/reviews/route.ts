@@ -25,6 +25,7 @@ export async function GET(request: Request) {
   if (productId) q = q.eq("product_id", productId);
   const ratingMin = url.searchParams.get("rating_min");
   if (ratingMin) q = q.gte("rating", Number(ratingMin));
+  if (url.searchParams.get("featured") === "true") q = q.eq("is_featured", true);
   const search = url.searchParams.get("search");
   if (search) q = q.or(`name.ilike.%${search}%,text.ilike.%${search}%`);
 

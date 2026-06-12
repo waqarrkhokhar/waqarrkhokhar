@@ -142,6 +142,7 @@ export interface Database {
         admin_reply: string | null;
         admin_reply_at: string | null;
         status: ReviewStatus;
+        is_featured: boolean;
       } & Timestamps>;
 
       whatsapp_leads: Table<{

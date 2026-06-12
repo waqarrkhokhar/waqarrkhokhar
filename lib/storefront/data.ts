@@ -202,6 +202,7 @@ export type ProductReview = {
   text: string;
   image_url: string | null;
   admin_reply: string | null;
+  is_featured: boolean;
   created_at: string;
 };
 export type ProductDetail = {
@@ -258,11 +259,12 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
     supabase.from("product_ratings").select("avg_rating, review_count").eq("product_id", row.id).maybeSingle(),
     supabase
       .from("reviews")
-      .select("id, name, city, rating, text, image_url, admin_reply, created_at")
+      .select("id, name, city, rating, text, image_url, admin_reply, is_featured, created_at")
       .eq("product_id", row.id)
       .eq("status", "approved")
+      .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(30),
   ]);
 
   // Related: same category, excluding this product.

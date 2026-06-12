@@ -10,24 +10,37 @@ type Params = { params: { id: string } };
 const schema = z.object({
   status: z.enum(["approved", "rejected", "pending"]).optional(),
   reply: z.string().min(1).max(500).optional(),
+  is_featured: z.boolean().optional(),
+  name: z.string().min(2).max(100).optional(),
+  city: z.string().max(50).nullish(),
+  rating: z.number().int().min(1).max(5).optional(),
+  text: z.string().min(3).max(1000).optional(),
 });
 
-/** PATCH /api/reviews/:id — approve/reject (status) or add an admin reply. */
+/** PATCH /api/reviews/:id — approve/reject, reply, feature, or edit fields. */
 export async function PATCH(request: Request, { params }: Params) {
   const guard = await requireCapability("reviews");
   if (!guard.ok) return guard.response;
 
   const body = await request.json().catch(() => null);
   const parsed = schema.safeParse(body);
-  if (!parsed.success || (!parsed.data.status && !parsed.data.reply)) {
-    return apiError(400, "VALIDATION_ERROR", "Provide a status or a reply");
+  if (!parsed.success) {
+    return apiError(400, "VALIDATION_ERROR", parsed.error.issues[0]?.message ?? "Invalid input");
   }
-
+  const d = parsed.data;
   const patch: Record<string, unknown> = {};
-  if (parsed.data.status) patch.status = parsed.data.status;
-  if (parsed.data.reply) {
-    patch.admin_reply = parsed.data.reply;
+  if (d.status) patch.status = d.status;
+  if (d.reply) {
+    patch.admin_reply = d.reply;
     patch.admin_reply_at = new Date().toISOString();
+  }
+  if (d.is_featured !== undefined) patch.is_featured = d.is_featured;
+  if (d.name !== undefined) patch.name = d.name;
+  if (d.city !== undefined) patch.city = d.city;
+  if (d.rating !== undefined) patch.rating = d.rating;
+  if (d.text !== undefined) patch.text = d.text;
+  if (Object.keys(patch).length === 0) {
+    return apiError(400, "VALIDATION_ERROR", "Nothing to update");
   }
 
   const supabase = createClient();
@@ -39,11 +52,12 @@ export async function PATCH(request: Request, { params }: Params) {
     .single();
   if (error || !data) return apiError(404, "NOT_FOUND", "Review not found");
 
-  if (parsed.data.status) await refreshRatings();
+  // Anything that changes the aggregate (status or rating) refreshes ratings.
+  if (d.status || d.rating !== undefined) await refreshRatings();
   await logActivity({
     userId: guard.user.id,
     userName: guard.user.name,
-    action: parsed.data.status === "approved" ? "approved" : parsed.data.status === "rejected" ? "rejected" : "updated",
+    action: d.status === "approved" ? "approved" : d.status === "rejected" ? "rejected" : "updated",
     entityType: "review",
     entityId: data.id,
     entityName: data.name,
