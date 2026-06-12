@@ -1,15 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
+import { DashPageHeader, DashBtn, DashBadge } from "@/components/dashboard/shared/Dash";
 import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Field";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 import { PKR, type Catalog, type ProductRow, type ProductHealth } from "./types";
+
+const statusBadge = (s: string) =>
+  s === "published" ? "published" : s === "archived" ? "archived" : s === "scheduled" ? "scheduled" : "draft";
 
 export default function ProductList() {
   const router = useRouter();
@@ -22,212 +24,141 @@ export default function ProductList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
+  const [confirmDel, setConfirmDel] = useState<ProductRow | null>(null);
 
-  // Filters
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [sort, setSort] = useState("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
 
+  const loadHealth = useCallback(() => {
+    apiGet<{ data: ProductHealth }>("/api/products/health").then((r) => r.ok && setHealth(r.data.data));
+  }, []);
+
   const loadProducts = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({
-      page: String(page),
-      limit: "20",
-      sort,
-      order,
-    });
+    const params = new URLSearchParams({ page: String(page), limit: "20", sort, order });
     if (search) params.set("search", search);
     if (status) params.set("status", status);
     if (categoryId) params.set("category_id", categoryId);
-
-    const res = await apiGet<{
-      data: ProductRow[];
-      pagination: { totalPages: number };
-    }>(`/api/products?${params.toString()}`);
+    const res = await apiGet<{ data: ProductRow[]; pagination: { totalPages: number } }>(`/api/products?${params}`);
     setLoading(false);
-    if (!res.ok) {
-      toast.error(res.error);
-      return;
-    }
+    if (!res.ok) return toast.error(res.error);
     setRows(res.data.data);
     setTotalPages(res.data.pagination.totalPages);
     setSelected([]);
   }, [page, sort, order, search, status, categoryId, toast]);
 
   useEffect(() => {
-    apiGet<{ data: Catalog }>("/api/catalog").then(
-      (r) => r.ok && setCatalog(r.data.data),
-    );
-    apiGet<{ data: ProductHealth }>("/api/products/health").then(
-      (r) => r.ok && setHealth(r.data.data),
-    );
-  }, []);
-
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+    apiGet<{ data: Catalog }>("/api/catalog").then((r) => r.ok && setCatalog(r.data.data));
+    loadHealth();
+  }, [loadHealth]);
+  useEffect(() => { loadProducts(); }, [loadProducts]);
 
   function toggleSort(key: string) {
     if (sort === key) setOrder(order === "asc" ? "desc" : "asc");
-    else {
-      setSort(key);
-      setOrder("asc");
-    }
+    else { setSort(key); setOrder("asc"); }
   }
 
   async function bulk(updates: Record<string, unknown>, label: string) {
     const res = await apiSend("/api/products/bulk", "PATCH", { ids: selected, updates });
     if (!res.ok) return toast.error(res.error);
     toast.success(`${label} — ${selected.length} product(s)`);
-    loadProducts();
-    setHealthDirty();
+    loadProducts(); loadHealth();
   }
 
-  function setHealthDirty() {
-    apiGet<{ data: ProductHealth }>("/api/products/health").then(
-      (r) => r.ok && setHealth(r.data.data),
-    );
+  async function duplicate(p: ProductRow) {
+    const res = await apiSend<{ data: { id: string } }>(`/api/products/${p.id}/duplicate`, "POST");
+    if (!res.ok) return toast.error(res.error);
+    toast.success(`"${p.name}" duplicated`);
+    router.push(`/dashboard/products/${res.data.data.id}`);
+  }
+
+  async function del() {
+    if (!confirmDel) return;
+    const res = await apiSend(`/api/products/${confirmDel.id}`, "DELETE");
+    setConfirmDel(null);
+    if (!res.ok) return toast.error(res.error);
+    toast.success(`"${confirmDel.name}" archived`);
+    loadProducts(); loadHealth();
   }
 
   const columns: Column<ProductRow>[] = [
     {
-      key: "image",
-      header: "",
-      className: "w-14",
-      render: (p) =>
-        p.primary_image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.primary_image}
-            alt=""
-            className="h-10 w-10 rounded-md object-cover"
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-md bg-black/5 dark:bg-white/10" />
-        ),
+      key: "image", header: "", className: "w-14",
+      render: (p) => p.primary_image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.primary_image} alt="" referrerPolicy="no-referrer" className="h-10 w-10 rounded-md bg-cream object-cover" />
+      ) : <div className="h-10 w-10 rounded-md bg-cream dark:bg-white/10" />,
     },
     {
-      key: "name",
-      header: "Product",
-      sortable: true,
+      key: "name", header: "Product", sortable: true,
       render: (p) => (
         <div>
-          <p className="font-medium">{p.name}</p>
-          <p className="text-xs text-charcoal/50 dark:text-cream/50">
-            {p.sku || "No SKU"} · {p.images_count} image(s)
-          </p>
+          <p className="font-medium text-charcoal dark:text-cream">{p.name.length > 44 ? p.name.slice(0, 44) + "…" : p.name}</p>
+          <p className="mt-0.5 text-[11px] text-muted">{p.sku || "No SKU"} · {p.images_count} image(s)</p>
         </div>
       ),
     },
+    { key: "category", header: "Category", render: (p) => <span className="whitespace-nowrap">{p.category?.name ?? "—"}</span> },
     {
-      key: "category",
-      header: "Category",
-      render: (p) => p.category?.name ?? "—",
+      key: "price", header: "Price", sortable: true,
+      render: (p) => (
+        <div className="whitespace-nowrap">
+          <div className="font-medium">{p.price != null ? `PKR ${p.price.toLocaleString()}` : "—"}</div>
+          {p.sale_price && <div className="text-[11px] text-green-600">Sale: PKR {p.sale_price.toLocaleString()}</div>}
+        </div>
+      ),
     },
+    { key: "status", header: "Status", render: (p) => <DashBadge status={statusBadge(p.status)} label={p.status} /> },
     {
-      key: "price",
-      header: "Price",
-      sortable: true,
-      render: (p) =>
-        p.sale_price ? (
-          <span>
-            <span className="font-medium">{PKR(p.sale_price)}</span>{" "}
-            <span className="text-xs text-charcoal/40 line-through dark:text-cream/40">
-              {PKR(p.price)}
-            </span>
-          </span>
-        ) : (
-          PKR(p.price)
-        ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (p) => <Badge tone={statusTone(p.status)}>{p.status}</Badge>,
+      key: "actions", header: "", className: "w-28",
+      render: (p) => (
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => router.push(`/dashboard/products/${p.id}`)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
+          <button onClick={() => duplicate(p)} title="Duplicate" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">📋</button>
+          <button onClick={() => setConfirmDel(p)} title="Archive" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
+        </div>
+      ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-heading text-2xl font-semibold">Products</h2>
-        <div className="flex gap-2">
-          <a href="/api/products/export" download>
-            <Button variant="secondary" size="sm">Export CSV</Button>
-          </a>
-          <Link href="/dashboard/products/new">
-            <Button size="sm">+ New Product</Button>
-          </Link>
-        </div>
-      </div>
+    <div>
+      <DashPageHeader
+        title="Products"
+        subtitle={`${health?.total ?? "…"} products in your catalog`}
+        breadcrumbs={[{ label: "Catalog" }, { label: "Products" }]}
+        actions={
+          <>
+            <a href="/api/products/export" download><DashBtn variant="secondary" icon="↓">Export CSV</DashBtn></a>
+            <DashBtn variant="secondary" icon="↑" href="/dashboard/import-export">Import</DashBtn>
+            <DashBtn icon="+" href="/dashboard/products/new">Add Product</DashBtn>
+          </>
+        }
+      />
 
-      {/* Health cards */}
-      {health && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "Published", value: health.published },
-            { label: "Draft", value: health.draft },
-            { label: "Archived", value: health.archived },
-            { label: "Missing images", value: health.missing_images },
-          ].map((c) => (
-            <div
-              key={c.label}
-              className="rounded-xl border border-line bg-white shadow-card p-4 dark:border-white/10 dark:bg-white/5"
-            >
-              <p className="text-2xl font-semibold">{c.value}</p>
-              <p className="text-xs text-charcoal/60 dark:text-cream/60">{c.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setPage(1);
-            loadProducts();
-          }}
-          className="flex-1 min-w-48"
-        >
-          <Input
-            placeholder="Search by name or SKU…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* Toolbar: search + filters */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); setPage(1); loadProducts(); }} className="relative min-w-[220px] flex-1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products..."
+            className="w-full rounded-md border border-line bg-white py-2.5 pl-9 pr-3 text-[13px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5" />
         </form>
-        <Select
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          className="w-40"
-        >
+        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+          className="rounded-md border border-line bg-white px-3 py-2.5 text-[13px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5">
           <option value="">All statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
           <option value="archived">Archived</option>
           <option value="scheduled">Scheduled</option>
-        </Select>
-        <Select
-          value={categoryId}
-          onChange={(e) => {
-            setCategoryId(e.target.value);
-            setPage(1);
-          }}
-          className="w-52"
-        >
+        </select>
+        <select value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}
+          className="rounded-md border border-line bg-white px-3 py-2.5 text-[13px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5">
           <option value="">All collections</option>
-          {catalog?.collections.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.parent_name} › {c.name}
-            </option>
-          ))}
-        </Select>
+          {catalog?.collections.map((c) => <option key={c.id} value={c.id}>{c.parent_name} › {c.name}</option>)}
+        </select>
       </div>
 
       <DashTable
@@ -249,25 +180,21 @@ export default function ProductList() {
         emptyDescription="Try adjusting filters, or create your first product."
         bulkActions={
           <>
-            <Button size="sm" onClick={() => bulk({ status: "published" }, "Published")}>
-              Publish
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => bulk({ status: "archived" }, "Archived")}
-            >
-              Archive
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => bulk({ is_featured: true }, "Featured")}
-            >
-              Feature
-            </Button>
+            <Button size="sm" onClick={() => bulk({ status: "published" }, "Published")}>Publish</Button>
+            <Button size="sm" variant="secondary" onClick={() => bulk({ status: "archived" }, "Archived")}>Archive</Button>
+            <Button size="sm" variant="secondary" onClick={() => bulk({ is_featured: true }, "Featured")}>Feature</Button>
           </>
         }
+      />
+
+      <ConfirmDialog
+        open={!!confirmDel}
+        onClose={() => setConfirmDel(null)}
+        onConfirm={del}
+        title="Archive product"
+        message={confirmDel ? `Archive "${confirmDel.name}"? It will be hidden from the storefront but kept in the database.` : ""}
+        confirmLabel="Archive"
+        danger
       />
     </div>
   );

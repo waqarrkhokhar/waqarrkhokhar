@@ -224,3 +224,117 @@ export function DashSparkline({ data, color = "#C9A84C", height = 40 }: { data: 
     </svg>
   );
 }
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+export function DashTabs<T extends string>({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: { id: T; label: string; count?: number }[];
+  active: T;
+  onChange: (id: T) => void;
+}) {
+  return (
+    <div className="mb-5 flex gap-0 overflow-x-auto border-b border-line dark:border-white/10">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          onClick={() => onChange(t.id)}
+          className={`whitespace-nowrap border-b-2 px-[18px] py-2.5 text-[13px] transition ${
+            active === t.id ? "border-gold font-semibold text-gold" : "border-transparent text-muted hover:text-ink"
+          }`}
+        >
+          {t.label}{t.count != null ? ` (${t.count})` : ""}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Form field ──────────────────────────────────────────────────────────── */
+export function DashInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  required,
+  helper,
+  textarea,
+  rows = 3,
+  disabled,
+}: {
+  label?: string;
+  value?: string | number;
+  onChange?: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+  helper?: string;
+  textarea?: boolean;
+  rows?: number;
+  disabled?: boolean;
+}) {
+  const cls =
+    "w-full rounded-md border border-line bg-white px-3 py-2.5 text-[13px] text-ink outline-none transition focus:border-gold disabled:bg-panel dark:border-white/10 dark:bg-white/5 dark:text-cream";
+  return (
+    <div className="mb-4">
+      {label && (
+        <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">
+          {label}{required && <span className="text-red-500"> *</span>}
+        </label>
+      )}
+      {textarea ? (
+        <textarea value={value ?? ""} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} rows={rows} disabled={disabled} className={`${cls} resize-y`} />
+      ) : (
+        <input type={type} value={value ?? ""} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} disabled={disabled} className={cls} />
+      )}
+      {helper && <div className="mt-1 text-[11px] text-muted">{helper}</div>}
+    </div>
+  );
+}
+
+export function DashSelect({
+  label,
+  value,
+  onChange,
+  required,
+  helper,
+  children,
+}: {
+  label?: string;
+  value?: string;
+  onChange?: (v: string) => void;
+  required?: boolean;
+  helper?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4">
+      {label && (
+        <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">
+          {label}{required && <span className="text-red-500"> *</span>}
+        </label>
+      )}
+      <select value={value} onChange={(e) => onChange?.(e.target.value)} className="w-full cursor-pointer rounded-md border border-line bg-white px-3 py-2.5 text-[13px] text-ink outline-none focus:border-gold dark:border-white/10 dark:bg-white/5 dark:text-cream">
+        {children}
+      </select>
+      {helper && <div className="mt-1 text-[11px] text-muted">{helper}</div>}
+    </div>
+  );
+}
+
+export function DashToggle({ label, checked, onChange, helper }: { label: string; checked: boolean; onChange?: (v: boolean) => void; helper?: string }) {
+  return (
+    <div className="mb-3.5 flex items-center justify-between">
+      <div>
+        <div className="text-[13px] text-ink dark:text-cream">{label}</div>
+        {helper && <div className="mt-0.5 text-[11px] text-muted">{helper}</div>}
+      </div>
+      <button type="button" onClick={() => onChange?.(!checked)} className={`relative h-[22px] w-10 flex-shrink-0 rounded-full transition ${checked ? "bg-gold" : "bg-gray-300 dark:bg-white/20"}`}>
+        <span className={`absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white shadow transition-all ${checked ? "left-[20px]" : "left-0.5"}`} />
+      </button>
+    </div>
+  );
+}
