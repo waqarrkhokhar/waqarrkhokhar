@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   DashPageHeader, DashSection, DashTabs, DashInput, DashSelect, DashToggle, DashBtn,
 } from "@/components/dashboard/shared/Dash";
+import RichTextEditor from "@/components/dashboard/shared/RichTextEditor";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -32,7 +33,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
 
   const [f, setF] = useState({
     name: "", parent_id: "", status: "draft", sort_order: "0", is_featured: false,
-    banner_image: "", intro_content: "",
+    banner_image: "", intro_content: "", content_html: "",
     meta_title: "", meta_description: "", focus_keyword: "", canonical_url: "",
     og_image: "", robots: "index, follow", schema_enabled: true,
   });
@@ -51,7 +52,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     setF({
       name: String(c.name ?? ""), parent_id: String(c.parent_id ?? ""), status: String(c.status ?? "draft"),
       sort_order: String(c.sort_order ?? 0), is_featured: !!c.is_featured, banner_image: String(c.banner_image ?? ""),
-      intro_content: String(c.intro_content ?? ""), meta_title: String(c.meta_title ?? ""),
+      intro_content: String(c.intro_content ?? ""), content_html: String(c.content_html ?? ""), meta_title: String(c.meta_title ?? ""),
       meta_description: String(c.meta_description ?? ""), focus_keyword: String(c.focus_keyword ?? ""),
       canonical_url: String(c.canonical_url ?? ""), og_image: String(c.og_image ?? ""),
       robots: String(c.robots ?? "index, follow"), schema_enabled: c.schema_enabled !== false,
@@ -67,7 +68,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     const str = (s: string) => (s.trim() ? s.trim() : null);
     return {
       name: f.name.trim(), status: f.status, sort_order: parseInt(f.sort_order, 10) || 0, is_featured: f.is_featured,
-      banner_image: str(f.banner_image), intro_content: str(f.intro_content), seo_content: seo,
+      banner_image: str(f.banner_image), intro_content: str(f.intro_content), content_html: str(f.content_html), seo_content: seo,
       meta_title: str(f.meta_title), meta_description: str(f.meta_description), focus_keyword: str(f.focus_keyword),
       canonical_url: str(f.canonical_url), og_image: str(f.og_image), robots: str(f.robots), schema_enabled: f.schema_enabled,
     };
@@ -113,7 +114,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
 
   const score = computeSeoScore({
     metaTitle: f.meta_title, metaDescription: f.meta_description, focusKeyword: f.focus_keyword,
-    contentWordCount: countWords(f.intro_content, seo.whyBuy, seo.shopByRoom, seo.howToChoose, seo.bottomContent, seo.faqContent),
+    contentWordCount: countWords(f.intro_content, f.content_html.replace(/<[^>]+>/g, " ")),
     minWords: 300, schemaEnabled: f.schema_enabled, ogImage: f.og_image || f.banner_image, canonical: f.canonical_url, internalLinks: 1,
   });
 
@@ -177,16 +178,13 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
       )}
 
       {tab === "content" && (
-        <DashSection title="Collection Content" subtitle="Rich SEO content rendered below the product grid">
-          <DashInput label="Collection Intro" textarea rows={4} value={f.intro_content} onChange={(v) => set("intro_content", v)} placeholder="Introduction paragraph shown at the top of the collection page" />
+        <DashSection title="Collection Content" subtitle="Rich content rendered below the product grid on the storefront">
+          <DashInput label="Collection Intro" textarea rows={3} value={f.intro_content} onChange={(v) => set("intro_content", v)} placeholder="Short introduction shown at the top of the collection page" />
           <div className="mb-3 rounded-md bg-blue-50 p-2.5 text-[12px] text-blue-600">
-            💡 These sections render below the product grid on the storefront. Add rich SEO content organized by headings.
+            💡 Use the editor below for the long-form page content (headings, lists, internal links). It renders under the products and pagination. For links, select text → 🔗 Link → paste the URL and tick &ldquo;Open in new tab&rdquo; if needed.
           </div>
-          <DashInput label="Why Buy Section" textarea rows={3} value={seo.whyBuy} onChange={(v) => setSeo({ ...seo, whyBuy: v })} placeholder="Key selling points and differentiators" />
-          <DashInput label="Shop by Room Content" textarea rows={4} value={seo.shopByRoom} onChange={(v) => setSeo({ ...seo, shopByRoom: v })} placeholder="Room-specific recommendations" />
-          <DashInput label="How to Choose Guide" textarea rows={4} value={seo.howToChoose} onChange={(v) => setSeo({ ...seo, howToChoose: v })} placeholder="Buying guide tips" />
-          <DashInput label="Bottom Content" textarea rows={4} value={seo.bottomContent} onChange={(v) => setSeo({ ...seo, bottomContent: v })} placeholder="Additional SEO-rich content shown at the bottom" />
-          <DashInput label="FAQ Content" textarea rows={4} value={seo.faqContent} onChange={(v) => setSeo({ ...seo, faqContent: v })} placeholder="Q: question | A: answer (one per line)" helper="Rendered as accordions with FAQ schema markup" />
+          <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">Page Content</label>
+          <RichTextEditor value={f.content_html} onChange={(v) => set("content_html", v)} />
         </DashSection>
       )}
 

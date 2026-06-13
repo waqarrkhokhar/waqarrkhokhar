@@ -34,6 +34,7 @@ export const collectionCreateSchema = z.object({
   name: z.string().min(2).max(100),
   parent_id: z.string().uuid(),
   intro_content: z.string().nullish(),
+  content_html: z.string().nullish(),
   seo_content: seoContentSchema.nullish(),
   schema_enabled: z.boolean().optional(),
   is_featured: z.boolean().optional(),

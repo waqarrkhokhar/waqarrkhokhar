@@ -8,11 +8,13 @@ export default function PolicyPage({
   title,
   intro,
   sections,
+  html,
   updated = "June 2026",
 }: {
   title: string;
-  intro: string;
-  sections: PolicySection[];
+  intro?: string;
+  sections?: PolicySection[];
+  html?: string;
   updated?: string;
 }) {
   return (
@@ -26,19 +28,23 @@ export default function PolicyPage({
       <div className="bg-navy px-6 py-10 text-center md:px-10">
         <div className="mb-2 text-[11px] uppercase tracking-[3px] text-gold">ComfyClub</div>
         <h1 className="m-0 font-heading text-[30px] font-semibold leading-tight text-white md:text-[36px]">{title}</h1>
-        <p className="mt-2 text-xs text-white/45">Last updated: {updated}</p>
+        {!html && <p className="mt-2 text-xs text-white/45">Last updated: {updated}</p>}
       </div>
 
       <article className="mx-auto max-w-3xl px-5 py-10 md:px-10">
-        <p className="mb-8 text-[15px] leading-[1.8] text-[#555]">{intro}</p>
-        {sections.map((s) => (
-          <section key={s.heading} className="mb-7">
-            <h2 className="mb-2.5 font-heading text-[20px] font-semibold text-charcoal">{s.heading}</h2>
-            {s.body.map((p, i) => (
-              <p key={i} className="mb-3 text-[14.5px] leading-[1.8] text-[#666]">{p}</p>
-            ))}
-          </section>
-        ))}
+        {intro && <p className="mb-8 text-[15px] leading-[1.8] text-[#555]">{intro}</p>}
+        {html ? (
+          <div className="rich-text" dangerouslySetInnerHTML={{ __html: html }} />
+        ) : (
+          (sections ?? []).map((s) => (
+            <section key={s.heading} className="mb-7">
+              <h2 className="mb-2.5 font-heading text-[20px] font-semibold text-charcoal">{s.heading}</h2>
+              {s.body.map((p, i) => (
+                <p key={i} className="mb-3 text-[14.5px] leading-[1.8] text-[#666]">{p}</p>
+              ))}
+            </section>
+          ))
+        )}
 
         <div className="mt-10 rounded-[10px] border-l-[3px] border-gold bg-cream px-5 py-5">
           <h3 className="mb-1 font-heading text-[16px] font-semibold text-charcoal">Questions?</h3>

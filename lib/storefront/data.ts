@@ -332,6 +332,7 @@ export type CategoryPage = {
   slug: string;
   description: string | null;
   intro_content: string | null;
+  content_html: string | null;
   banner_image: string | null;
   meta_title: string | null;
   meta_description: string | null;
@@ -350,7 +351,7 @@ export async function getCategoryPage(path: string): Promise<CategoryPage | null
   const { data: collection } = await supabase
     .from("categories")
     .select(
-      `id, name, slug, description, intro_content, banner_image, meta_title, meta_description,
+      `id, name, slug, description, intro_content, content_html, banner_image, meta_title, meta_description,
        parent:parent_categories(name, slug)`,
     )
     .eq("slug", slug)
@@ -366,6 +367,7 @@ export async function getCategoryPage(path: string): Promise<CategoryPage | null
       slug: c.slug,
       description: c.description ? stripTagsPlain(cleanHtml(c.description)) : null,
       intro_content: cleanHtml(c.intro_content) || null,
+      content_html: cleanHtml(c.content_html) || null,
       banner_image: c.banner_image,
       meta_title: c.meta_title,
       meta_description: c.meta_description,
@@ -428,6 +430,7 @@ export async function getCategoryPage(path: string): Promise<CategoryPage | null
     slug: parent.slug,
     description: parent.description ? stripTagsPlain(parent.description) : null,
     intro_content: null,
+    content_html: null,
     banner_image: parent.banner_image,
     meta_title: parent.meta_title,
     meta_description: parent.meta_description,

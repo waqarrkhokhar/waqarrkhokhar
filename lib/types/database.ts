@@ -77,6 +77,7 @@ export interface Database {
         description: string | null;
         banner_image: string | null;
         intro_content: string | null;
+        content_html: string | null;
         seo_content: Json;
         meta_title: string | null;
         meta_description: string | null;
