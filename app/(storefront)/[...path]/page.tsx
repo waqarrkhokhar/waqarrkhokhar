@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategoryPage } from "@/lib/storefront/data";
-import ProductCard from "@/components/storefront/ProductCard";
+import CollectionGrid from "@/components/storefront/CollectionGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -85,28 +85,19 @@ export default async function CategoryPage({ params }: { params: { path: string[
         </div>
       )}
 
-      {/* Product grid */}
-      <section className="px-5 py-8 md:px-10">
-        {page.products.length > 0 ? (
-          <>
-            <p className="mb-4 text-[13px] text-charcoal/50">
-              {page.products.length} product{page.products.length === 1 ? "" : "s"}
-            </p>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-              {page.products.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </>
-        ) : (
-          page.children.length === 0 && (
-            <div className="py-16 text-center text-charcoal/50">
-              <p className="font-heading text-lg">No products here yet.</p>
-              <p className="mt-1 text-sm">Check back soon — new pieces are added regularly.</p>
-            </div>
-          )
-        )}
-      </section>
+      {/* Product grid with filters / sort / load-more */}
+      {page.products.length > 0 ? (
+        <section className="py-5">
+          <CollectionGrid products={page.products} />
+        </section>
+      ) : (
+        page.children.length === 0 && (
+          <section className="px-5 py-16 text-center text-charcoal/50 md:px-10">
+            <p className="font-heading text-lg">No products here yet.</p>
+            <p className="mt-1 text-sm">Check back soon — new pieces are added regularly.</p>
+          </section>
+        )
+      )}
     </div>
   );
 }
