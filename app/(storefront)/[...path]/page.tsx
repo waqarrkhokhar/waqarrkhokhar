@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategoryPage } from "@/lib/storefront/data";
 import CollectionGrid from "@/components/storefront/CollectionGrid";
+import CollapsibleContent from "@/components/storefront/CollapsibleContent";
 
 export const dynamic = "force-dynamic";
 
@@ -102,10 +103,7 @@ export default async function CategoryPage({ params }: { params: { path: string[
       {/* Long-form collection content (below products + pagination) */}
       {page.content_html && (
         <section className="bg-cream px-5 py-12 md:px-10">
-          <div
-            className="rich-text mx-auto max-w-3xl"
-            dangerouslySetInnerHTML={{ __html: page.content_html }}
-          />
+          <CollapsibleContent html={page.content_html} />
         </section>
       )}
     </div>
