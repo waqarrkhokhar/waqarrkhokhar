@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { waLink } from "@/lib/whatsapp";
+import WhatsAppIcon from "../WhatsAppIcon";
 
 export type Slide = {
   image: string | null;
@@ -68,8 +69,9 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
             href={waLink("Hi, I'd like to know more about your furniture collection.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-white/30 px-6 py-3 text-[13px] font-medium tracking-wide text-white"
+            className="inline-flex items-center gap-2 bg-whatsapp px-6 py-3 text-[13px] font-semibold tracking-wide text-white"
           >
+            <WhatsAppIcon size={16} />
             WhatsApp Us
           </a>
         </div>

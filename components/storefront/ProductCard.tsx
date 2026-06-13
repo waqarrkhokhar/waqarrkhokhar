@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import type { StoreProduct } from "@/lib/storefront/data";
-import { waLink, formatPrice } from "@/lib/whatsapp";
+import { waLink, waProductMessage, formatPrice } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/analytics";
+import WhatsAppIcon from "./WhatsAppIcon";
 
 /** Fire a WhatsApp lead (GA4 + /api/leads) then open the chat. */
 export function whatsappOrder(product: { id?: string; name: string }, type = "order") {
@@ -67,14 +68,14 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
         </span>
 
         <a
-          href={waLink(`Hi, I'm interested in ${product.name}. Can you share more details?`)}
+          href={waLink(waProductMessage(product.name, product.slug))}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => whatsappOrder(product)}
           aria-label="Order on WhatsApp"
           className="absolute bottom-2.5 right-2.5 flex h-9 w-9 translate-y-2 items-center justify-center rounded-full bg-whatsapp text-white opacity-0 shadow-md transition group-hover:translate-y-0 group-hover:opacity-100"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.5-1.4-3.5-3.1-.3-.5.3-.4.8-1.4.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5 4.4 1.9.8 2.6.9 3.5.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2"/></svg>
+          <WhatsAppIcon size={18} />
         </a>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ProductDetail } from "@/lib/storefront/data";
-import { waLink, formatPrice } from "@/lib/whatsapp";
+import { waLink, productUrl, formatPrice } from "@/lib/whatsapp";
 import { whatsappOrder } from "@/components/storefront/ProductCard";
 
 /* ── Stars ───────────────────────────────────────────────────────────────── */
@@ -209,9 +209,10 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
       ].filter((d) => d.value)
     : [];
 
-  const orderMsg = `Hi, I'm interested in ${p.name}${p.sku ? ` (${p.sku})` : ""}. Can you share more details?`;
-  const quoteMsg = `Hi, I'd like a quote for ${p.name}.`;
-  const consultMsg = `Hi, I'd like a consultation about ${p.name}.`;
+  const link = productUrl(p.slug);
+  const orderMsg = `Hi, I'm interested in ${p.name}${p.sku ? ` (${p.sku})` : ""}. Can you share more details?\n\n${link}`;
+  const quoteMsg = `Hi, I'd like a quote for ${p.name}.\n\n${link}`;
+  const consultMsg = `Hi, I'd like a consultation about ${p.name}.\n\n${link}`;
 
   const visibleReviews = showAll ? p.reviews : p.reviews.slice(0, 3);
 
