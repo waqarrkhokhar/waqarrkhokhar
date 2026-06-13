@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { waLink } from "@/lib/whatsapp";
+import WhatsAppIcon from "./WhatsAppIcon";
 
 export type PolicySection = { heading: string; body: string[] };
 
@@ -45,7 +46,7 @@ export default function PolicyPage({
             We&apos;re always happy to help. Reach us on WhatsApp or email and we&apos;ll respond quickly.
           </p>
           <div className="flex flex-wrap gap-2.5">
-            <a href={waLink("Hi, I have a question about your policies.")} target="_blank" rel="noopener noreferrer" className="rounded bg-whatsapp px-5 py-2.5 text-[13px] font-semibold text-white">WhatsApp Us</a>
+            <a href={waLink("Hi, I have a question about your policies.")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded bg-whatsapp px-5 py-2.5 text-[13px] font-semibold text-white"><WhatsAppIcon size={15} /> WhatsApp Us</a>
             <Link href="/contact-us/" className="rounded border border-navy px-5 py-2.5 text-[13px] font-semibold text-navy">Contact Page</Link>
           </div>
         </div>

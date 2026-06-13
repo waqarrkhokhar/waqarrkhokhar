@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { waLink } from "@/lib/whatsapp";
+import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -176,7 +177,7 @@ export default async function AboutPage() {
         <p className="mx-auto mb-6 max-w-sm text-sm leading-relaxed text-white/50">Browse our collection or chat with our furniture experts. We&apos;re one message away.</p>
         <div className="flex flex-wrap justify-center gap-2.5">
           <Link href="/" className="rounded bg-gold px-7 py-3.5 text-sm font-semibold text-white">Browse Collection</Link>
-          <a href={waLink("Hi, I'd like to know more about ComfyClub.")} target="_blank" rel="noopener noreferrer" className="rounded border border-white/25 px-7 py-3.5 text-sm font-medium text-white">WhatsApp Us</a>
+          <a href={waLink("Hi, I'd like to know more about ComfyClub.")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded bg-whatsapp px-7 py-3.5 text-sm font-semibold text-white"><WhatsAppIcon size={16} /> WhatsApp Us</a>
         </div>
       </section>
     </div>

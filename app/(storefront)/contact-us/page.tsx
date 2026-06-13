@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactForm from "@/components/storefront/ContactForm";
+import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
 import { waLink } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export default function ContactPage() {
       <div className="relative z-[2] mx-5 mt-6 grid gap-3 md:mx-10 md:grid-cols-3">
         <a href={waLink("Hi, I'd like to get in touch.")} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3.5 rounded-[10px] border border-black/[0.04] bg-white px-5 py-[18px] shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-whatsapp text-white">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.5-1.4-3.5-3.1-.3-.5.3-.4.8-1.4.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5 4.4 1.9.8 2.6.9 3.5.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2" /></svg>
+            <WhatsAppIcon size={22} />
           </div>
           <div>
             <div className="font-heading text-[15px] font-semibold text-charcoal">WhatsApp Us</div>
