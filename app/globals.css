@@ -41,18 +41,31 @@ body {
 .rich-text h3,
 .rich-text h4 {
   font-family: var(--font-cormorant), "Cormorant Garamond", serif;
-  color: #2c2c2c;
   font-weight: 600;
-  line-height: 1.25;
-  margin: 1.4em 0 0.5em;
+  line-height: 1.2;
 }
-.rich-text h1 { font-size: 1.7em; }
-.rich-text h2 { font-size: 1.4em; }
-.rich-text h3 { font-size: 1.2em; }
-.rich-text h4 { font-size: 1.05em; }
+/* H2 — prominent section headings (navy, with a gold accent rule) */
+.rich-text h2 {
+  font-size: 1.9em;
+  color: #0f1d35;
+  margin: 1.7em 0 0.55em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.3);
+}
+/* H3 — clear sub-headings (charcoal) */
+.rich-text h3 {
+  font-size: 1.35em;
+  color: #2c2c2c;
+  margin: 1.5em 0 0.4em;
+}
+.rich-text h4 {
+  font-size: 1.1em;
+  color: #2c2c2c;
+  margin: 1.3em 0 0.35em;
+}
 .rich-text p { margin: 0 0 1em; }
 .rich-text a { color: #c9a84c; text-decoration: underline; }
-.rich-text strong, .rich-text b { color: #2c2c2c; font-weight: 600; }
+.rich-text strong, .rich-text b { color: #0f1d35; font-weight: 600; }
 .rich-text ul,
 .rich-text ol {
   margin: 0 0 1em;
@@ -60,7 +73,7 @@ body {
 }
 .rich-text ul { list-style: disc; }
 .rich-text ol { list-style: decimal; }
-.rich-text li { margin: 0.3em 0; }
+.rich-text li { margin: 0.4em 0; }
 .rich-text img {
   max-width: 100%;
   height: auto;
