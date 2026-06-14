@@ -13,10 +13,15 @@ const schema = z.object({
 
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "comfyclub.pk@gmail.com";
 
+function esc(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 /**
  * POST /api/contact — public contact form.
- * Stores the message (service role) and emails a notification via Resend when
- * RESEND_API_KEY is configured. Submission succeeds even if email is not set up.
+ * Resilient: tries to store the message (service role) AND email a notification
+ * (Resend). Succeeds if either path works, so a missing key/table never loses
+ * the customer's message.
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -26,17 +31,25 @@ export async function POST(request: Request) {
   }
   const d = parsed.data;
 
-  const db = createAdminClient();
-  const { error } = await db.from("contact_submissions").insert({
-    name: d.name, email: d.email, phone: d.phone ?? null, subject: d.subject ?? null, message: d.message,
-  });
-  if (error) return apiError(500, "INTERNAL_ERROR", error.message);
+  // 1) Store in the database (best-effort).
+  let stored = false;
+  try {
+    const db = createAdminClient();
+    const { error } = await db.from("contact_submissions").insert({
+      name: d.name, email: d.email, phone: d.phone ?? null, subject: d.subject ?? null, message: d.message,
+    });
+    if (error) console.error("contact: db insert failed:", error.message);
+    else stored = true;
+  } catch (e) {
+    console.error("contact: admin client unavailable:", e instanceof Error ? e.message : e);
+  }
 
-  // Best-effort email notification (no SDK; Resend REST API).
+  // 2) Email a notification via Resend (best-effort).
+  let emailed = false;
   const key = process.env.RESEND_API_KEY;
   if (key) {
     try {
-      await fetch("https://api.resend.com/emails", {
+      const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -52,14 +65,15 @@ export async function POST(request: Request) {
 <p><strong>Message:</strong></p><p>${esc(d.message).replace(/\n/g, "<br/>")}</p>`,
         }),
       });
-    } catch {
-      // ignore — message is already stored
+      if (res.ok) emailed = true;
+      else console.error("contact: resend failed:", res.status, await res.text().catch(() => ""));
+    } catch (e) {
+      console.error("contact: resend error:", e instanceof Error ? e.message : e);
     }
   }
 
+  if (!stored && !emailed) {
+    return apiError(500, "INTERNAL_ERROR", "We couldn't send your message right now. Please WhatsApp us instead.");
+  }
   return created({ message: "Thanks! We'll get back to you within 24 hours." });
-}
-
-function esc(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
