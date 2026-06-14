@@ -174,6 +174,7 @@ export interface Database {
         canonical_url: string | null;
         og_title: string | null;
         og_description: string | null;
+        robots: string | null;
         faqs: Json | null;
         internal_links: Json | null;
         published_at: string | null;

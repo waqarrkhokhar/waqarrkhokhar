@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  DashPageHeader, DashSection, DashTabs, DashInput, DashSelect, DashBtn,
+  DashPageHeader, DashSection, DashTabs, DashInput, DashSelect, DashToggle, DashBtn,
 } from "@/components/dashboard/shared/Dash";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -32,7 +32,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
   const [f, setF] = useState({
     title: "", content: "", excerpt: "", featured_image: "",
     category: BLOG_CATEGORIES[0] as string, tags: "", author: "",
-    status: "draft", scheduled_at: "",
+    status: "draft", scheduled_at: "", robots: "index, follow",
     meta_title: "", meta_description: "", focus_keyword: "", canonical_url: "",
   });
   const [faqs, setFaqs] = useState<Faq[]>([]);
@@ -54,6 +54,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
       featured_image: String(p.featured_image ?? ""), category: String(p.category ?? BLOG_CATEGORIES[0]),
       tags: Array.isArray(p.tags) ? (p.tags as string[]).join(", ") : "", author: String(p.author ?? ""),
       status: String(p.status ?? "draft"), scheduled_at: p.scheduled_at ? String(p.scheduled_at).slice(0, 16) : "",
+      robots: String(p.robots ?? "index, follow"),
       meta_title: String(p.meta_title ?? ""), meta_description: String(p.meta_description ?? ""),
       focus_keyword: String(p.focus_keyword ?? ""), canonical_url: String(p.canonical_url ?? ""),
     });
@@ -85,7 +86,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
       author: str(f.author), status: overrideStatus ?? f.status,
       scheduled_at: (overrideStatus ?? f.status) === "scheduled" && f.scheduled_at ? new Date(f.scheduled_at).toISOString() : null,
       meta_title: str(f.meta_title), meta_description: str(f.meta_description),
-      focus_keyword: str(f.focus_keyword), canonical_url: str(f.canonical_url),
+      focus_keyword: str(f.focus_keyword), canonical_url: str(f.canonical_url), robots: f.robots,
       faqs: faqs.filter((q) => q.q.trim()), internal_links: links.filter((l) => l.url.trim()),
     };
   }
@@ -246,6 +247,9 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
                   <DashInput label="Focus Keyword" value={f.focus_keyword} onChange={(v) => set("focus_keyword", v)} />
                   <DashInput label="Canonical URL" value={f.canonical_url} onChange={(v) => set("canonical_url", v)} />
                 </div>
+              </DashSection>
+              <DashSection title="Visibility">
+                <DashToggle label="Hide from search engines (noindex)" checked={/noindex/.test(f.robots)} onChange={(v) => set("robots", v ? "noindex, follow" : "index, follow")} helper="Use for filler or low-value posts you don't want indexed by Google" />
               </DashSection>
               <DashSection title="SEO Score">
                 <div className="mb-3 flex items-center justify-between">

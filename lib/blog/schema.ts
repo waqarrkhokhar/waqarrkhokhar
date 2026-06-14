@@ -27,6 +27,7 @@ const base = z.object({
   canonical_url: z.string().url().nullish(),
   og_title: z.string().nullish(),
   og_description: z.string().nullish(),
+  robots: z.string().nullish(),
   faqs: z.array(faq).nullish(),
   internal_links: z.array(internalLink).nullish(),
 });
