@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
-import { Field, Input, Textarea, Select } from "@/components/ui/Field";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import {
+  DashPageHeader, DashSection, DashTabs, DashInput, DashSelect, DashBtn,
+} from "@/components/dashboard/shared/Dash";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -51,32 +50,22 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     setFaqs(Array.isArray(p.faqs) ? (p.faqs as Faq[]) : []);
     setLinks(Array.isArray(p.internal_links) ? (p.internal_links as ILink[]) : []);
     setF({
-      title: String(p.title ?? ""),
-      content: String(p.content ?? ""),
-      excerpt: String(p.excerpt ?? ""),
-      featured_image: String(p.featured_image ?? ""),
-      category: String(p.category ?? BLOG_CATEGORIES[0]),
-      tags: Array.isArray(p.tags) ? (p.tags as string[]).join(", ") : "",
-      author: String(p.author ?? ""),
-      status: String(p.status ?? "draft"),
-      scheduled_at: p.scheduled_at ? String(p.scheduled_at).slice(0, 16) : "",
-      meta_title: String(p.meta_title ?? ""),
-      meta_description: String(p.meta_description ?? ""),
-      focus_keyword: String(p.focus_keyword ?? ""),
-      canonical_url: String(p.canonical_url ?? ""),
+      title: String(p.title ?? ""), content: String(p.content ?? ""), excerpt: String(p.excerpt ?? ""),
+      featured_image: String(p.featured_image ?? ""), category: String(p.category ?? BLOG_CATEGORIES[0]),
+      tags: Array.isArray(p.tags) ? (p.tags as string[]).join(", ") : "", author: String(p.author ?? ""),
+      status: String(p.status ?? "draft"), scheduled_at: p.scheduled_at ? String(p.scheduled_at).slice(0, 16) : "",
+      meta_title: String(p.meta_title ?? ""), meta_description: String(p.meta_description ?? ""),
+      focus_keyword: String(p.focus_keyword ?? ""), canonical_url: String(p.canonical_url ?? ""),
     });
   }, [mode, postId, toast]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   /** Insert markdown around the current selection in the content textarea. */
   function wrap(before: string, after = "", placeholder = "") {
     const el = contentRef.current;
     if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
+    const start = el.selectionStart, end = el.selectionEnd;
     const sel = f.content.slice(start, end) || placeholder;
     const next = f.content.slice(0, start) + before + sel + after + f.content.slice(end);
     set("content", next);
@@ -90,36 +79,20 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
   function payload(overrideStatus?: string) {
     const str = (s: string) => (s.trim() ? s.trim() : null);
     return {
-      title: f.title.trim(),
-      content: f.content.trim() || null,
-      excerpt: str(f.excerpt),
-      featured_image: str(f.featured_image),
-      category: f.category,
+      title: f.title.trim(), content: f.content.trim() || null, excerpt: str(f.excerpt),
+      featured_image: str(f.featured_image), category: f.category,
       tags: f.tags.trim() ? f.tags.split(",").map((t) => t.trim()).filter(Boolean) : null,
-      author: str(f.author),
-      status: overrideStatus ?? f.status,
-      scheduled_at:
-        (overrideStatus ?? f.status) === "scheduled" && f.scheduled_at
-          ? new Date(f.scheduled_at).toISOString()
-          : null,
-      meta_title: str(f.meta_title),
-      meta_description: str(f.meta_description),
-      focus_keyword: str(f.focus_keyword),
-      canonical_url: str(f.canonical_url),
-      faqs: faqs.filter((q) => q.q.trim()),
-      internal_links: links.filter((l) => l.url.trim()),
+      author: str(f.author), status: overrideStatus ?? f.status,
+      scheduled_at: (overrideStatus ?? f.status) === "scheduled" && f.scheduled_at ? new Date(f.scheduled_at).toISOString() : null,
+      meta_title: str(f.meta_title), meta_description: str(f.meta_description),
+      focus_keyword: str(f.focus_keyword), canonical_url: str(f.canonical_url),
+      faqs: faqs.filter((q) => q.q.trim()), internal_links: links.filter((l) => l.url.trim()),
     };
   }
 
   async function save(overrideStatus?: string) {
-    if (f.title.trim().length < 5) {
-      setTab("content");
-      return toast.error("Title must be at least 5 characters");
-    }
-    if (!f.content.trim()) {
-      setTab("content");
-      return toast.error("Content is required");
-    }
+    if (f.title.trim().length < 5) { setTab("content"); return toast.error("Title must be at least 5 characters"); }
+    if (!f.content.trim()) { setTab("content"); return toast.error("Content is required"); }
     setSaving(true);
     if (mode === "create") {
       const res = await apiSend<{ data: { id: string } }>("/api/blog", "POST", payload(overrideStatus));
@@ -147,8 +120,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
 
   async function upload(file: File) {
     const form = new FormData();
-    form.append("file", file);
-    form.append("folder", "blog");
+    form.append("file", file); form.append("folder", "blog");
     const up = await fetch("/api/media/upload", { method: "POST", body: form });
     const json = await up.json().catch(() => ({}));
     if (!up.ok) return toast.error(json.error ?? "Upload failed");
@@ -156,172 +128,175 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
   }
 
   const score = computeSeoScore({
-    metaTitle: f.meta_title,
-    metaDescription: f.meta_description,
-    focusKeyword: f.focus_keyword,
-    contentWordCount: countWords(f.content, f.excerpt),
-    minWords: 300,
-    schemaEnabled: true,
-    ogImage: f.featured_image,
-    canonical: f.canonical_url,
-    internalLinks: links.length,
+    metaTitle: f.meta_title, metaDescription: f.meta_description, focusKeyword: f.focus_keyword,
+    contentWordCount: countWords(f.content, f.excerpt), minWords: 300, schemaEnabled: true,
+    ogImage: f.featured_image, canonical: f.canonical_url, internalLinks: links.length,
   });
 
-  if (loading) return <p className="text-sm text-charcoal/60 dark:text-cream/60">Loading…</p>;
+  if (loading) return <p className="text-sm text-muted">Loading…</p>;
   const previewSlug = slug || slugify(f.title || "new-post");
 
   const TABS: { id: Tab; label: string }[] = [
     { id: "content", label: "Content" },
-    { id: "faq", label: `FAQ (${faqs.length})` },
+    { id: "faq", label: `FAQs (${faqs.length})` },
     { id: "links", label: `Internal Links (${links.length})` },
     { id: "seo", label: "SEO" },
   ];
 
+  const TOOLBAR: [string, () => void, string?][] = [
+    ["H2", () => wrap("\n## ", "", "Heading")],
+    ["H3", () => wrap("\n### ", "", "Subheading")],
+    ["B", () => wrap("**", "**", "bold"), "font-bold"],
+    ["I", () => wrap("_", "_", "italic"), "italic"],
+    ["• List", () => wrap("\n- ", "", "item")],
+    ["1. List", () => wrap("\n1. ", "", "item")],
+    ["❝", () => wrap("\n> ", "", "quote")],
+    ["Link", () => wrap("[", "](https://)", "text")],
+    ["Image", () => wrap("\n![alt](", ")", "https://")],
+    ["—", () => wrap("\n\n---\n\n")],
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link href="/dashboard/blog" className="text-sm text-charcoal/60 hover:text-gold dark:text-cream/60">← Back to blog</Link>
-          <h2 className="mt-1 font-heading text-2xl font-semibold">{mode === "create" ? "New Post" : f.title || "Edit Post"}</h2>
-          {mode === "edit" && <p className="text-xs text-charcoal/50 dark:text-cream/50">/blog/{previewSlug}/ · <Badge tone={statusTone(f.status)}>{f.status}</Badge></p>}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {mode === "edit" && <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>Delete</Button>}
-          <Button variant="secondary" size="sm" loading={saving} onClick={() => save()}>Save</Button>
-          <Button size="sm" loading={saving} onClick={() => save("published")}>Save &amp; Publish</Button>
-        </div>
-      </div>
+    <div>
+      <DashPageHeader
+        title={mode === "create" ? "New Blog Post" : `Edit: ${f.title || "Untitled"}`}
+        breadcrumbs={[{ label: "Blog", href: "/dashboard/blog" }, { label: mode === "create" ? "New" : "Edit" }]}
+        actions={
+          <>
+            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/blog/${previewSlug}/`, "_blank")}>Preview</DashBtn>}
+            {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmDelete(true)}>Delete</DashBtn>}
+            <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save Draft"}</DashBtn>
+            <DashBtn onClick={() => save("published")}>Publish</DashBtn>
+          </>
+        }
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-        <div>
-          <div className="mb-4 flex gap-1 overflow-x-auto border-b border-line dark:border-white/10">
-            {TABS.map((t) => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className={`whitespace-nowrap px-4 py-2 text-sm font-medium ${tab === t.id ? "border-b-2 border-gold text-navy dark:text-gold" : "text-charcoal/60 dark:text-cream/60"}`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
+      {f.status === "published" && previewSlug && (
+        <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+          <span className="text-xs font-medium text-green-600">Live:</span>
+          <a href={`/blog/${previewSlug}/`} target="_blank" rel="noopener noreferrer" className="text-xs text-ink underline dark:text-cream">comfyclub.pk/blog/{previewSlug}/</a>
+        </div>
+      )}
 
+      <DashTabs tabs={TABS} active={tab} onChange={setTab} />
+
+      <div className="grid items-start gap-5 lg:grid-cols-[1fr_280px]">
+        <div>
           {tab === "content" && (
-            <div className="space-y-4">
-              <Field label="Title" hint={`/blog/${previewSlug}/`}>
-                <Input value={f.title} onChange={(e) => set("title", e.target.value)} />
-              </Field>
-              <div>
-                <div className="mb-1 flex flex-wrap gap-1">
-                  {[
-                    ["H2", () => wrap("\n## ", "", "Heading")],
-                    ["H3", () => wrap("\n### ", "", "Subheading")],
-                    ["B", () => wrap("**", "**", "bold")],
-                    ["I", () => wrap("_", "_", "italic")],
-                    ["• List", () => wrap("\n- ", "", "item")],
-                    ["❝", () => wrap("\n> ", "", "quote")],
-                    ["Link", () => wrap("[", "](https://)", "text")],
-                    ["Image", () => wrap("\n![alt](", ")", "https://")],
-                  ].map(([label, fn]) => (
-                    <button key={label as string} type="button" onClick={fn as () => void}
-                      className="rounded border border-black/10 px-2 py-1 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10">
-                      {label as string}
-                    </button>
-                  ))}
-                </div>
-                <Textarea ref={contentRef} className="min-h-80 font-mono text-sm" value={f.content} onChange={(e) => set("content", e.target.value)} />
-                <p className="mt-1 text-xs text-charcoal/50 dark:text-cream/50">
-                  Markdown · {countWords(f.content)} words
-                </p>
+            <DashSection title="Post Content">
+              <DashInput label="Title" required value={f.title} onChange={(v) => { set("title", v); if (mode === "create") setSlug(slugify(v)); }} placeholder="Enter blog post title" />
+              <DashInput label="URL Slug" value={previewSlug} disabled helper={`/blog/${previewSlug}/`} />
+              <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">Content</label>
+              <div className="flex flex-wrap gap-0.5 rounded-t-md border border-b-0 border-line bg-panel px-2 py-1.5 dark:border-white/10 dark:bg-white/5">
+                {TOOLBAR.map(([label, fn, cls]) => (
+                  <button key={label} type="button" onClick={fn} className={`rounded px-2 py-1 text-[13px] text-ink hover:bg-white dark:text-cream dark:hover:bg-white/10 ${cls ?? ""}`}>{label}</button>
+                ))}
               </div>
-            </div>
+              <textarea ref={contentRef} value={f.content} onChange={(e) => set("content", e.target.value)} rows={16}
+                placeholder="Write your blog post in Markdown…"
+                className="w-full rounded-b-md border border-line bg-white px-3.5 py-3 font-mono text-[13px] leading-relaxed text-ink outline-none focus:border-gold dark:border-white/10 dark:bg-white/5 dark:text-cream" />
+              <div className="mt-1 text-[11px] text-muted">Markdown · {countWords(f.content)} words · ~{Math.max(1, Math.ceil(countWords(f.content) / 200))} min read</div>
+            </DashSection>
           )}
 
           {tab === "faq" && (
-            <div className="space-y-3">
+            <DashSection title="FAQ Block" subtitle="Rendered as expandable accordions with FAQ schema markup">
               {faqs.map((q, i) => (
-                <div key={i} className="rounded-xl border border-line p-3 dark:border-white/10">
-                  <div className="mb-2 flex justify-end">
-                    <button onClick={() => setFaqs(faqs.filter((_, x) => x !== i))} className="text-xs text-red-500">Remove</button>
+                <div key={i} className="mb-2.5 rounded-lg border border-line bg-panel p-3.5 dark:border-white/10 dark:bg-white/5">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-muted">FAQ #{i + 1}</span>
+                    <button onClick={() => setFaqs(faqs.filter((_, x) => x !== i))} className="text-red-500">×</button>
                   </div>
-                  <Field label="Question"><Input value={q.q} onChange={(e) => setFaqs(faqs.map((x, j) => j === i ? { ...x, q: e.target.value } : x))} /></Field>
-                  <div className="mt-2"><Field label="Answer"><Textarea value={q.a} onChange={(e) => setFaqs(faqs.map((x, j) => j === i ? { ...x, a: e.target.value } : x))} /></Field></div>
+                  <DashInput label="Question" value={q.q} onChange={(v) => setFaqs(faqs.map((x, j) => j === i ? { ...x, q: v } : x))} placeholder="e.g. What fabric options do you offer?" />
+                  <DashInput label="Answer" textarea rows={2} value={q.a} onChange={(v) => setFaqs(faqs.map((x, j) => j === i ? { ...x, a: v } : x))} placeholder="Answer…" />
                 </div>
               ))}
-              <Button size="sm" variant="secondary" onClick={() => setFaqs([...faqs, { q: "", a: "" }])}>+ Add FAQ</Button>
-            </div>
+              <DashBtn variant="secondary" size="sm" icon="+" onClick={() => setFaqs([...faqs, { q: "", a: "" }])}>Add FAQ</DashBtn>
+            </DashSection>
           )}
 
           {tab === "links" && (
-            <div className="space-y-3">
+            <DashSection title="Internal Links" subtitle="Link to related products, collections and pages for better SEO">
               {links.map((l, i) => (
-                <div key={i} className="grid gap-2 rounded-xl border border-line p-3 dark:border-white/10 sm:grid-cols-3">
-                  <Field label="Type"><Input value={l.type} onChange={(e) => setLinks(links.map((x, j) => j === i ? { ...x, type: e.target.value } : x))} /></Field>
-                  <Field label="Name"><Input value={l.name} onChange={(e) => setLinks(links.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} /></Field>
-                  <Field label="URL"><Input value={l.url} onChange={(e) => setLinks(links.map((x, j) => j === i ? { ...x, url: e.target.value } : x))} /></Field>
-                  <div className="sm:col-span-3 flex justify-end">
-                    <button onClick={() => setLinks(links.filter((_, x) => x !== i))} className="text-xs text-red-500">Remove</button>
-                  </div>
+                <div key={i} className="mb-2 grid gap-2 rounded-lg border border-line p-3 dark:border-white/10 sm:grid-cols-3">
+                  <DashInput label="Type" value={l.type} onChange={(v) => setLinks(links.map((x, j) => j === i ? { ...x, type: v } : x))} />
+                  <DashInput label="Name" value={l.name} onChange={(v) => setLinks(links.map((x, j) => j === i ? { ...x, name: v } : x))} />
+                  <DashInput label="URL" value={l.url} onChange={(v) => setLinks(links.map((x, j) => j === i ? { ...x, url: v } : x))} />
+                  <div className="flex justify-end sm:col-span-3"><button onClick={() => setLinks(links.filter((_, x) => x !== i))} className="text-xs text-red-500">Remove</button></div>
                 </div>
               ))}
-              <Button size="sm" variant="secondary" onClick={() => setLinks([...links, { type: "Product", name: "", url: "" }])}>+ Add link</Button>
-            </div>
+              <DashBtn variant="secondary" size="sm" icon="+" onClick={() => setLinks([...links, { type: "Product", name: "", url: "" }])}>Add Link</DashBtn>
+            </DashSection>
           )}
 
           {tab === "seo" && (
-            <div className="space-y-4">
-              <Field label="Meta title" hint={`${f.meta_title.length}/60`}><Input value={f.meta_title} onChange={(e) => set("meta_title", e.target.value)} /></Field>
-              <Field label="Meta description" hint={`${f.meta_description.length}/160`}><Textarea value={f.meta_description} onChange={(e) => set("meta_description", e.target.value)} /></Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Focus keyword"><Input value={f.focus_keyword} onChange={(e) => set("focus_keyword", e.target.value)} /></Field>
-                <Field label="Canonical URL"><Input value={f.canonical_url} onChange={(e) => set("canonical_url", e.target.value)} /></Field>
-              </div>
-              <div className="rounded-xl border border-line p-4 dark:border-white/10">
+            <>
+              <DashSection title="Search Engine Preview">
+                <div className="max-w-xl rounded-lg bg-panel p-4 dark:bg-white/5">
+                  <div className="text-[18px] leading-tight text-[#1a0dab] dark:text-blue-400">{f.meta_title || f.title || "Blog Post Title"} | ComfyClub</div>
+                  <div className="mt-0.5 text-[13px] text-green-700">comfyclub.pk/blog/{previewSlug}/</div>
+                  <div className="mt-1 text-[13px] leading-snug text-muted">{f.meta_description || f.excerpt || "No description set — add a compelling meta description."}</div>
+                </div>
+              </DashSection>
+              <DashSection title="SEO Metadata">
+                <DashInput label="Meta Title" value={f.meta_title} onChange={(v) => set("meta_title", v)} placeholder={`${f.title} | ComfyClub`} helper={`${f.meta_title.length}/60`} />
+                <DashInput label="Meta Description" textarea rows={2} value={f.meta_description} onChange={(v) => set("meta_description", v)} helper={`${f.meta_description.length}/160`} />
+                <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+                  <DashInput label="Focus Keyword" value={f.focus_keyword} onChange={(v) => set("focus_keyword", v)} />
+                  <DashInput label="Canonical URL" value={f.canonical_url} onChange={(v) => set("canonical_url", v)} />
+                </div>
+              </DashSection>
+              <DashSection title="SEO Score">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-medium">SEO score</span>
+                  <span className="text-sm font-medium">Score</span>
                   <span className={`text-2xl font-bold ${score.score >= 70 ? "text-green-600" : score.score >= 40 ? "text-amber-500" : "text-red-500"}`}>{score.score}</span>
                 </div>
                 <ul className="space-y-1.5 text-xs">
                   {score.checks.map((c) => (
-                    <li key={c.label} className="flex items-start gap-2">
-                      <span>{c.passed ? "✅" : "⬜"}</span>
-                      <span className={c.passed ? "" : "text-charcoal/50 dark:text-cream/50"}>{c.label}</span>
-                    </li>
+                    <li key={c.label} className="flex items-start gap-2"><span>{c.passed ? "✅" : "⬜"}</span><span className={c.passed ? "" : "text-muted"}>{c.label}</span></li>
                   ))}
                 </ul>
-              </div>
-            </div>
+              </DashSection>
+            </>
           )}
         </div>
 
         {/* Sidebar */}
-        <aside className="space-y-4 rounded-xl border border-line p-4 dark:border-white/10">
-          <Field label="Status">
-            <Select value={f.status} onChange={(e) => set("status", e.target.value)}>
+        <div>
+          <DashSection title="Publish">
+            <DashSelect label="Status" value={f.status} onChange={(v) => set("status", v)}>
               <option value="draft">Draft</option>
               <option value="published">Published</option>
               <option value="scheduled">Scheduled</option>
-            </Select>
-          </Field>
-          {f.status === "scheduled" && (
-            <Field label="Publish at"><Input type="datetime-local" value={f.scheduled_at} onChange={(e) => set("scheduled_at", e.target.value)} /></Field>
-          )}
-          <Field label="Category">
-            <Select value={f.category} onChange={(e) => set("category", e.target.value)}>
+            </DashSelect>
+            {f.status === "scheduled" && <DashInput label="Publish at" type="datetime-local" value={f.scheduled_at} onChange={(v) => set("scheduled_at", v)} />}
+          </DashSection>
+          <DashSection title="Category">
+            <DashSelect value={f.category} onChange={(v) => set("category", v)}>
               {BLOG_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </Select>
-          </Field>
-          <Field label="Tags" hint="Comma-separated"><Input value={f.tags} onChange={(e) => set("tags", e.target.value)} /></Field>
-          <Field label="Author"><Input value={f.author} onChange={(e) => set("author", e.target.value)} placeholder="Defaults to you" /></Field>
-          <Field label="Excerpt" hint={`${f.excerpt.length}/300`}><Textarea value={f.excerpt} onChange={(e) => set("excerpt", e.target.value)} /></Field>
-          <div>
-            <Field label="Featured image URL"><Input value={f.featured_image} onChange={(e) => set("featured_image", e.target.value)} /></Field>
+            </DashSelect>
+          </DashSection>
+          <DashSection title="Tags">
+            <DashInput value={f.tags} onChange={(v) => set("tags", v)} placeholder="sofa, guide, tips (comma separated)" />
+          </DashSection>
+          <DashSection title="Author">
+            <DashInput value={f.author} onChange={(v) => set("author", v)} placeholder="Defaults to you" />
+          </DashSection>
+          <DashSection title="Excerpt">
+            <DashInput textarea rows={3} value={f.excerpt} onChange={(v) => set("excerpt", v)} helper={`${f.excerpt.length}/300`} />
+          </DashSection>
+          <DashSection title="Featured Image">
+            <DashInput value={f.featured_image} onChange={(v) => set("featured_image", v)} placeholder="Image URL" />
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
               onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(file); e.target.value = ""; }} />
-            <Button size="sm" variant="secondary" className="mt-2" onClick={() => fileRef.current?.click()}>Upload</Button>
+            <DashBtn variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>Upload</DashBtn>
             {f.featured_image && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={f.featured_image} alt="" className="mt-2 h-28 w-full rounded-lg object-cover" />
+              <img src={f.featured_image} alt="" referrerPolicy="no-referrer" className="mt-2 h-28 w-full rounded-lg object-cover" />
             )}
-          </div>
-        </aside>
+          </DashSection>
+        </div>
       </div>
 
       <ConfirmDialog open={confirmDelete} onClose={() => setConfirmDelete(false)} onConfirm={remove}

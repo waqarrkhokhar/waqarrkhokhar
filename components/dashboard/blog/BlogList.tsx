@@ -1,12 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
-import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Field";
-import { Badge, statusTone } from "@/components/ui/Badge";
+import { DashPageHeader, DashBtn, DashBadge } from "@/components/dashboard/shared/Dash";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -15,11 +12,15 @@ import { BLOG_CATEGORIES } from "@/lib/blog/schema";
 type Post = {
   id: string;
   title: string;
+  slug: string;
   category: string;
+  author: string | null;
   status: string;
   published_at: string | null;
   updated_at: string;
 };
+
+const statusBadge = (s: string) => (s === "published" ? "published" : s === "scheduled" ? "scheduled" : "draft");
 
 export default function BlogList() {
   const router = useRouter();
@@ -62,52 +63,45 @@ export default function BlogList() {
   }
 
   const columns: Column<Post>[] = [
-    { key: "title", header: "Title", render: (p) => <span className="font-medium">{p.title}</span> },
-    { key: "category", header: "Category", render: (p) => p.category },
-    { key: "status", header: "Status", render: (p) => <Badge tone={statusTone(p.status)}>{p.status}</Badge> },
-    {
-      key: "date",
-      header: "Date",
-      render: (p) => new Date(p.published_at ?? p.updated_at).toLocaleDateString(),
-    },
-    {
-      key: "actions",
-      header: "",
-      render: (p) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setToDelete(p);
-          }}
-          className="text-sm text-red-500 hover:underline"
-        >
-          Delete
-        </button>
-      ),
-    },
+    { key: "title", header: "Title", render: (p) => (
+      <div><p className="font-medium text-charcoal dark:text-cream">{p.title}</p><p className="text-[11px] text-muted">/blog/{p.slug}/</p></div>
+    ) },
+    { key: "category", header: "Category", render: (p) => <DashBadge status="scheduled" label={p.category} /> },
+    { key: "author", header: "Author", render: (p) => p.author || "Admin" },
+    { key: "status", header: "Status", render: (p) => <DashBadge status={statusBadge(p.status)} label={p.status} /> },
+    { key: "date", header: "Date", render: (p) => new Date(p.published_at ?? p.updated_at).toLocaleDateString() },
+    { key: "actions", header: "", className: "w-20", render: (p) => (
+      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => router.push(`/dashboard/blog/${p.id}`)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
+        <button onClick={() => setToDelete(p)} title="Delete" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
+      </div>
+    ) },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-2xl font-semibold">Blog</h2>
-        <Link href="/dashboard/blog/new"><Button size="sm">+ New Post</Button></Link>
-      </div>
+    <div>
+      <DashPageHeader
+        title="Blog Posts"
+        subtitle="Articles, guides and SEO content"
+        breadcrumbs={[{ label: "Blog" }]}
+        actions={<DashBtn icon="+" href="/dashboard/blog/new">New Post</DashBtn>}
+      />
 
-      <div className="flex flex-wrap gap-2">
-        <form onSubmit={(e) => { e.preventDefault(); setPage(1); load(); }} className="flex-1 min-w-48">
-          <Input placeholder="Search titles…" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); setPage(1); load(); }} className="relative min-w-[220px] flex-1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search posts..." className="w-full rounded-md border border-line bg-white py-2.5 pl-9 pr-3 text-[13px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5" />
         </form>
-        <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="w-40">
+        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-md border border-line bg-white px-3 py-2.5 text-[13px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5">
           <option value="">All statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
           <option value="scheduled">Scheduled</option>
-        </Select>
-        <Select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} className="w-48">
+        </select>
+        <select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} className="rounded-md border border-line bg-white px-3 py-2.5 text-[13px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5">
           <option value="">All categories</option>
           {BLOG_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </Select>
+        </select>
       </div>
 
       <DashTable
