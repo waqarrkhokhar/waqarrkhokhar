@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { waLink } from "@/lib/whatsapp";
 
 export default function ContactForm() {
   const [f, setF] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
@@ -10,6 +11,10 @@ export default function ContactForm() {
 
   const valid = f.name.trim() && f.email.trim() && f.message.trim();
   const field = "w-full rounded-md border border-[#D8D2C8] px-3.5 py-3 text-sm text-charcoal outline-none transition focus:border-gold";
+
+  const waFallback = waLink(
+    `Hi, I tried the contact form.\n\nName: ${f.name}\nEmail: ${f.email}${f.phone ? `\nPhone: ${f.phone}` : ""}${f.subject ? `\nSubject: ${f.subject}` : ""}\n\n${f.message}`,
+  );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +32,9 @@ export default function ContactForm() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => null);
-        throw new Error(j?.error?.message || "Could not send your message.");
+        // apiError returns { error: "<message>", code }, success returns { data }
+        const msg = typeof j?.error === "string" ? j.error : j?.error?.message;
+        throw new Error(msg || `Request failed (${res.status})`);
       }
       setSent(true);
       setF({ name: "", email: "", phone: "", subject: "", message: "" });
@@ -50,7 +57,14 @@ export default function ContactForm() {
           </div>
         </div>
       )}
-      {error && <div className="rounded-lg bg-sale/10 px-4 py-3 text-sm text-sale">{error}</div>}
+      {error && (
+        <div className="rounded-lg bg-sale/10 px-4 py-3 text-sm text-sale">
+          <p>{error}</p>
+          <a href={waFallback} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 font-semibold text-whatsapp underline">
+            Send this message on WhatsApp instead →
+          </a>
+        </div>
+      )}
 
       <div className="grid gap-3.5 md:grid-cols-2">
         <div>
