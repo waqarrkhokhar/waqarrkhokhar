@@ -62,7 +62,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       </header>
 
       {p.featured_image && (
-        <div className="aspect-[16/9] w-full overflow-hidden bg-cream">
+        <div className="mx-auto aspect-[1260/660] w-full max-w-[1260px] overflow-hidden bg-cream">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.featured_image} alt={p.title} referrerPolicy="no-referrer" className="h-full w-full object-cover" />
         </div>

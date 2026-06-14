@@ -1,4 +1,4 @@
--- ComfyClub — 3 sample blog posts (filler), published but noindex.
+-- ComfyClub — 4 sample blog posts (filler), published but noindex.
 -- Safe to re-run. Adds the robots column if missing.
 BEGIN;
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS robots TEXT DEFAULT 'index, follow';
@@ -6,7 +6,8 @@ ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS robots TEXT DEFAULT 'index, foll
 DELETE FROM blog_posts WHERE slug IN (
   'how-to-choose-the-perfect-sofa-for-your-drawing-room',
   'interior-design-trends-pakistani-homes-2026',
-  'velvet-vs-linen-which-fabric-is-right'
+  'velvet-vs-linen-which-fabric-is-right',
+  'small-space-solutions-furniture-ideas-for-apartments'
 );
 
 INSERT INTO blog_posts (title, slug, content, excerpt, category, featured_image, author, status, robots, published_at, created_at) VALUES
@@ -51,6 +52,16 @@ Velvet is rich, luxurious, and surprisingly durable. Modern performance velvets 
 Linen is lightweight, breathable, and naturally hypoallergenic. It''s perfect for warmer climates like Karachi and Multan. Linen develops a beautiful patina over time, becoming softer with each use.
 
 ## Our Recommendation
-If you have air conditioning and want a formal look, choose velvet. If you prefer a casual, airy feel, go with linen. Both fabrics are available across our entire sofa collection.','Pakistan''s varied climate means fabric choice matters. We compare durability, comfort, and maintenance for both options.','Furniture Care','https://comfyclub.pk/wp-content/uploads/2026/04/comfyclub-fabric-upholstered-dining-chair-with-arms-2.webp','Admin','published','noindex, follow', now() - interval '20 days', now() - interval '20 days');
+If you have air conditioning and want a formal look, choose velvet. If you prefer a casual, airy feel, go with linen. Both fabrics are available across our entire sofa collection.','Pakistan''s varied climate means fabric choice matters. We compare durability, comfort, and maintenance for both options.','Furniture Care','https://comfyclub.pk/wp-content/uploads/2026/04/comfyclub-fabric-upholstered-dining-chair-with-arms-2.webp','Admin','published','noindex, follow', now() - interval '20 days', now() - interval '20 days'),
+  ('Small Space Solutions: Furniture Ideas for Apartments','small-space-solutions-furniture-ideas-for-apartments','Apartment living is on the rise across Pakistan''s major cities. But small spaces don''t mean small style. With the right furniture choices, you can create a luxurious, functional home in any size apartment.
+
+## Sofa Cum Beds: Double Duty
+A high-quality sofa cum bed is the ultimate space saver. By day, it''s a stylish sofa for guests. By night, it converts to a comfortable bed. Look for designs with built-in storage.
+
+## Accent Chairs Over Sofas
+In very compact rooms, two accent chairs can work better than a full sofa. They''re lighter visually and can be rearranged easily. Our wingback and barrel chairs are perfect for this.
+
+## Choose Legs Over Skirts
+Furniture with visible legs creates a sense of airiness. You can see the floor beneath, making the room feel larger. Avoid heavy, skirted pieces that visually weigh down the space.','Living in a compact apartment doesn''t mean compromising on style. Here are our top picks for space-saving luxury furniture.','Home Styling','https://comfyclub.pk/wp-content/uploads/2026/04/comfyclub-meribeth-upholstered-accent-chair-4.webp','Admin','published','noindex, follow', now() - interval '8 days', now() - interval '8 days');
 
 COMMIT;
