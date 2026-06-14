@@ -2,10 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
-import { Button } from "@/components/ui/Button";
-import { Field, Input, Textarea, Select } from "@/components/ui/Field";
-import { Badge, statusTone } from "@/components/ui/Badge";
-import { Modal, ConfirmDialog } from "@/components/ui/Modal";
+import { DashPageHeader, DashSection, DashInput, DashSelect, DashToggle, DashBtn, DashBadge } from "@/components/dashboard/shared/Dash";
+import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 
@@ -34,6 +32,8 @@ const TYPES = [
   ["hero_banner", "Hero Banner"],
   ["collection_banner", "Collection Banner"],
 ] as const;
+const typeLabel = (t: string) => TYPES.find((x) => x[0] === t)?.[1] ?? t;
+const statusBadge = (s: string) => (s === "active" ? "active" : s === "scheduled" ? "scheduled" : s === "expired" ? "archived" : "draft");
 
 const blank = {
   title: "", type: "announcement_bar", content: "", cta_text: "", cta_url: "",
@@ -46,8 +46,7 @@ export default function PromotionManager() {
   const toast = useToast();
   const [rows, setRows] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | "new" | null>(null);
   const [f, setF] = useState({ ...blank });
   const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState<Promo | null>(null);
@@ -62,23 +61,15 @@ export default function PromotionManager() {
 
   useEffect(() => { load(); }, [load]);
 
-  function openNew() {
-    setEditId(null);
-    setF({ ...blank });
-    setOpen(true);
-  }
+  function openNew() { setEditId("new"); setF({ ...blank }); }
   function openEdit(p: Promo) {
     setEditId(p.id);
     setF({
       title: p.title, type: p.type, content: p.content ?? "", cta_text: p.cta_text ?? "",
-      cta_url: p.cta_url ?? "", background_color: p.background_color ?? "#0F1D35",
-      text_color: p.text_color ?? "#FFFFFF",
-      start_date: p.start_date ? p.start_date.slice(0, 16) : "",
-      end_date: p.end_date ? p.end_date.slice(0, 16) : "",
-      is_active: p.is_active, display_delay_seconds: String(p.display_delay_seconds),
-      display_frequency: p.display_frequency,
+      cta_url: p.cta_url ?? "", background_color: p.background_color ?? "#0F1D35", text_color: p.text_color ?? "#FFFFFF",
+      start_date: p.start_date ? p.start_date.slice(0, 16) : "", end_date: p.end_date ? p.end_date.slice(0, 16) : "",
+      is_active: p.is_active, display_delay_seconds: String(p.display_delay_seconds), display_frequency: p.display_frequency,
     });
-    setOpen(true);
   }
 
   async function save() {
@@ -90,17 +81,16 @@ export default function PromotionManager() {
       background_color: f.background_color || null, text_color: f.text_color || null,
       start_date: f.start_date ? new Date(f.start_date).toISOString() : null,
       end_date: f.end_date ? new Date(f.end_date).toISOString() : null,
-      is_active: f.is_active,
-      display_delay_seconds: parseInt(f.display_delay_seconds, 10) || 0,
+      is_active: f.is_active, display_delay_seconds: parseInt(f.display_delay_seconds, 10) || 0,
       display_frequency: f.display_frequency,
     };
-    const res = editId
+    const res = editId && editId !== "new"
       ? await apiSend(`/api/promotions/${editId}`, "PATCH", payload)
       : await apiSend("/api/promotions", "POST", payload);
     setSaving(false);
     if (!res.ok) return toast.error(res.error);
-    toast.success(editId ? "Promotion updated" : "Promotion created");
-    setOpen(false);
+    toast.success(editId === "new" ? "Promotion created" : "Promotion updated");
+    setEditId(null);
     load();
   }
 
@@ -113,62 +103,92 @@ export default function PromotionManager() {
     load();
   }
 
+  // ── Inline editor ──
+  if (editId !== null) {
+    const isPopup = f.type === "popup";
+    return (
+      <div>
+        <DashPageHeader
+          title={editId === "new" ? "New Promotion" : "Edit Promotion"}
+          breadcrumbs={[{ label: "Promotions" }, { label: editId === "new" ? "New" : "Edit" }]}
+          actions={
+            <>
+              <DashBtn variant="secondary" onClick={() => setEditId(null)}>Cancel</DashBtn>
+              <DashBtn onClick={save}>{saving ? "Saving…" : "Save"}</DashBtn>
+            </>
+          }
+        />
+        <DashSection title="Promotion Details">
+          <DashInput label="Promotion Name" required value={f.title} onChange={(v) => setF({ ...f, title: v })} placeholder="e.g. Summer Sale 2026" />
+          <DashSelect label="Type" required value={f.type} onChange={(v) => setF({ ...f, type: v })}>
+            {TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </DashSelect>
+          <DashInput label="Content / Message" textarea rows={3} value={f.content} onChange={(v) => setF({ ...f, content: v })} />
+          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+            <DashInput label="Button Text" value={f.cta_text} onChange={(v) => setF({ ...f, cta_text: v })} placeholder="Shop Now" />
+            <DashInput label="Button Link" value={f.cta_url} onChange={(v) => setF({ ...f, cta_url: v })} placeholder="/sofas/" />
+          </div>
+          <div className="grid grid-cols-2 gap-x-4">
+            <div className="mb-4">
+              <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">Background Colour</label>
+              <input type="color" value={f.background_color} onChange={(e) => setF({ ...f, background_color: e.target.value })} className="h-10 w-full rounded-md border border-line dark:border-white/10" />
+            </div>
+            <div className="mb-4">
+              <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">Text Colour</label>
+              <input type="color" value={f.text_color} onChange={(e) => setF({ ...f, text_color: e.target.value })} className="h-10 w-full rounded-md border border-line dark:border-white/10" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+            <DashInput label="Start Date" type="datetime-local" value={f.start_date} onChange={(v) => setF({ ...f, start_date: v })} />
+            <DashInput label="End Date" type="datetime-local" value={f.end_date} onChange={(v) => setF({ ...f, end_date: v })} />
+          </div>
+        </DashSection>
+
+        <DashSection title="Display Settings">
+          {isPopup && <DashInput label="Delay (seconds)" type="number" value={f.display_delay_seconds} onChange={(v) => setF({ ...f, display_delay_seconds: v })} helper="Wait before showing the popup" />}
+          <DashSelect label="Frequency" value={f.display_frequency} onChange={(v) => setF({ ...f, display_frequency: v })}>
+            <option value="every_visit">Every visit</option>
+            <option value="once_per_session">Once per session</option>
+            <option value="once_per_day">Once per day</option>
+          </DashSelect>
+          <DashToggle label="Active" checked={f.is_active} onChange={(v) => setF({ ...f, is_active: v })} helper="Goes live within the start/end date window" />
+        </DashSection>
+      </div>
+    );
+  }
+
+  // ── List ──
   const columns: Column<Promo>[] = [
-    { key: "title", header: "Title", render: (p) => <span className="font-medium">{p.title}</span> },
-    { key: "type", header: "Type", render: (p) => TYPES.find((t) => t[0] === p.type)?.[1] ?? p.type },
-    { key: "status", header: "Status", render: (p) => <Badge tone={statusTone(p.status)}>{p.status}</Badge> },
+    { key: "title", header: "Promotion", render: (p) => <span className="font-medium text-charcoal dark:text-cream">{p.title}</span> },
+    { key: "type", header: "Type", render: (p) => <DashBadge status="scheduled" label={typeLabel(p.type)} /> },
+    { key: "window", header: "Window", render: (p) => (
+      <span className="whitespace-nowrap text-xs text-muted">
+        {p.start_date ? new Date(p.start_date).toLocaleDateString() : "—"} → {p.end_date ? new Date(p.end_date).toLocaleDateString() : "—"}
+      </span>
+    ) },
     { key: "stats", header: "Impr / Clicks", render: (p) => `${p.impressions} / ${p.clicks}` },
-    { key: "actions", header: "", render: (p) => (
-      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => openEdit(p)} className="text-sm text-gold hover:underline">Edit</button>
-        <button onClick={() => setToDelete(p)} className="text-sm text-red-500 hover:underline">Delete</button>
+    { key: "status", header: "Status", render: (p) => <DashBadge status={statusBadge(p.status)} label={p.status} /> },
+    { key: "actions", header: "", className: "w-20", render: (p) => (
+      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => openEdit(p)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
+        <button onClick={() => setToDelete(p)} title="Delete" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
       </div>
     ) },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-2xl font-semibold">Promotions</h2>
-        <Button size="sm" onClick={openNew}>+ New Promotion</Button>
-      </div>
-
+    <div>
+      <DashPageHeader
+        title="Promotions"
+        subtitle="Manage sales banners, popups, and announcements"
+        breadcrumbs={[{ label: "Promotions" }]}
+        actions={<DashBtn icon="+" onClick={openNew}>Create Promotion</DashBtn>}
+      />
       <DashTable columns={columns} rows={rows} getId={(p) => p.id} loading={loading}
+        onRowClick={openEdit}
         emptyTitle="No promotions yet" emptyDescription="Create an announcement bar, popup, or banner." />
-
-      <Modal open={open} onClose={() => setOpen(false)} title={editId ? "Edit Promotion" : "New Promotion"} size="lg"
-        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button><Button loading={saving} onClick={save}>Save</Button></>}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Title"><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
-          <Field label="Type">
-            <Select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>
-              {TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </Select>
-          </Field>
-          <div className="sm:col-span-2"><Field label="Content"><Textarea value={f.content} onChange={(e) => setF({ ...f, content: e.target.value })} /></Field></div>
-          <Field label="Button text"><Input value={f.cta_text} onChange={(e) => setF({ ...f, cta_text: e.target.value })} /></Field>
-          <Field label="Button link"><Input value={f.cta_url} onChange={(e) => setF({ ...f, cta_url: e.target.value })} placeholder="/sofas/" /></Field>
-          <Field label="Background colour"><Input type="color" value={f.background_color} onChange={(e) => setF({ ...f, background_color: e.target.value })} /></Field>
-          <Field label="Text colour"><Input type="color" value={f.text_color} onChange={(e) => setF({ ...f, text_color: e.target.value })} /></Field>
-          <Field label="Start date"><Input type="datetime-local" value={f.start_date} onChange={(e) => setF({ ...f, start_date: e.target.value })} /></Field>
-          <Field label="End date"><Input type="datetime-local" value={f.end_date} onChange={(e) => setF({ ...f, end_date: e.target.value })} /></Field>
-          <Field label="Popup delay (seconds)"><Input type="number" value={f.display_delay_seconds} onChange={(e) => setF({ ...f, display_delay_seconds: e.target.value })} /></Field>
-          <Field label="Frequency">
-            <Select value={f.display_frequency} onChange={(e) => setF({ ...f, display_frequency: e.target.value })}>
-              <option value="every_visit">Every visit</option>
-              <option value="once_per_session">Once per session</option>
-              <option value="once_per_day">Once per day</option>
-            </Select>
-          </Field>
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
-            <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} />
-            Active (live within the date window)
-          </label>
-        </div>
-      </Modal>
-
       <ConfirmDialog open={!!toDelete} onClose={() => setToDelete(null)} onConfirm={remove}
-        title={`Delete '${toDelete?.title}'?`} confirmLabel="Delete" danger />
+        title={`Delete '${toDelete?.title}'?`} message="This permanently removes the promotion." confirmLabel="Delete" danger />
     </div>
   );
 }
