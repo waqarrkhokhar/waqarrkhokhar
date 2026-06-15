@@ -20,28 +20,34 @@ const jost = Jost({
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfyclub.pk";
 
-// Default site-wide metadata + OG defaults. Search Console verification is
-// pulled from settings so the property can be verified from the dashboard.
+// Default site-wide metadata + OG defaults. The canonical base URL and Search
+// Console verification are pulled from settings so they're editable from the
+// dashboard. A self-referencing canonical is applied to every page.
 export async function generateMetadata(): Promise<Metadata> {
   let verification: string | undefined;
+  let base = siteUrl;
   try {
     const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["search_console_verification"]);
+    const s = await getSettings(["search_console_verification", "site_url"]);
     if (typeof s.search_console_verification === "string" && s.search_console_verification) {
       verification = s.search_console_verification;
     }
+    if (typeof s.site_url === "string" && /^https?:\/\//.test(s.site_url)) {
+      base = s.site_url.replace(/\/$/, "");
+    }
   } catch {
-    // settings unavailable — skip verification tag
+    // settings unavailable — fall back to env site URL
   }
   return {
-    metadataBase: new URL(siteUrl),
+    metadataBase: new URL(base),
     title: {
       default: "ComfyClub — Handcrafted Furniture in Lahore",
       template: "%s | ComfyClub",
     },
     description:
       "ComfyClub crafts made-to-order sofas, sofa chairs, and furniture at our Lahore workshop. Choose your fabric, colour, and finish.",
-    openGraph: { type: "website", siteName: "ComfyClub", url: siteUrl },
+    alternates: { canonical: "./" },
+    openGraph: { type: "website", siteName: "ComfyClub", url: base },
     twitter: { card: "summary_large_image" },
     ...(verification ? { verification: { google: verification } } : {}),
   };

@@ -15,6 +15,7 @@ export default function SettingsManager() {
   const toast = useToast();
   const [biz, setBiz] = useState<Biz>(EMPTY_BIZ);
   const [social, setSocial] = useState<Social>(EMPTY_SOCIAL);
+  const [siteUrl, setSiteUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [canEdit, setCanEdit] = useState(true);
 
@@ -23,6 +24,7 @@ export default function SettingsManager() {
       if (!r.ok) { setCanEdit(false); return; }
       setBiz({ ...EMPTY_BIZ, ...((r.data.data.business_info as Partial<Biz>) ?? {}) });
       setSocial({ ...EMPTY_SOCIAL, ...((r.data.data.social_links as Partial<Social>) ?? {}) });
+      setSiteUrl(String(r.data.data.site_url ?? ""));
     });
   }, []);
 
@@ -31,6 +33,7 @@ export default function SettingsManager() {
     const res = await Promise.all([
       apiSend("/api/settings", "PATCH", { key: "business_info", value: biz }),
       apiSend("/api/settings", "PATCH", { key: "social_links", value: social }),
+      apiSend("/api/settings", "PATCH", { key: "site_url", value: siteUrl.trim().replace(/\/$/, "") }),
     ]);
     setSaving(false);
     if (res.some((r) => !r.ok)) return toast.error("Could not save (admin only)");
@@ -51,6 +54,10 @@ export default function SettingsManager() {
           <DashInput label="Website Name" value={biz.name} onChange={sb("name")} disabled={!canEdit} />
           <DashInput label="Tagline" value={biz.tagline} onChange={sb("tagline")} disabled={!canEdit} />
         </div>
+      </DashSection>
+
+      <DashSection title="SEO / Canonical" subtitle="The site's primary URL. Used for the canonical tag on every page and in sitemaps">
+        <DashInput label="Canonical Site URL" value={siteUrl} onChange={setSiteUrl} placeholder="https://comfyclub.pk" helper="No trailing slash. Every page gets a self-referencing canonical based on this domain." disabled={!canEdit} />
       </DashSection>
 
       <DashSection title="Contact Information" subtitle="Shown in the footer and used for WhatsApp / email links">
