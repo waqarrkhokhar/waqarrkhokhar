@@ -14,14 +14,11 @@ export default async function StorefrontLayout({
   const { nav, business, social } = await getChrome();
 
   return (
-    <div className="bg-[#f0ede8]">
-      {/* White content card centred on a warm-gray page, matching the prototype */}
-      <div className="mx-auto min-h-screen max-w-[1400px] bg-white shadow-[0_0_60px_rgba(0,0,0,0.08)]">
-        <AnnouncementBar />
-        <Header nav={nav} />
-        <main>{children}</main>
-        <Footer nav={nav} business={business} social={social} />
-      </div>
+    <div className="min-h-screen w-full bg-white">
+      <AnnouncementBar />
+      <Header nav={nav} />
+      <main>{children}</main>
+      <Footer nav={nav} business={business} social={social} />
       <FloatingButtons />
     </div>
   );
