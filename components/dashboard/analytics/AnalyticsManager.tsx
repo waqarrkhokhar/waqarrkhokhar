@@ -10,6 +10,10 @@ import { apiGet, apiSend } from "@/lib/api/client";
 
 type SearchStats = { total: number; top: { query: string; count: number }[]; zero_result: { query: string; count: number }[] };
 type LeadStats = { total: number; this_week: number; this_month: number; by_type: Record<string, number> };
+type Ga4 = { totals: { pageViews: number; users: number; sessions: number }; topPages: { path: string; views: number }[] };
+type Gsc = { totals: { clicks: number; impressions: number; ctr: number; position: number }; topQueries: { query: string; clicks: number; impressions: number; ctr: number; position: number }[] };
+type Live = { configured: boolean; ga4: Ga4 | null; gsc: Gsc | null };
+const num = (n: number) => n.toLocaleString();
 
 type IntKey = "ga4" | "gsc" | "gtm";
 const DEFS: Record<IntKey, { name: string; icon: string; field: string; placeholder: string; desc: string; settingKey: string; manage: string; activeLabel: string }> = {
@@ -27,6 +31,9 @@ export default function AnalyticsManager() {
   const [connect, setConnect] = useState<IntKey | null>(null);
   const [input, setInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [live, setLive] = useState<Live | null>(null);
+  const [propId, setPropId] = useState("");
+  const [savingProp, setSavingProp] = useState(false);
 
   useEffect(() => {
     apiGet<{ data: Record<string, unknown> }>("/api/settings").then((r) => {
@@ -36,10 +43,21 @@ export default function AnalyticsManager() {
         gsc: String(r.data.data.search_console_verification ?? ""),
         gtm: String(r.data.data.gtm_id ?? ""),
       });
+      setPropId(String(r.data.data.ga4_property_id ?? ""));
     });
     apiGet<{ data: SearchStats }>("/api/search/analytics").then((r) => r.ok && setSearch(r.data.data));
     apiGet<{ data: LeadStats }>("/api/leads/stats").then((r) => r.ok && setLeads(r.data.data));
+    apiGet<{ data: Live }>("/api/analytics/google").then((r) => r.ok && setLive(r.data.data));
   }, []);
+
+  async function saveProp() {
+    setSavingProp(true);
+    const res = await apiSend("/api/settings", "PATCH", { key: "ga4_property_id", value: propId.trim() });
+    setSavingProp(false);
+    if (!res.ok) return toast.error("Could not save (admin only)");
+    toast.success("GA4 Property ID saved");
+    apiGet<{ data: Live }>("/api/analytics/google").then((r) => r.ok && setLive(r.data.data));
+  }
 
   async function setIntegration(key: IntKey, value: string) {
     const res = await apiSend("/api/settings", "PATCH", { key: DEFS[key].settingKey, value });
@@ -99,6 +117,71 @@ export default function AnalyticsManager() {
           })}
         </div>
       </DashSection>
+
+      {/* Live Google reports (last 28 days) */}
+      {live && !live.configured && (
+        <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-700">
+          🔌 Live GA4 &amp; Search Console charts aren&apos;t connected yet. Add a Google service-account key (free) to show traffic &amp; ranking data here — ask the team to set <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> in Vercel, then enter your GA4 Property ID below.
+        </div>
+      )}
+
+      {live?.configured && (
+        <>
+          <DashSection title="Google Analytics — Last 28 Days" subtitle="Live from your GA4 property"
+            actions={<a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GA4 →</DashBtn></a>}>
+            {!propId ? (
+              <div className="flex flex-wrap items-end gap-2">
+                <Field label="GA4 Property ID (numeric, from GA4 → Admin → Property Settings)">
+                  <Input value={propId} onChange={(e) => setPropId(e.target.value)} placeholder="123456789" />
+                </Field>
+                <Button loading={savingProp} onClick={saveProp}>Save</Button>
+              </div>
+            ) : live.ga4 ? (
+              <>
+                <div className="grid grid-cols-3 gap-3.5">
+                  <DashCard label="Page Views" value={num(live.ga4.totals.pageViews)} icon="👁️" tint="bg-blue-100" />
+                  <DashCard label="Active Users" value={num(live.ga4.totals.users)} icon="👤" tint="bg-green-100" />
+                  <DashCard label="Sessions" value={num(live.ga4.totals.sessions)} icon="📊" tint="bg-gold/15" />
+                </div>
+                {live.ga4.topPages.length > 0 && (
+                  <div className="mt-4">
+                    <div className="mb-2 text-xs font-semibold text-muted">Top Pages</div>
+                    <ul className="space-y-1.5 text-sm">
+                      {live.ga4.topPages.map((p) => <li key={p.path} className="flex justify-between gap-3"><span className="truncate">{p.path}</span><span className="text-muted">{num(p.views)}</span></li>)}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted">No data yet — GA4 needs ~24–48h after connecting, and the service account must have Viewer access to this property.</p>
+            )}
+          </DashSection>
+
+          <DashSection title="Search Console — Last 28 Days" subtitle="Live clicks, impressions & rankings"
+            actions={<a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GSC →</DashBtn></a>}>
+            {live.gsc ? (
+              <>
+                <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+                  <DashCard label="Clicks" value={num(live.gsc.totals.clicks)} icon="🖱️" tint="bg-green-100" />
+                  <DashCard label="Impressions" value={num(live.gsc.totals.impressions)} icon="📊" tint="bg-blue-100" />
+                  <DashCard label="Avg CTR" value={`${(live.gsc.totals.ctr * 100).toFixed(1)}%`} icon="📈" tint="bg-blue-100" />
+                  <DashCard label="Avg Position" value={live.gsc.totals.position.toFixed(1)} icon="🏆" tint="bg-gold/15" />
+                </div>
+                {live.gsc.topQueries.length > 0 && (
+                  <div className="mt-4">
+                    <div className="mb-2 text-xs font-semibold text-muted">Top Search Queries</div>
+                    <ul className="space-y-1.5 text-sm">
+                      {live.gsc.topQueries.map((q) => <li key={q.query} className="flex justify-between gap-3"><span className="truncate">{q.query}</span><span className="text-muted">{num(q.clicks)} clicks · pos {q.position.toFixed(1)}</span></li>)}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted">No data — confirm the Search Console property is set on the connect card and the service account is added as a user in Search Console.</p>
+            )}
+          </DashSection>
+        </>
+      )}
 
       {/* Real store activity */}
       <DashSection title="Store Activity" subtitle="Real numbers from your storefront">
