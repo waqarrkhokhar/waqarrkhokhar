@@ -41,10 +41,12 @@ export default function Footer({
   nav,
   business,
   social,
+  footer,
 }: {
   nav: NavParent[];
   business: Record<string, string>;
   social: Record<string, string>;
+  footer?: { brand?: string; copyright?: string };
 }) {
   const existing = new Set(nav.flatMap((p) => p.children.map((c) => c.slug)));
   const menuItem = ([label, slug]: string[]) =>
@@ -62,8 +64,8 @@ export default function Footer({
       <div className="mx-auto max-w-[1400px]">
         <p className="font-heading text-[22px] font-semibold uppercase tracking-[2px] text-gold">ComfyClub</p>
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/45">
-          Pakistan&apos;s premium handcrafted furniture brand. We create sofas, chairs, and seating made to order
-          using solid hardwood frames and premium upholstery — designed to last generations.
+          {footer?.brand ||
+            "Pakistan's premium handcrafted furniture brand. We create sofas, chairs, and seating made to order using solid hardwood frames and premium upholstery — designed to last generations."}
         </p>
 
         <div className="my-5 h-px bg-white/10" />
@@ -143,7 +145,7 @@ export default function Footer({
         </div>
 
         <p className="text-center text-xs text-white/25">
-          © {new Date().getFullYear()} ComfyClub · Lahore, Pakistan · {business.hours ?? "Mon–Sat 8 AM – 9 PM"}
+          {footer?.copyright || `© ${new Date().getFullYear()} ComfyClub · Lahore, Pakistan · ${business.hours ?? "Mon–Sat 8 AM – 9 PM"}`}
         </p>
       </div>
     </footer>

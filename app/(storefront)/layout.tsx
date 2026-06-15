@@ -11,14 +11,19 @@ export default async function StorefrontLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { nav, business, social } = await getChrome();
+  const { nav, business, social, announcement, footer } = await getChrome();
 
   return (
     <div className="min-h-screen w-full bg-white">
-      <AnnouncementBar />
+      <AnnouncementBar
+        enabled={announcement.enabled !== false}
+        text={announcement.message || undefined}
+        bg={announcement.bg}
+        color={announcement.color}
+      />
       <Header nav={nav} />
       <main>{children}</main>
-      <Footer nav={nav} business={business} social={social} />
+      <Footer nav={nav} business={business} social={social} footer={footer} />
       <FloatingButtons />
     </div>
   );
