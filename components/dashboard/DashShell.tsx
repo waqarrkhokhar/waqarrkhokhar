@@ -55,7 +55,7 @@ const NAV: Item[] = [
   },
   { kind: "leaf", label: "Homepage", href: "/dashboard/homepage", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z M4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z M16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z", cap: "settings", ready: true },
   { kind: "leaf", label: "Blog", href: "/dashboard/blog", icon: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8", cap: "blog", ready: true },
-  { kind: "leaf", label: "Pages", href: "/dashboard/pages", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", cap: "pages" },
+  { kind: "leaf", label: "Pages", href: "/dashboard/pages", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", cap: "pages", ready: true },
   {
     kind: "group",
     label: "SEO",
@@ -70,7 +70,7 @@ const NAV: Item[] = [
       { label: "Internal Linking", href: "/dashboard/seo/internal-links", cap: "seo", ready: true },
     ],
   },
-  { kind: "leaf", label: "Media Library", href: "/dashboard/media", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", cap: "media" },
+  { kind: "leaf", label: "Media Library", href: "/dashboard/media", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", cap: "media", ready: true },
   { kind: "leaf", label: "Promotions", href: "/dashboard/promotions", icon: "M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z", cap: "promotions", ready: true },
   { kind: "leaf", label: "WhatsApp Leads", href: "/dashboard/leads", icon: "M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z", cap: "leads", ready: true },
   { kind: "leaf", label: "Reviews", href: "/dashboard/reviews", icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z", cap: "reviews", ready: true },
@@ -102,8 +102,8 @@ const NAV: Item[] = [
       { label: "General", href: "/dashboard/settings", cap: "settings", ready: true },
       { label: "Users & Roles", href: "/dashboard/users", cap: "users", ready: true },
       { label: "Activity Log", href: "/dashboard/activity" },
-      { label: "Backups", href: "/dashboard/settings/backups", cap: "settings" },
-      { label: "Content Blocks", href: "/dashboard/settings/content-blocks", cap: "settings" },
+      { label: "Backups", href: "/dashboard/settings/backups", cap: "settings", ready: true },
+      { label: "Content Blocks", href: "/dashboard/settings/content-blocks", cap: "settings", ready: true },
     ],
   },
 ];
