@@ -34,6 +34,8 @@ export default function AnalyticsManager() {
   const [live, setLive] = useState<Live | null>(null);
   const [propId, setPropId] = useState("");
   const [savingProp, setSavingProp] = useState(false);
+  const [gscProp, setGscProp] = useState("");
+  const [savingGsc, setSavingGsc] = useState(false);
 
   useEffect(() => {
     apiGet<{ data: Record<string, unknown> }>("/api/settings").then((r) => {
@@ -44,11 +46,16 @@ export default function AnalyticsManager() {
         gtm: String(r.data.data.gtm_id ?? ""),
       });
       setPropId(String(r.data.data.ga4_property_id ?? ""));
+      setGscProp(String(r.data.data.search_console_property ?? ""));
     });
     apiGet<{ data: SearchStats }>("/api/search/analytics").then((r) => r.ok && setSearch(r.data.data));
     apiGet<{ data: LeadStats }>("/api/leads/stats").then((r) => r.ok && setLeads(r.data.data));
     apiGet<{ data: Live }>("/api/analytics/google").then((r) => r.ok && setLive(r.data.data));
   }, []);
+
+  function refreshLive() {
+    apiGet<{ data: Live }>("/api/analytics/google").then((r) => r.ok && setLive(r.data.data));
+  }
 
   async function saveProp() {
     setSavingProp(true);
@@ -56,7 +63,16 @@ export default function AnalyticsManager() {
     setSavingProp(false);
     if (!res.ok) return toast.error("Could not save (admin only)");
     toast.success("GA4 Property ID saved");
-    apiGet<{ data: Live }>("/api/analytics/google").then((r) => r.ok && setLive(r.data.data));
+    refreshLive();
+  }
+
+  async function saveGscProp() {
+    setSavingGsc(true);
+    const res = await apiSend("/api/settings", "PATCH", { key: "search_console_property", value: gscProp.trim() });
+    setSavingGsc(false);
+    if (!res.ok) return toast.error("Could not save (admin only)");
+    toast.success("Search Console property saved");
+    refreshLive();
   }
 
   async function setIntegration(key: IntKey, value: string) {
@@ -159,7 +175,14 @@ export default function AnalyticsManager() {
 
           <DashSection title="Search Console — Last 28 Days" subtitle="Live clicks, impressions & rankings"
             actions={<a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GSC →</DashBtn></a>}>
-            {live.gsc ? (
+            {!gscProp ? (
+              <div className="flex flex-wrap items-end gap-2">
+                <Field label="Search Console property (e.g. sc-domain:comfyclub.pk or https://comfyclub.pk/)">
+                  <Input value={gscProp} onChange={(e) => setGscProp(e.target.value)} placeholder="sc-domain:comfyclub.pk" />
+                </Field>
+                <Button loading={savingGsc} onClick={saveGscProp}>Save</Button>
+              </div>
+            ) : live.gsc ? (
               <>
                 <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
                   <DashCard label="Clicks" value={num(live.gsc.totals.clicks)} icon="🖱️" tint="bg-green-100" />
@@ -175,9 +198,10 @@ export default function AnalyticsManager() {
                     </ul>
                   </div>
                 )}
+                <p className="mt-3 text-[11px] text-muted">Property: {gscProp} · <button onClick={() => setGscProp("")} className="text-gold">change</button></p>
               </>
             ) : (
-              <p className="text-sm text-muted">No data — confirm the Search Console property is set on the connect card and the service account is added as a user in Search Console.</p>
+              <p className="text-sm text-muted">No data yet for <strong>{gscProp}</strong> — Search Console needs 2–3 days after verification, and the service account must be added as a user in Search Console. <button onClick={() => setGscProp("")} className="text-gold">Change property</button></p>
             )}
           </DashSection>
         </>
