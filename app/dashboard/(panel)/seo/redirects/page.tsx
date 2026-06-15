@@ -1,12 +1,12 @@
 import { getCurrentUser } from "@/lib/auth/session";
 import { can } from "@/lib/auth/permissions";
 import { EmptyState } from "@/components/ui/EmptyState";
-import SeoDashboard from "@/components/dashboard/seo/SeoDashboard";
+import RedirectsPage from "@/components/dashboard/seo/RedirectsPage";
 
 export default async function Page() {
   const user = await getCurrentUser();
   if (!user || !can(user.role, "seo")) {
     return <EmptyState title="No access" description="You can't manage SEO." />;
   }
-  return <SeoDashboard />;
+  return <RedirectsPage />;
 }

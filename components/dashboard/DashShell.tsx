@@ -62,12 +62,12 @@ const NAV: Item[] = [
     icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
     children: [
       { label: "SEO Dashboard", href: "/dashboard/seo", cap: "seo", ready: true },
-      { label: "Metadata Manager", href: "/dashboard/seo/metadata", cap: "seo" },
-      { label: "Schema Manager", href: "/dashboard/seo/schema", cap: "seo" },
+      { label: "Metadata Manager", href: "/dashboard/seo/metadata", cap: "seo", ready: true },
+      { label: "Schema Manager", href: "/dashboard/seo/schema", cap: "seo", ready: true },
       { label: "Redirect Manager", href: "/dashboard/seo/redirects", cap: "seo", ready: true },
-      { label: "Sitemap Manager", href: "/dashboard/seo/sitemap", cap: "seo" },
-      { label: "Robots Manager", href: "/dashboard/seo/robots", cap: "seo" },
-      { label: "Internal Linking", href: "/dashboard/seo/internal-links", cap: "seo" },
+      { label: "Sitemap Manager", href: "/dashboard/seo/sitemap", cap: "seo", ready: true },
+      { label: "Robots Manager", href: "/dashboard/seo/robots", cap: "seo", ready: true },
+      { label: "Internal Linking", href: "/dashboard/seo/internal-links", cap: "seo", ready: true },
     ],
   },
   { kind: "leaf", label: "Media Library", href: "/dashboard/media", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", cap: "media" },
@@ -81,7 +81,7 @@ const NAV: Item[] = [
     children: [
       { label: "Overview", href: "/dashboard/analytics", cap: "analytics", ready: true },
       { label: "Search Analytics", href: "/dashboard/analytics/search", cap: "analytics" },
-      { label: "404 Monitor", href: "/dashboard/seo#monitor", cap: "seo", ready: true },
+      { label: "404 Monitor", href: "/dashboard/seo/redirects", cap: "seo", ready: true },
     ],
   },
   {
