@@ -20,22 +20,32 @@ const jost = Jost({
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfyclub.pk";
 
-// Default site-wide metadata + OG defaults (per-page metadata added in later phases).
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "ComfyClub — Handcrafted Furniture in Lahore",
-    template: "%s | ComfyClub",
-  },
-  description:
-    "ComfyClub crafts made-to-order sofas, sofa chairs, and furniture at our Lahore workshop. Choose your fabric, colour, and finish.",
-  openGraph: {
-    type: "website",
-    siteName: "ComfyClub",
-    url: siteUrl,
-  },
-  twitter: { card: "summary_large_image" },
-};
+// Default site-wide metadata + OG defaults. Search Console verification is
+// pulled from settings so the property can be verified from the dashboard.
+export async function generateMetadata(): Promise<Metadata> {
+  let verification: string | undefined;
+  try {
+    const { getSettings } = await import("@/lib/settings");
+    const s = await getSettings(["search_console_verification"]);
+    if (typeof s.search_console_verification === "string" && s.search_console_verification) {
+      verification = s.search_console_verification;
+    }
+  } catch {
+    // settings unavailable — skip verification tag
+  }
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: "ComfyClub — Handcrafted Furniture in Lahore",
+      template: "%s | ComfyClub",
+    },
+    description:
+      "ComfyClub crafts made-to-order sofas, sofa chairs, and furniture at our Lahore workshop. Choose your fabric, colour, and finish.",
+    openGraph: { type: "website", siteName: "ComfyClub", url: siteUrl },
+    twitter: { card: "summary_large_image" },
+    ...(verification ? { verification: { google: verification } } : {}),
+  };
+}
 
 /** Read GA4/GTM IDs from settings (safe — returns empty if unavailable). */
 async function getAnalyticsIds(): Promise<{ ga4Id?: string; gtmId?: string }> {
