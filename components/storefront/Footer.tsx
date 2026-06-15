@@ -11,6 +11,24 @@ const QUICK_LINKS = [
   ["Terms & Conditions", "/terms-and-conditions/"],
 ];
 
+// Full menu per the design. Items render as links only when the collection
+// actually exists; the rest show as plain text (no dead links).
+const SOFAS_MENU = [
+  ["Sofa Chairs", "/sofas/sofa-chair/"],
+  ["Sofa Cum Beds", "/sofas/sofa-come-bed/"],
+  ["L Shape Sofas", "/sofas/l-shape-sofas/"],
+  ["Deewan Sofas", "/sofas/deewan-sofas/"],
+  ["Settee Sofas", "/sofas/settee-sofas/"],
+  ["Ottoman Sofas", "/sofas/ottoman-sofas/"],
+];
+const SEATER_MENU = [
+  ["2 Seater Sofas", "/seater-sofas/2-seater-sofas/"],
+  ["3 Seater Sofas", "/seater-sofas/3-seater-sofas/"],
+  ["4 Seater Sofas", "/seater-sofas/4-seater-sofas/"],
+  ["5 Seater Sofas", "/seater-sofas/5-seater-sofas/"],
+  ["6 Seater Sofas", "/seater-sofas/6-seater-sofas/"],
+];
+
 const SOCIALS: { key: string; label: string; href: string; path: React.ReactNode }[] = [
   { key: "facebook", label: "Facebook", href: "https://www.facebook.com/comfyclublahore/", path: <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /> },
   { key: "instagram", label: "Instagram", href: "https://www.instagram.com/comfyclub.pk/", path: <><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></> },
@@ -28,7 +46,13 @@ export default function Footer({
   business: Record<string, string>;
   social: Record<string, string>;
 }) {
-  const cols = nav.slice(0, 2); // first two parents become link columns
+  const existing = new Set(nav.flatMap((p) => p.children.map((c) => c.slug)));
+  const menuItem = ([label, slug]: string[]) =>
+    existing.has(slug) ? (
+      <li key={slug}><Link href={slug} className="text-sm text-white/50 hover:text-white">{label}</Link></li>
+    ) : (
+      <li key={slug}><span className="text-sm text-white/40">{label}</span></li>
+    );
   const phone = business.phone || business.whatsapp || "+92 339 410 0052";
   const email = business.email || "comfyclub.pk@gmail.com";
   const address = business.address || "Jan Muhammad Road, Nawab Town, Lahore";
@@ -46,16 +70,14 @@ export default function Footer({
 
         {/* Links grid */}
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {cols.map((p) => (
-            <div key={p.id}>
-              <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">{p.name}</h4>
-              <ul className="space-y-2.5">
-                {p.children.map((c) => (
-                  <li key={c.id}><Link href={c.slug} className="text-sm text-white/50 hover:text-white">{c.name}</Link></li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div>
+            <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Sofas</h4>
+            <ul className="space-y-2.5">{SOFAS_MENU.map(menuItem)}</ul>
+          </div>
+          <div>
+            <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Seater Sofas</h4>
+            <ul className="space-y-2.5">{SEATER_MENU.map(menuItem)}</ul>
+          </div>
 
           <div>
             <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Quick Links</h4>
