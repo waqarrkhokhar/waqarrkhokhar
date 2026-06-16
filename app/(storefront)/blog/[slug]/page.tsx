@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getBlogPost, getMorePosts } from "@/lib/storefront/blog";
+import { isPreviewRequest } from "@/lib/storefront/preview";
 import { markdownToHtml } from "@/lib/markdown";
 import { waLink } from "@/lib/whatsapp";
 import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
+import PreviewBanner from "@/components/storefront/PreviewBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +28,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const p = await getBlogPost(params.slug);
+export default async function BlogPostPage({ params, searchParams }: { params: { slug: string }; searchParams: { preview?: string } }) {
+  const preview = await isPreviewRequest(searchParams);
+  const p = await getBlogPost(params.slug, preview);
   if (!p) notFound();
   const more = await getMorePosts(p.slug);
   const bodyHtml = markdownToHtml(p.content);
@@ -45,6 +48,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   return (
     <div>
+      {preview && <PreviewBanner editHref="/dashboard/blog" />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <nav className="px-5 pb-2 pt-3 text-xs text-charcoal/50 md:px-10" aria-label="Breadcrumb">

@@ -67,14 +67,42 @@ async function getAnalyticsIds(): Promise<{ ga4Id?: string; gtmId?: string }> {
   }
 }
 
+type CustomSchema = { id: string; name: string; type: string; json: string; enabled: boolean };
+
+/** Site-wide custom JSON-LD blocks, managed from Dashboard → SEO → Schema. */
+async function getCustomSchemas(): Promise<string[]> {
+  try {
+    const { getSettings } = await import("@/lib/settings");
+    const s = await getSettings(["custom_schemas"]);
+    const list = Array.isArray(s.custom_schemas) ? (s.custom_schemas as CustomSchema[]) : [];
+    return list
+      .filter((x) => x.enabled && x.json)
+      .map((x) => {
+        try {
+          return JSON.stringify(JSON.parse(x.json)); // validate + minify
+        } catch {
+          return "";
+        }
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { ga4Id, gtmId } = await getAnalyticsIds();
+  const [{ ga4Id, gtmId }, schemas] = await Promise.all([getAnalyticsIds(), getCustomSchemas()]);
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
+      <head>
+        {schemas.map((s, i) => (
+          <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: s }} />
+        ))}
+      </head>
       <body className="font-body">{children}</body>
       <GoogleAnalytics ga4Id={ga4Id} gtmId={gtmId} />
     </html>

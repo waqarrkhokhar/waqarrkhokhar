@@ -41,14 +41,14 @@ export async function getBlogList(): Promise<BlogCard[]> {
 }
 
 /** A single published post for /blog/[slug]. */
-export async function getBlogPost(slug: string): Promise<BlogPostFull | null> {
+export async function getBlogPost(slug: string, preview = false): Promise<BlogPostFull | null> {
   const supabase = createClient();
-  const { data: p } = await supabase
+  let q = supabase
     .from("blog_posts")
     .select("*")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle();
+    .eq("slug", slug);
+  if (!preview) q = q.eq("status", "published");
+  const { data: p } = await q.maybeSingle();
   if (!p) return null;
   return {
     id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt, category: p.category,

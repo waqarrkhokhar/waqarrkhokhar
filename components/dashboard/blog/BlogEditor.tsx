@@ -164,7 +164,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
         breadcrumbs={[{ label: "Blog", href: "/dashboard/blog" }, { label: mode === "create" ? "New" : "Edit" }]}
         actions={
           <>
-            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/blog/${previewSlug}/`, "_blank")}>Preview</DashBtn>}
+            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/blog/${previewSlug}/?preview=1`, "_blank")}>Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmDelete(true)}>Delete</DashBtn>}
             <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save Draft"}</DashBtn>
             <DashBtn onClick={() => save("published")}>Publish</DashBtn>

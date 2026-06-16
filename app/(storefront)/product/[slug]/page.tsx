@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProductDetail } from "@/lib/storefront/data";
+import { isPreviewRequest } from "@/lib/storefront/preview";
 import ProductView from "@/components/storefront/product/ProductView";
 import { ProductRow } from "@/components/storefront/home/Sections";
+import PreviewBanner from "@/components/storefront/PreviewBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +23,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const p = await getProductDetail(params.slug);
+export default async function ProductPage({ params, searchParams }: { params: { slug: string }; searchParams: { preview?: string } }) {
+  const preview = await isPreviewRequest(searchParams);
+  const p = await getProductDetail(params.slug, preview);
   if (!p) notFound();
 
   const onSale = !!(p.sale_price && p.price && p.sale_price < p.price);
@@ -50,6 +53,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   return (
     <div>
+      {preview && <PreviewBanner editHref={`/dashboard/products`} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ProductView product={p} />
 

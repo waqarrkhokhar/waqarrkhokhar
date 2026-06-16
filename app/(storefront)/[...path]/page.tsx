@@ -2,8 +2,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategoryPage } from "@/lib/storefront/data";
+import { isPreviewRequest } from "@/lib/storefront/preview";
 import CollectionGrid from "@/components/storefront/CollectionGrid";
 import CollapsibleContent from "@/components/storefront/CollapsibleContent";
+import PreviewBanner from "@/components/storefront/PreviewBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -20,12 +22,14 @@ export async function generateMetadata({ params }: { params: { path: string[] } 
   return { title, description, openGraph: { title, description, images: image ? [image] : undefined } };
 }
 
-export default async function CategoryPage({ params }: { params: { path: string[] } }) {
-  const page = await getCategoryPage(toPath(params.path));
+export default async function CategoryPage({ params, searchParams }: { params: { path: string[] }; searchParams: { preview?: string } }) {
+  const preview = await isPreviewRequest(searchParams);
+  const page = await getCategoryPage(toPath(params.path), preview);
   if (!page) notFound();
 
   return (
     <div>
+      {preview && <PreviewBanner editHref="/dashboard/collections" />}
       {/* Banner / header */}
       <div className="relative overflow-hidden bg-navy px-5 py-12 text-center md:px-10 md:py-16">
         {page.banner_image && (

@@ -143,14 +143,26 @@ export async function getHomepageData() {
 
   const all = raw.map((p) => toStoreProduct(p, ratingMap.get(p.id)));
 
+  // Fisher-Yates shuffle so non-pinned homepage picks rotate on every visit
+  // (keeps the sections feeling live instead of frozen to one fixed set).
+  const shuffle = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
   // Trending: pinned ids → is_trending → newest. Offers: biggest discount.
   const pinnedTrending = Array.isArray(config.pinned_trending) ? (config.pinned_trending as string[]) : [];
   const byId = new Map(all.map((p) => [p.id, p]));
   let trending = pinnedTrending.map((id) => byId.get(id)).filter(Boolean) as StoreProduct[];
   if (trending.length < 4) {
     const extra = all.filter((p) => !trending.includes(p));
-    const trend = extra.filter((p) => raw.find((r) => r.id === p.id)?.is_trending);
-    trending = [...trending, ...trend, ...extra].slice(0, 8);
+    const trend = shuffle(extra.filter((p) => raw.find((r) => r.id === p.id)?.is_trending));
+    const rest = shuffle(extra.filter((p) => !raw.find((r) => r.id === p.id)?.is_trending));
+    trending = [...trending, ...trend, ...rest].slice(0, 8);
   }
   trending = trending.slice(0, 8);
 
@@ -188,7 +200,7 @@ export async function getHomepageData() {
     title: featureCat?.name ?? "2 Seater Sofas",
     subtitle: "Compact luxury for every space",
     link: featureSlug,
-    products: raw.filter((p) => p.category?.slug === featureSlug).slice(0, 4).map((p) => toStoreProduct(p, ratingMap.get(p.id))),
+    products: shuffle(raw.filter((p) => p.category?.slug === featureSlug)).slice(0, 4).map((p) => toStoreProduct(p, ratingMap.get(p.id))),
   };
 
   return { config, trending, offers, categories: cats, feature };
@@ -235,9 +247,9 @@ export type ProductDetail = {
 };
 
 /** Full product detail for /product/[slug]/. Returns null if not found. */
-export async function getProductDetail(slug: string): Promise<ProductDetail | null> {
+export async function getProductDetail(slug: string, preview = false): Promise<ProductDetail | null> {
   const supabase = createClient();
-  const { data: p } = await supabase
+  let q = supabase
     .from("products")
     .select(
       `id, name, slug, sku, price, sale_price, short_description, long_description,
@@ -245,9 +257,9 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
        category:categories(name, slug, parent:parent_categories(name, slug)),
        product_images(url, alt_text, is_primary, sort_order)`,
     )
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle();
+    .eq("slug", slug);
+  if (!preview) q = q.eq("status", "published");
+  const { data: p } = await q.maybeSingle();
 
   if (!p) return null;
   const row = p as any;
@@ -345,20 +357,20 @@ export type CategoryPage = {
 };
 
 /** Resolve a storefront path to a parent or collection listing. null if unknown. */
-export async function getCategoryPage(path: string): Promise<CategoryPage | null> {
+export async function getCategoryPage(path: string, preview = false): Promise<CategoryPage | null> {
   const slug = path.startsWith("/") ? path : `/${path}`;
   const supabase = createClient();
 
   // Try a child collection first (most specific).
-  const { data: collection } = await supabase
+  let colQ = supabase
     .from("categories")
     .select(
       `id, name, slug, description, intro_content, content_html, banner_image, meta_title, meta_description,
        parent:parent_categories(name, slug)`,
     )
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle();
+    .eq("slug", slug);
+  if (!preview) colQ = colQ.eq("status", "published");
+  const { data: collection } = await colQ.maybeSingle();
 
   if (collection) {
     const c = collection as any;
@@ -380,12 +392,12 @@ export async function getCategoryPage(path: string): Promise<CategoryPage | null
   }
 
   // Otherwise a parent category.
-  const { data: parent } = await supabase
+  let parentQ = supabase
     .from("parent_categories")
     .select("id, name, slug, description, banner_image, meta_title, meta_description")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle();
+    .eq("slug", slug);
+  if (!preview) parentQ = parentQ.eq("status", "published");
+  const { data: parent } = await parentQ.maybeSingle();
 
   if (!parent) return null;
 

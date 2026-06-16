@@ -182,7 +182,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
         breadcrumbs={[{ label: "Catalog" }, { label: "Products", href: "/dashboard/products" }, { label: mode === "create" ? "New Product" : form.name.slice(0, 25) }]}
         actions={
           <>
-            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/product/${previewSlug}/`, "_blank")}>👁 Preview</DashBtn>}
+            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/product/${previewSlug}/?preview=1`, "_blank")}>👁 Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="secondary" icon="📋" onClick={duplicate}>Duplicate</DashBtn>}
             {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmArchive(true)}>Archive</DashBtn>}
             <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save"}</DashBtn>
@@ -417,7 +417,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               </div>
             </div>
             {mode === "edit" && (
-              <DashBtn variant="secondary" full onClick={() => window.open(`/product/${previewSlug}/`, "_blank")}>👁 Preview on Storefront</DashBtn>
+              <DashBtn variant="secondary" full onClick={() => window.open(`/product/${previewSlug}/?preview=1`, "_blank")}>👁 Preview on Storefront</DashBtn>
             )}
           </DashSection>
         </div>
