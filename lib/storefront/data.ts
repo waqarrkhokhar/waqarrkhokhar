@@ -38,11 +38,13 @@ export async function getChrome() {
         .from("parent_categories")
         .select("id, name, slug, sort_order")
         .eq("status", "published")
+        .is("deleted_at", null)
         .order("sort_order"),
       supabase
         .from("categories")
         .select("id, name, slug, parent_id, sort_order")
         .eq("status", "published")
+        .is("deleted_at", null)
         .order("sort_order"),
       supabase
         .from("settings")
@@ -122,6 +124,7 @@ export async function getHomepageData() {
         .from("categories")
         .select("id, name, slug, banner_image, sort_order")
         .eq("status", "published")
+        .is("deleted_at", null)
         .order("sort_order"),
     ]);
 
@@ -276,6 +279,7 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
       .select("id, name, city, rating, text, image_url, admin_reply, is_featured, created_at")
       .eq("product_id", row.id)
       .eq("status", "approved")
+      .is("deleted_at", null)
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(30),
@@ -368,7 +372,8 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
       `id, name, slug, description, intro_content, content_html, banner_image, meta_title, meta_description,
        parent:parent_categories(name, slug)`,
     )
-    .eq("slug", slug);
+    .eq("slug", slug)
+    .is("deleted_at", null);
   if (!preview) colQ = colQ.eq("status", "published");
   const { data: collection } = await colQ.maybeSingle();
 
@@ -395,7 +400,8 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
   let parentQ = supabase
     .from("parent_categories")
     .select("id, name, slug, description, banner_image, meta_title, meta_description")
-    .eq("slug", slug);
+    .eq("slug", slug)
+    .is("deleted_at", null);
   if (!preview) parentQ = parentQ.eq("status", "published");
   const { data: parent } = await parentQ.maybeSingle();
 
@@ -406,6 +412,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
     .select("id, name, slug, banner_image, sort_order")
     .eq("parent_id", parent.id)
     .eq("status", "published")
+    .is("deleted_at", null)
     .order("sort_order");
 
   // Products across all child collections of this parent.

@@ -57,14 +57,15 @@ export async function PATCH(request: Request, { params }: Params) {
   return ok(data);
 }
 
-/** DELETE /api/collections/:id — products become uncategorized (SET NULL). */
-export async function DELETE(_req: Request, { params }: Params) {
+/** DELETE /api/collections/:id — soft-delete to trash (or ?permanent=1). */
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("categories");
   if (!guard.ok) return guard.response;
   if (guard.user.role !== "Super Admin" && guard.user.role !== "Admin") {
     return apiError(403, "FORBIDDEN", "Only an Admin can delete a collection");
   }
 
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
   const { data: col } = await supabase
     .from("categories")
@@ -73,22 +74,30 @@ export async function DELETE(_req: Request, { params }: Params) {
     .single();
   if (!col) return apiError(404, "NOT_FOUND", "Collection not found");
 
-  const { count } = await supabase
-    .from("products")
-    .select("id", { count: "exact", head: true })
-    .eq("category_id", params.id);
+  if (permanent) {
+    const { count } = await supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("category_id", params.id);
+    const { error } = await supabase.from("categories").delete().eq("id", params.id);
+    if (error) return apiError(500, "INTERNAL_ERROR", error.message);
+    await logActivity({
+      userId: guard.user.id, userName: guard.user.name, action: "permanently deleted",
+      entityType: "collection", entityId: col.id, entityName: col.name,
+      details: { products_uncategorized: count ?? 0 },
+    });
+    return action(`Collection permanently deleted. ${count ?? 0} product(s) uncategorized.`);
+  }
 
-  const { error } = await supabase.from("categories").delete().eq("id", params.id);
+  const { error } = await supabase
+    .from("categories")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", params.id);
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
 
   await logActivity({
-    userId: guard.user.id,
-    userName: guard.user.name,
-    action: "deleted",
-    entityType: "collection",
-    entityId: col.id,
-    entityName: col.name,
-    details: { products_uncategorized: count ?? 0 },
+    userId: guard.user.id, userName: guard.user.name, action: "moved to trash",
+    entityType: "collection", entityId: col.id, entityName: col.name,
   });
-  return action(`Collection deleted. ${count ?? 0} product(s) uncategorized.`);
+  return action("Collection moved to trash. Restore it any time from Trash.");
 }

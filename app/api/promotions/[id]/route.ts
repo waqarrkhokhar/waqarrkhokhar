@@ -39,12 +39,16 @@ export async function PATCH(request: Request, { params }: Params) {
   return ok(data);
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("promotions");
   if (!guard.ok) return guard.response;
 
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
-  const { error } = await supabase.from("promotions").delete().eq("id", params.id);
+  const { error } = permanent
+    ? await supabase.from("promotions").delete().eq("id", params.id)
+    : await supabase.from("promotions").update({ deleted_at: new Date().toISOString() }).eq("id", params.id);
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
-  return action("Promotion deleted");
+  await logActivity({ userId: guard.user.id, userName: guard.user.name, action: permanent ? "permanently deleted" : "moved to trash", entityType: "promotion", entityId: params.id });
+  return action(permanent ? "Promotion permanently deleted" : "Promotion moved to trash");
 }

@@ -39,14 +39,18 @@ export async function PATCH(request: Request, { params }: Params) {
   return ok(data);
 }
 
-/** DELETE /api/pages/:id — custom pages only (core/policy protected). */
-export async function DELETE(_req: Request, { params }: Params) {
+/** DELETE /api/pages/:id — custom pages only; soft-delete to trash (or ?permanent=1). */
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("pages");
   if (!guard.ok) return guard.response;
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
-  const { data: row } = await supabase.from("pages").select("type").eq("id", params.id).maybeSingle();
+  const { data: row } = await supabase.from("pages").select("type, title").eq("id", params.id).maybeSingle();
   if (row && row.type !== "custom") return apiError(400, "VALIDATION_ERROR", "Core/policy pages can't be deleted");
-  const { error } = await supabase.from("pages").delete().eq("id", params.id);
+  const { error } = permanent
+    ? await supabase.from("pages").delete().eq("id", params.id)
+    : await supabase.from("pages").update({ deleted_at: new Date().toISOString() }).eq("id", params.id);
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
-  return action("Page deleted");
+  await logActivity({ userId: guard.user.id, userName: guard.user.name, action: permanent ? "permanently deleted" : "moved to trash", entityType: "page", entityId: params.id, entityName: row?.title });
+  return action(permanent ? "Page permanently deleted" : "Page moved to trash");
 }

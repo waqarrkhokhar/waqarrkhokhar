@@ -13,6 +13,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("promotions")
     .select("*")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
   return ok(data);

@@ -10,7 +10,10 @@ export type ActivityAction =
   | "approved"
   | "rejected"
   | "invited"
-  | "duplicated";
+  | "duplicated"
+  | "moved to trash"
+  | "permanently deleted"
+  | "restored";
 
 export type ActivityEntity =
   | "product"

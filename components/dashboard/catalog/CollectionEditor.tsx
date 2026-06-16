@@ -99,7 +99,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     setConfirmDelete(false);
     const res = await apiSend(`/api/collections/${collectionId}`, "DELETE");
     if (!res.ok) return toast.error(res.error);
-    toast.success("Collection deleted");
+    toast.success("Collection moved to trash");
     router.push("/dashboard/collections");
   }
 
@@ -237,9 +237,9 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         onConfirm={remove}
-        title="Delete this collection?"
-        message="Products are kept but become uncategorized. This cannot be undone."
-        confirmLabel="Delete"
+        title="Move this collection to trash?"
+        message="It will be hidden from the storefront. Restore it any time from Settings → Trash."
+        confirmLabel="Move to Trash"
         danger
       />
     </div>

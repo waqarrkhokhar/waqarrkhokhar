@@ -32,6 +32,7 @@ export async function getBlogList(): Promise<BlogCard[]> {
     .from("blog_posts")
     .select("id, title, slug, excerpt, category, featured_image, content, published_at")
     .eq("status", "published")
+    .is("deleted_at", null)
     .order("published_at", { ascending: false, nullsFirst: false })
     .limit(60);
   return (data ?? []).map((p) => ({
@@ -46,7 +47,8 @@ export async function getBlogPost(slug: string, preview = false): Promise<BlogPo
   let q = supabase
     .from("blog_posts")
     .select("*")
-    .eq("slug", slug);
+    .eq("slug", slug)
+    .is("deleted_at", null);
   if (!preview) q = q.eq("status", "published");
   const { data: p } = await q.maybeSingle();
   if (!p) return null;

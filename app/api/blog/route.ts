@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       "id, title, slug, excerpt, featured_image, category, tags, author, status, published_at, updated_at",
       { count: "exact" },
     )
+    .is("deleted_at", null)
     .order("published_at", { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
 

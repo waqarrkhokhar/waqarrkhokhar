@@ -115,7 +115,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     setConfirmDelete(false);
     const res = await apiSend(`/api/blog/${postId}`, "DELETE");
     if (!res.ok) return toast.error(res.error);
-    toast.success("Post deleted");
+    toast.success("Post moved to trash");
     router.push("/dashboard/blog");
   }
 
@@ -304,7 +304,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
       </div>
 
       <ConfirmDialog open={confirmDelete} onClose={() => setConfirmDelete(false)} onConfirm={remove}
-        title="Delete this post?" message="This cannot be undone." confirmLabel="Delete" danger />
+        title="Move this post to trash?" message="It will be hidden from the blog. You can restore it any time from Settings → Trash." confirmLabel="Move to Trash" danger />
     </div>
   );
 }

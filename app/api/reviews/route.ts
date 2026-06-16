@@ -16,6 +16,7 @@ export async function GET(request: Request) {
   let q = supabase
     .from("reviews")
     .select("*, product:products(name, slug)", { count: "exact" })
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 

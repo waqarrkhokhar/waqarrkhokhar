@@ -40,6 +40,7 @@ export type UserStatus = "active" | "suspended" | "invited";
 
 type Timestamps = { created_at: string };
 type WithUpdated = { updated_at: string };
+type SoftDelete = { deleted_at: string | null };
 
 // Helper to build the standard table shape supabase-js expects.
 type Table<Row> = {
@@ -67,7 +68,7 @@ export interface Database {
         robots: string | null;
         sort_order: number;
         status: CatalogStatus;
-      } & Timestamps & WithUpdated>;
+      } & Timestamps & WithUpdated & SoftDelete>;
 
       categories: Table<{
         id: string;
@@ -89,7 +90,7 @@ export interface Database {
         sort_order: number;
         is_featured: boolean;
         status: CatalogStatus;
-      } & Timestamps & WithUpdated>;
+      } & Timestamps & WithUpdated & SoftDelete>;
 
       products: Table<{
         id: string;
@@ -121,7 +122,7 @@ export interface Database {
         robots: string | null;
         whatsapp_message_template: string | null;
         published_at: string | null;
-      } & Timestamps & WithUpdated>;
+      } & Timestamps & WithUpdated & SoftDelete>;
 
       product_images: Table<{
         id: string;
@@ -144,7 +145,7 @@ export interface Database {
         admin_reply_at: string | null;
         status: ReviewStatus;
         is_featured: boolean;
-      } & Timestamps>;
+      } & Timestamps & SoftDelete>;
 
       whatsapp_leads: Table<{
         id: string;
@@ -178,7 +179,7 @@ export interface Database {
         faqs: Json | null;
         internal_links: Json | null;
         published_at: string | null;
-      } & Timestamps & WithUpdated>;
+      } & Timestamps & WithUpdated & SoftDelete>;
 
       pages: Table<{
         id: string;
@@ -195,7 +196,7 @@ export interface Database {
         schema_enabled: boolean;
         schema_type: string;
         status: PageStatus;
-      } & Timestamps & WithUpdated>;
+      } & Timestamps & WithUpdated & SoftDelete>;
 
       media: Table<{
         id: string;
@@ -232,7 +233,7 @@ export interface Database {
         impressions: number;
         clicks: number;
         status: PromotionStatus;
-      } & Timestamps>;
+      } & Timestamps & SoftDelete>;
 
       redirects: Table<{
         id: string;

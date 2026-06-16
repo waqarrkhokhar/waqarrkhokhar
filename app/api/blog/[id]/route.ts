@@ -69,27 +69,25 @@ export async function PATCH(request: Request, { params }: Params) {
   return ok(data);
 }
 
-/** DELETE /api/blog/:id — Admins (or post owners via role). */
-export async function DELETE(_req: Request, { params }: Params) {
+/** DELETE /api/blog/:id — soft-delete to trash (or ?permanent=1 to remove). */
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("blog");
   if (!guard.ok) return guard.response;
 
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("blog_posts")
-    .delete()
-    .eq("id", params.id)
-    .select("id, title")
-    .single();
+  const { data, error } = permanent
+    ? await supabase.from("blog_posts").delete().eq("id", params.id).select("id, title").single()
+    : await supabase.from("blog_posts").update({ deleted_at: new Date().toISOString() }).eq("id", params.id).select("id, title").single();
   if (error || !data) return apiError(404, "NOT_FOUND", "Post not found");
 
   await logActivity({
     userId: guard.user.id,
     userName: guard.user.name,
-    action: "deleted",
+    action: permanent ? "permanently deleted" : "moved to trash",
     entityType: "blog",
     entityId: data.id,
     entityName: data.title,
   });
-  return action("Post deleted");
+  return action(permanent ? "Post permanently deleted" : "Post moved to trash");
 }

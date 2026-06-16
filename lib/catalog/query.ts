@@ -8,6 +8,7 @@ export async function listParents(db: DB, staff: boolean) {
   let q = db
     .from("parent_categories")
     .select("*")
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true });
   if (!staff) q = q.eq("status", "published");
 
@@ -16,7 +17,8 @@ export async function listParents(db: DB, staff: boolean) {
 
   const { data: cats } = await db
     .from("categories")
-    .select("id, parent_id");
+    .select("id, parent_id")
+    .is("deleted_at", null);
   const { data: prods } = await db
     .from("products")
     .select("category_id")
@@ -52,6 +54,7 @@ export async function listCollections(
     .select(
       "*, parent:parent_categories(id, name, slug)",
     )
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true });
   if (!staff) q = q.eq("status", "published");
   if (parentId) q = q.eq("parent_id", parentId);

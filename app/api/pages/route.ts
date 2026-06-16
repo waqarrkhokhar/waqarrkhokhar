@@ -13,6 +13,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("pages")
     .select("id, title, slug, type, status, updated_at")
+    .is("deleted_at", null)
     .order("updated_at", { ascending: false });
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
   return ok(data ?? []);

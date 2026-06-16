@@ -104,6 +104,7 @@ const NAV: Item[] = [
       { label: "Activity Log", href: "/dashboard/activity", ready: true },
       { label: "Backups", href: "/dashboard/settings/backups", cap: "settings", ready: true },
       { label: "Content Blocks", href: "/dashboard/settings/content-blocks", cap: "settings", ready: true },
+      { label: "Trash", href: "/dashboard/trash", ready: true },
     ],
   },
 ];

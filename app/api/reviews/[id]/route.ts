@@ -65,17 +65,20 @@ export async function PATCH(request: Request, { params }: Params) {
   return ok(data);
 }
 
-/** DELETE /api/reviews/:id — permanent delete (Admins). */
-export async function DELETE(_req: Request, { params }: Params) {
+/** DELETE /api/reviews/:id — soft-delete to trash (or ?permanent=1) (Admins). */
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("reviews");
   if (!guard.ok) return guard.response;
   if (guard.user.role !== "Super Admin" && guard.user.role !== "Admin") {
     return apiError(403, "FORBIDDEN", "Only an Admin can delete reviews");
   }
 
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
-  const { error } = await supabase.from("reviews").delete().eq("id", params.id);
+  const { error } = permanent
+    ? await supabase.from("reviews").delete().eq("id", params.id)
+    : await supabase.from("reviews").update({ deleted_at: new Date().toISOString() }).eq("id", params.id);
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
   await refreshRatings();
-  return action("Review deleted");
+  return action(permanent ? "Review permanently deleted" : "Review moved to trash");
 }

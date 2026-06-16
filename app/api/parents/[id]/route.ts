@@ -43,13 +43,14 @@ export async function PATCH(request: Request, { params }: Params) {
  * Child collections cascade-delete; their products become uncategorized
  * (category_id → NULL) — products are never destroyed.
  */
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("categories");
   if (!guard.ok) return guard.response;
   if (guard.user.role !== "Super Admin" && guard.user.role !== "Admin") {
     return apiError(403, "FORBIDDEN", "Only an Admin can delete a parent category");
   }
 
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
   const { data: parent } = await supabase
     .from("parent_categories")
@@ -58,22 +59,30 @@ export async function DELETE(_req: Request, { params }: Params) {
     .single();
   if (!parent) return apiError(404, "NOT_FOUND", "Parent category not found");
 
-  const { count: childCount } = await supabase
-    .from("categories")
-    .select("id", { count: "exact", head: true })
-    .eq("parent_id", params.id);
+  if (permanent) {
+    const { count: childCount } = await supabase
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", params.id);
+    const { error } = await supabase.from("parent_categories").delete().eq("id", params.id);
+    if (error) return apiError(500, "INTERNAL_ERROR", error.message);
+    await logActivity({
+      userId: guard.user.id, userName: guard.user.name, action: "permanently deleted",
+      entityType: "category", entityId: parent.id, entityName: parent.name,
+      details: { collections_removed: childCount ?? 0 },
+    });
+    return action(`'${parent.name}' permanently deleted (${childCount ?? 0} collections removed)`);
+  }
 
-  const { error } = await supabase.from("parent_categories").delete().eq("id", params.id);
+  const { error } = await supabase
+    .from("parent_categories")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", params.id);
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
 
   await logActivity({
-    userId: guard.user.id,
-    userName: guard.user.name,
-    action: "deleted",
-    entityType: "category",
-    entityId: parent.id,
-    entityName: parent.name,
-    details: { collections_removed: childCount ?? 0 },
+    userId: guard.user.id, userName: guard.user.name, action: "moved to trash",
+    entityType: "category", entityId: parent.id, entityName: parent.name,
   });
-  return action(`'${parent.name}' deleted (${childCount ?? 0} collections removed)`);
+  return action(`'${parent.name}' moved to trash`);
 }
