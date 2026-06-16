@@ -7,9 +7,15 @@ import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 
-type Page = { id: string; title: string; slug: string; type: string; status: string; updated_at: string };
+type Page = { id: string; title: string; slug: string; type: string; status: string; schema_enabled?: boolean; traffic?: number; updated_at: string };
 type Form = { title: string; content: string; banner_image: string; meta_title: string; meta_description: string; status: string };
 const EMPTY: Form = { title: "", content: "", banner_image: "", meta_title: "", meta_description: "", status: "draft" };
+
+// Normalise a stored slug to exactly one leading and one trailing slash.
+const fmtSlug = (s: string) => "/" + String(s).replace(/^\/+|\/+$/g, "") + "/";
+
+const typeLabel: Record<string, string> = { core: "Core Page", policy: "Policy", custom: "Custom Page" };
+const typeBadge = (t: string) => (t === "policy" ? "archived" : t === "core" ? "active" : "scheduled");
 
 export default function PagesManager() {
   const toast = useToast();
@@ -24,10 +30,19 @@ export default function PagesManager() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await apiGet<{ data: Page[] }>("/api/pages");
+    const [res, ga] = await Promise.all([
+      apiGet<{ data: Page[] }>("/api/pages"),
+      apiGet<{ data: { ga4: { topPages?: { path: string; views: number }[] } | null } }>("/api/analytics/google"),
+    ]);
     setLoading(false);
     if (!res.ok) return toast.error(res.error);
-    setRows(res.data.data);
+
+    // Real per-page views from GA4 (last 28d), matched by URL path. No data → "—".
+    const views = new Map<string, number>();
+    if (ga.ok && ga.data.data.ga4?.topPages) {
+      for (const tp of ga.data.data.ga4.topPages) views.set(fmtSlug(tp.path), tp.views);
+    }
+    setRows(res.data.data.map((p) => ({ ...p, traffic: views.get(fmtSlug(p.slug)) })));
   }, [toast]);
 
   useEffect(() => { load(); }, [load]);
@@ -70,11 +85,26 @@ export default function PagesManager() {
       <div>
         <DashPageHeader title={editing === "new" ? "New Page" : `Edit: ${f.title}`}
           breadcrumbs={[{ label: "Pages" }, { label: editing === "new" ? "New" : f.title }]}
-          actions={<><DashBtn variant="secondary" onClick={() => setEditing(null)}>Cancel</DashBtn><DashBtn onClick={save}>{saving ? "Saving…" : "Save Page"}</DashBtn></>} />
+          actions={
+            <>
+              {editing !== "new" && slug && <DashBtn variant="secondary" onClick={() => window.open(fmtSlug(slug), "_blank")}>👁 Preview</DashBtn>}
+              <DashBtn variant="secondary" onClick={() => setEditing(null)}>Cancel</DashBtn>
+              <DashBtn onClick={save}>{saving ? "Saving…" : "Save Page"}</DashBtn>
+            </>
+          } />
+
+        {f.status === "published" && slug && (
+          <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+            <span className="text-xs font-medium text-green-600">Live:</span>
+            <a href={fmtSlug(slug)} target="_blank" rel="noopener noreferrer" className="text-xs text-ink underline dark:text-cream">comfyclub.pk{fmtSlug(slug)}</a>
+          </div>
+        )}
+
         <div className="grid items-start gap-5 lg:grid-cols-[1fr_280px]">
           <DashSection title="Page Content">
             <DashInput label="Title" required value={f.title} onChange={(v) => setF({ ...f, title: v })} />
-            {slug && <DashInput label="Slug" value={`/${slug}/`} disabled />}
+            {slug && <DashInput label="Slug" value={fmtSlug(slug)} disabled helper={`comfyclub.pk${fmtSlug(slug)}`} />}
             <DashInput label="Content" textarea rows={12} value={f.content} onChange={(v) => setF({ ...f, content: v })} placeholder="Page content (Markdown supported)" />
           </DashSection>
           <div>
@@ -97,21 +127,43 @@ export default function PagesManager() {
   }
 
   const columns: Column<Page>[] = [
-    { key: "title", header: "Page", render: (p) => <div><div className="font-medium text-charcoal dark:text-cream">{p.title}</div><div className="text-[11px] text-muted">/{p.slug}/</div></div> },
-    { key: "type", header: "Type", render: (p) => <DashBadge status="scheduled" label={p.type} /> },
+    {
+      key: "title", header: "Page",
+      render: (p) => (
+        <div>
+          <a
+            href={fmtSlug(p.slug)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="font-medium text-navy underline decoration-line underline-offset-2 hover:decoration-gold dark:text-cream"
+          >
+            {p.title}
+          </a>
+          <div className="text-[11px] text-muted">{fmtSlug(p.slug)}</div>
+        </div>
+      ),
+    },
+    { key: "type", header: "Type", render: (p) => <DashBadge status={typeBadge(p.type)} label={typeLabel[p.type] ?? p.type} /> },
+    { key: "traffic", header: "Monthly Traffic", render: (p) => <span className="text-muted">{p.traffic != null ? p.traffic.toLocaleString() : "—"}</span> },
+    { key: "schema", header: "Schema", render: (p) => p.schema_enabled ? <span className="text-[14px] text-green-600">✓</span> : <span className="text-[14px] text-muted">—</span> },
     { key: "status", header: "Status", render: (p) => <DashBadge status={p.status === "published" ? "published" : "draft"} label={p.status} /> },
-    { key: "actions", header: "", className: "w-20", render: (p) => (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => openEdit(p.id)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
-        {p.type === "custom" && <button onClick={() => setDel(p)} title="Delete" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>}
-      </div>
-    ) },
+    {
+      key: "actions", header: "", className: "w-24",
+      render: (p) => (
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => openEdit(p.id)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
+          <a href={fmtSlug(p.slug)} target="_blank" rel="noopener noreferrer" title="View Live" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🌐</a>
+          {p.type === "custom" && <button onClick={() => setDel(p)} title="Delete" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>}
+        </div>
+      ),
+    },
   ];
 
   return (
     <div>
-      <DashPageHeader title="Pages" subtitle="Custom & landing pages" breadcrumbs={[{ label: "Pages" }]}
-        actions={<DashBtn icon="+" onClick={openNew}>New Page</DashBtn>} />
+      <DashPageHeader title="Pages" subtitle="Manage site pages, policies & SEO landing pages" breadcrumbs={[{ label: "Pages" }]}
+        actions={<DashBtn icon="+" onClick={openNew}>Create Page</DashBtn>} />
       <DashTable columns={columns} rows={rows} getId={(p) => p.id} loading={loading} onRowClick={(p) => openEdit(p.id)}
         emptyTitle="No pages yet" emptyDescription="Create a custom or landing page." />
       <ConfirmDialog open={!!del} onClose={() => setDel(null)} onConfirm={remove} title={`Delete '${del?.title}'?`} message="This permanently removes the page." confirmLabel="Delete" danger />
