@@ -101,7 +101,7 @@ const NAV: Item[] = [
     children: [
       { label: "General", href: "/dashboard/settings", cap: "settings", ready: true },
       { label: "Users & Roles", href: "/dashboard/users", cap: "users", ready: true },
-      { label: "Activity Log", href: "/dashboard/activity" },
+      { label: "Activity Log", href: "/dashboard/activity", ready: true },
       { label: "Backups", href: "/dashboard/settings/backups", cap: "settings", ready: true },
       { label: "Content Blocks", href: "/dashboard/settings/content-blocks", cap: "settings", ready: true },
     ],
