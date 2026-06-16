@@ -84,9 +84,9 @@ export function DashTable<T>({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-card dark:border-white/10 dark:bg-white/5">
-        <table className="w-full text-left text-[14px]">
-          <thead className="border-b border-line text-[11.5px] font-semibold uppercase tracking-wide text-charcoal/70 dark:border-white/10 dark:text-cream/60">
+      <div className="overflow-x-auto rounded-[10px] border border-line bg-white dark:border-white/10 dark:bg-[#191f2e]">
+        <table className="w-full text-left text-[13px]">
+          <thead className="bg-panel text-[11px] font-medium uppercase tracking-[0.5px] text-muted dark:bg-white/5">
             <tr>
               {selectable && (
                 <th className="w-10 px-4 py-3">
@@ -117,7 +117,7 @@ export function DashTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/5 dark:divide-white/10">
+          <tbody className="divide-y divide-line dark:divide-white/10">
             {loading
               ? Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
@@ -137,7 +137,7 @@ export function DashTable<T>({
                       onClick={() => onRowClick?.(row)}
                       className={cn(
                         "transition",
-                        onRowClick && "cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.03]",
+                        onRowClick && "cursor-pointer hover:bg-panel dark:hover:bg-white/[0.03]",
                       )}
                     >
                       {selectable && (

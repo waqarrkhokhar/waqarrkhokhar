@@ -42,7 +42,7 @@ export function DashBtn({
   type?: "button" | "submit";
 }) {
   const cls = `inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition ${
-    size === "sm" ? "px-3 py-1.5 text-[12.5px]" : "px-[18px] py-[10px] text-[13.5px]"
+    size === "sm" ? "px-3 py-1.5 text-[12px]" : "px-[18px] py-[9px] text-[13px]"
   } ${btnVariants[variant]} ${full ? "w-full" : ""} ${disabled ? "cursor-not-allowed opacity-50" : ""}`;
   if (href && !disabled) {
     return (
@@ -79,7 +79,7 @@ const badgeStyles: Record<BadgeStatus, string> = {
 };
 export function DashBadge({ status = "draft", label }: { status?: BadgeStatus; label?: string }) {
   return (
-    <span className={`inline-block rounded-full px-2.5 py-[3px] text-[11.5px] font-semibold ${badgeStyles[status] ?? badgeStyles.draft}`}>
+    <span className={`inline-block rounded-full px-2.5 py-[3px] text-[11px] font-medium ${badgeStyles[status] ?? badgeStyles.draft}`}>
       {label ?? status}
     </span>
   );
@@ -106,8 +106,8 @@ export function DashCard({
   const inner = (
     <>
       <div>
-        <div className="text-[13px] text-muted">{label}</div>
-        <div className="mt-1.5 font-heading text-[30px] font-bold leading-none text-charcoal dark:text-cream">{value}</div>
+        <div className="text-[12px] text-muted">{label}</div>
+        <div className="mt-1.5 font-heading text-[28px] font-bold leading-none text-charcoal dark:text-cream">{value}</div>
         {change != null && (
           <div className={`mt-1 flex items-center gap-1 text-[11px] ${change > 0 ? "text-green-600" : "text-red-500"}`}>
             {change > 0 ? "↑" : "↓"} {Math.abs(change)}% vs last month
@@ -143,8 +143,8 @@ export function DashSection({
       {title && (
         <div className="flex items-center justify-between border-b border-line px-5 py-4 dark:border-white/10">
           <div>
-            <div className="text-[16px] font-semibold text-charcoal dark:text-cream">{title}</div>
-            {subtitle && <div className="mt-1 text-[13px] text-muted">{subtitle}</div>}
+            <div className="text-[15px] font-semibold text-charcoal dark:text-cream">{title}</div>
+            {subtitle && <div className="mt-0.5 text-[12px] text-muted">{subtitle}</div>}
           </div>
           {actions && <div className="flex gap-1.5">{actions}</div>}
         </div>
@@ -184,8 +184,8 @@ export function DashPageHeader({
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="m-0 font-heading text-[28px] font-semibold text-charcoal dark:text-cream">{title}</h1>
-          {subtitle && <p className="mt-1.5 text-[14px] text-muted">{subtitle}</p>}
+          <h1 className="m-0 font-heading text-[26px] font-semibold text-charcoal dark:text-cream">{title}</h1>
+          {subtitle && <p className="mt-1 text-[13px] text-muted">{subtitle}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
@@ -241,7 +241,7 @@ export function DashTabs<T extends string>({
         <button
           key={t.id}
           onClick={() => onChange(t.id)}
-          className={`whitespace-nowrap border-b-2 px-[18px] py-2.5 text-[14px] transition ${
+          className={`whitespace-nowrap border-b-2 px-[18px] py-2.5 text-[13px] transition ${
             active === t.id ? "border-gold font-semibold text-gold" : "border-transparent text-muted hover:text-ink"
           }`}
         >
@@ -277,11 +277,11 @@ export function DashInput({
   disabled?: boolean;
 }) {
   const cls =
-    "w-full rounded-md border border-line bg-white px-3 py-2.5 text-[14px] text-ink outline-none transition focus:border-gold disabled:bg-panel dark:border-white/10 dark:bg-white/5 dark:text-cream";
+    "w-full rounded-md border border-line bg-white px-3 py-2.5 text-[13px] text-ink outline-none transition focus:border-gold disabled:bg-panel dark:border-white/10 dark:bg-white/5 dark:text-cream";
   return (
     <div className="mb-4">
       {label && (
-        <label className="mb-1.5 block text-[13px] font-medium text-ink dark:text-cream">
+        <label className="mb-1.5 block text-[12px] font-medium text-ink dark:text-cream">
           {label}{required && <span className="text-red-500"> *</span>}
         </label>
       )}
@@ -290,7 +290,7 @@ export function DashInput({
       ) : (
         <input type={type} value={value ?? ""} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} disabled={disabled} className={cls} />
       )}
-      {helper && <div className="mt-1 text-[12px] text-muted">{helper}</div>}
+      {helper && <div className="mt-1 text-[11px] text-muted">{helper}</div>}
     </div>
   );
 }
@@ -313,14 +313,14 @@ export function DashSelect({
   return (
     <div className="mb-4">
       {label && (
-        <label className="mb-1.5 block text-[13px] font-medium text-ink dark:text-cream">
+        <label className="mb-1.5 block text-[12px] font-medium text-ink dark:text-cream">
           {label}{required && <span className="text-red-500"> *</span>}
         </label>
       )}
-      <select value={value} onChange={(e) => onChange?.(e.target.value)} className="w-full cursor-pointer rounded-md border border-line bg-white px-3 py-2.5 text-[14px] text-ink outline-none focus:border-gold dark:border-white/10 dark:bg-white/5 dark:text-cream">
+      <select value={value} onChange={(e) => onChange?.(e.target.value)} className="w-full cursor-pointer rounded-md border border-line bg-white px-3 py-2.5 text-[13px] text-ink outline-none focus:border-gold dark:border-white/10 dark:bg-white/5 dark:text-cream">
         {children}
       </select>
-      {helper && <div className="mt-1 text-[12px] text-muted">{helper}</div>}
+      {helper && <div className="mt-1 text-[11px] text-muted">{helper}</div>}
     </div>
   );
 }
@@ -329,7 +329,7 @@ export function DashToggle({ label, checked, onChange, helper }: { label: string
   return (
     <div className="mb-3.5 flex items-center justify-between">
       <div>
-        <div className="text-[14px] text-ink dark:text-cream">{label}</div>
+        <div className="text-[13px] text-ink dark:text-cream">{label}</div>
         {helper && <div className="mt-0.5 text-[11px] text-muted">{helper}</div>}
       </div>
       <button type="button" onClick={() => onChange?.(!checked)} className={`relative h-[22px] w-10 flex-shrink-0 rounded-full transition ${checked ? "bg-gold" : "bg-gray-300 dark:bg-white/20"}`}>

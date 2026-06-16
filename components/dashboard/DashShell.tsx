@@ -171,7 +171,8 @@ export default function DashShell({
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex items-center gap-2.5 border-b border-navyLight px-[18px] py-5">
-        <span className="font-heading text-[22px] font-semibold leading-none text-white">ComfyClub</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/comfyclub-logo.png" alt="ComfyClub" className="h-7" style={{ filter: "brightness(1.5)" }} />
         <span className="text-[11px] uppercase tracking-[1px] text-gold/70">CMS</span>
       </div>
 
