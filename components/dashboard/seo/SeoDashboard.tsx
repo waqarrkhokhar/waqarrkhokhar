@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashPageHeader, DashCard, DashBtn, DashBadge } from "@/components/dashboard/shared/Dash";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
-import { apiGet } from "@/lib/api/client";
+import { apiGet, apiSend } from "@/lib/api/client";
+import { useToast } from "@/components/ui/Toast";
 
 type Row = { key: string; page: string; type: string; url: string; editHref?: string };
 type Tab = "all" | "categories" | "collections" | "products" | "blog" | "pages";
@@ -23,6 +24,8 @@ const typeLabel: Record<string, string> = { categories: "Category", collections:
 
 export default function SeoDashboard() {
   const router = useRouter();
+  const toast = useToast();
+  const [generating, setGenerating] = useState(false);
   const [tab, setTab] = useState<Tab>("all");
   const [rows, setRows] = useState<Row[]>([]);
   const [counts, setCounts] = useState({ categories: 0, collections: 0, products: 0, blog: 0, pages: STATIC_PAGES.length });
@@ -56,6 +59,14 @@ export default function SeoDashboard() {
     { id: "pages", label: "Static Pages", count: counts.pages },
   ];
 
+  async function generateSeo() {
+    setGenerating(true);
+    const res = await apiSend<{ data: { updated: number } }>("/api/products/seo/generate", "POST", { overwrite: false });
+    setGenerating(false);
+    if (!res.ok) return toast.error(res.error);
+    toast.success(`SEO meta filled for ${res.data.data.updated} product(s)`);
+  }
+
   const columns: Column<Row>[] = [
     { key: "page", header: "Page", render: (r) => <div><div className="font-medium text-charcoal dark:text-cream">{r.page.length > 44 ? r.page.slice(0, 44) + "…" : r.page}</div><div className="text-[11px] text-muted">{r.url}</div></div> },
     { key: "type", header: "Type", render: (r) => <DashBadge status="scheduled" label={typeLabel[r.type] ?? r.type} /> },
@@ -70,7 +81,8 @@ export default function SeoDashboard() {
   return (
     <div>
       <DashPageHeader title="SEO Dashboard" subtitle="Central index of every page's SEO - edit each item in its own SEO tab"
-        breadcrumbs={[{ label: "SEO" }, { label: "Dashboard" }]} />
+        breadcrumbs={[{ label: "SEO" }, { label: "Dashboard" }]}
+        actions={<DashBtn icon="✨" onClick={generateSeo} disabled={generating}>{generating ? "Filling…" : "Auto-fill missing SEO"}</DashBtn>} />
 
       <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
         <DashCard label="Total Pages" value={total || "…"} icon="📄" tint="bg-gold/15" />
