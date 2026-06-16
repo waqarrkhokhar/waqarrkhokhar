@@ -43,10 +43,19 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
             alt=""
             referrerPolicy="no-referrer"
             className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
-            style={{ opacity: i === active ? 0.5 : 0 }}
+            style={{ opacity: i === active ? 1 : 0 }}
           />
         ) : null,
       )}
+
+      {/* Scrim: keeps the furniture image vivid while text stays readable */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(15,29,53,0.72) 0%, rgba(15,29,53,0.45) 38%, rgba(15,29,53,0.12) 70%, rgba(15,29,53,0) 100%)",
+        }}
+      />
 
       {/* Content */}
       <div
