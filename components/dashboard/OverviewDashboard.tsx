@@ -54,14 +54,14 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
     });
   }, []);
 
-  const total = health?.total ?? "—";
+  const total = health?.total ?? "-";
   const seoMax = health?.total || 1;
 
   return (
     <div>
       <DashPageHeader
         title="Dashboard"
-        subtitle={`Welcome back, ${firstName} — here's your ComfyClub snapshot.`}
+        subtitle={`Welcome back, ${firstName} - here's your ComfyClub snapshot.`}
         actions={
           <>
             <DashBtn variant="secondary" href="/dashboard/analytics">Analytics</DashBtn>
@@ -73,9 +73,9 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
       {/* Key metrics */}
       <div className="mb-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <DashCard label="Total Products" value={total} icon="📦" tint="bg-gold/15" href="/dashboard/products" />
-        <DashCard label="WhatsApp Leads (Today)" value={leadsToday ?? "—"} icon="💬" tint="bg-green-100" href="/dashboard/leads" />
-        <DashCard label="Pending Reviews" value={pending ?? "—"} icon="⭐" tint="bg-amber-100" href="/dashboard/reviews" />
-        <DashCard label="Collections" value={collections ?? "—"} icon="🗂️" tint="bg-blue-100" href="/dashboard/collections" />
+        <DashCard label="WhatsApp Leads (Today)" value={leadsToday ?? "-"} icon="💬" tint="bg-green-100" href="/dashboard/leads" />
+        <DashCard label="Pending Reviews" value={pending ?? "-"} icon="⭐" tint="bg-amber-100" href="/dashboard/reviews" />
+        <DashCard label="Collections" value={collections ?? "-"} icon="🗂️" tint="bg-blue-100" href="/dashboard/collections" />
       </div>
 
       {/* Main grid */}
@@ -105,7 +105,7 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
                   leads.map((o) => (
                     <tr key={o.id} className="border-b border-line dark:border-white/10">
                       <td className="px-5 py-3 font-medium text-ink dark:text-cream">{o.product_name ?? "General enquiry"}</td>
-                      <td className="px-3.5 py-3 text-muted">{o.source_page ?? "—"}</td>
+                      <td className="px-3.5 py-3 text-muted">{o.source_page ?? "-"}</td>
                       <td className="px-3.5 py-3"><DashBadge status={typeBadge(o.message_type)} label={o.message_type[0].toUpperCase() + o.message_type.slice(1)} /></td>
                       <td className="px-3.5 py-3 text-right text-xs text-muted">{timeAgo(o.created_at)}</td>
                     </tr>
@@ -127,7 +127,7 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
                 { label: "Archived", value: health?.archived, color: "text-gold" },
               ].map((s) => (
                 <div key={s.label} className="rounded-lg bg-panel px-3.5 py-3 text-center dark:bg-white/5">
-                  <div className={`font-heading text-[22px] font-bold ${s.color}`}>{s.value ?? "—"}</div>
+                  <div className={`font-heading text-[22px] font-bold ${s.color}`}>{s.value ?? "-"}</div>
                   <div className="mt-0.5 text-[11px] text-muted">{s.label}</div>
                 </div>
               ))}

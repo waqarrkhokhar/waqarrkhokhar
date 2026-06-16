@@ -69,7 +69,7 @@ export default function SeoDashboard() {
 
   return (
     <div>
-      <DashPageHeader title="SEO Dashboard" subtitle="Central index of every page's SEO — edit each item in its own SEO tab"
+      <DashPageHeader title="SEO Dashboard" subtitle="Central index of every page's SEO - edit each item in its own SEO tab"
         breadcrumbs={[{ label: "SEO" }, { label: "Dashboard" }]} />
 
       <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">

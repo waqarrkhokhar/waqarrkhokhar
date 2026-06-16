@@ -8,7 +8,7 @@ import { apiGet, apiSend } from "@/lib/api/client";
 
 type Item = { id: string; filename: string; url: string; thumbnail_url: string | null; size_bytes: number | null; folder: string; created_at: string };
 
-const kb = (n: number | null) => (n ? (n > 1024 * 1024 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`) : "—");
+const kb = (n: number | null) => (n ? (n > 1024 * 1024 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`) : "-");
 
 export default function MediaLibrary() {
   const toast = useToast();

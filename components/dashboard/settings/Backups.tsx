@@ -21,7 +21,7 @@ export default function Backups() {
       </DashSection>
 
       <DashSection title="Export a Snapshot" subtitle="Download a copy of your catalog you can keep offline">
-        <p className="mb-3 text-[13px] leading-relaxed text-muted">A CSV of every product — handy as a quick offline backup or for editing in a spreadsheet.</p>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">A CSV of every product - handy as a quick offline backup or for editing in a spreadsheet.</p>
         <a href="/api/products/export" download><DashBtn icon="↓">Download Products CSV</DashBtn></a>
       </DashSection>
 

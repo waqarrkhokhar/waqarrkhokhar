@@ -57,8 +57,8 @@ export default function CustomFields() {
   const columns: Column<Field>[] = [
     { key: "name", header: "Field Name", render: (x) => <span className="font-medium">{x.name}</span> },
     { key: "type", header: "Type", render: (x) => <DashBadge status="scheduled" label={x.type} /> },
-    { key: "options", header: "Options", render: (x) => x.options || "—" },
-    { key: "required", header: "Required", render: (x) => (x.required ? "✓" : "—") },
+    { key: "options", header: "Options", render: (x) => x.options || "-" },
+    { key: "required", header: "Required", render: (x) => (x.required ? "✓" : "-") },
     { key: "actions", header: "", className: "w-20", render: (x) => (
       <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
         <button onClick={() => openEdit(x)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>

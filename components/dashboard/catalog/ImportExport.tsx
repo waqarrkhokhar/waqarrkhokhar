@@ -24,7 +24,7 @@ export default function ImportExport() {
           <a href="/api/products/export" download>
             <DashBtn icon="↓">Download Products CSV</DashBtn>
           </a>
-          <p className="mt-3 text-[12px] text-muted">Tip: this same file works as an import template — edit it in Excel/Sheets and keep the column headers.</p>
+          <p className="mt-3 text-[12px] text-muted">Tip: this same file works as an import template - edit it in Excel/Sheets and keep the column headers.</p>
         </DashSection>
       )}
 

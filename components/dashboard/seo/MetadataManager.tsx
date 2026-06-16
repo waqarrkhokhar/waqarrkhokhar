@@ -40,7 +40,7 @@ export default function MetadataManager() {
 
   return (
     <div>
-      <DashPageHeader title="Metadata Manager" subtitle="Meta titles, descriptions & keywords — edited in each item's SEO tab"
+      <DashPageHeader title="Metadata Manager" subtitle="Meta titles, descriptions & keywords - edited in each item's SEO tab"
         breadcrumbs={[{ label: "SEO" }, { label: "Metadata Manager" }]}
         actions={<DashBtn variant="secondary" href="/dashboard/seo">SEO Dashboard</DashBtn>} />
       <div className="mb-4">

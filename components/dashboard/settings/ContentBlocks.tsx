@@ -57,7 +57,7 @@ export default function ContentBlocks() {
   const columns: Column<Block>[] = [
     { key: "name", header: "Block Name", render: (b) => <span className="font-medium">{b.name}</span> },
     { key: "content", header: "Preview", render: (b) => <span className="line-clamp-1 text-xs text-muted">{b.content.replace(/<[^>]+>/g, "")}</span> },
-    { key: "updated", header: "Last Updated", render: (b) => b.updated ? new Date(b.updated).toLocaleDateString() : "—" },
+    { key: "updated", header: "Last Updated", render: (b) => b.updated ? new Date(b.updated).toLocaleDateString() : "-" },
     { key: "actions", header: "", className: "w-20", render: (b) => (
       <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
         <button onClick={() => openEdit(b)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
@@ -68,7 +68,7 @@ export default function ContentBlocks() {
 
   return (
     <div>
-      <DashPageHeader title="Content Blocks" subtitle="Reusable snippets — update once, reuse anywhere"
+      <DashPageHeader title="Content Blocks" subtitle="Reusable snippets - update once, reuse anywhere"
         breadcrumbs={[{ label: "Settings" }, { label: "Content Blocks" }]}
         actions={canEdit && <DashBtn icon="+" onClick={openNew}>Add Block</DashBtn>} />
 

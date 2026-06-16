@@ -416,22 +416,22 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
             {visibleReviews.map((r) => (
               <div key={r.id} className="mb-2.5 rounded-lg bg-white p-4">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[13px] font-semibold text-charcoal">
+                  <span className="flex items-center gap-1.5 text-[15px] font-semibold text-charcoal">
                     {r.name}
                     {r.is_featured && (
-                      <span className="rounded-full bg-gold/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gold">Featured</span>
+                      <span className="rounded-full bg-gold/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold">Featured</span>
                     )}
                   </span>
                   <Stars rating={r.rating} />
                 </div>
-                {r.city && <div className="mt-0.5 text-[10px] text-[#aaa]">{r.city}</div>}
-                <p className="mt-2 text-xs leading-relaxed text-[#666]">{r.text}</p>
+                {r.city && <div className="mt-0.5 text-[12px] text-[#999]">{r.city}</div>}
+                <p className="mt-2 text-[14.5px] leading-relaxed text-charcoal/80">{r.text}</p>
                 {r.image_url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={r.image_url} alt="" referrerPolicy="no-referrer" className="mt-2.5 h-20 w-20 rounded object-cover" />
                 )}
                 {r.admin_reply && (
-                  <div className="mt-2.5 rounded bg-cream px-3 py-2 text-xs text-charcoal/70">
+                  <div className="mt-2.5 rounded bg-cream px-3 py-2 text-[13px] text-charcoal/70">
                     <span className="font-semibold text-navy">ComfyClub:</span> {r.admin_reply}
                   </div>
                 )}

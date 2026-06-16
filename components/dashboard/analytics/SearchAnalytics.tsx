@@ -37,8 +37,8 @@ export default function SearchAnalytics() {
         breadcrumbs={[{ label: "Analytics" }, { label: "Search Analytics" }]} />
 
       <div className="mb-5 grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-        <DashCard label="Total Searches" value={stats?.total ?? "—"} icon="🔍" tint="bg-gold/15" />
-        <DashCard label="Unique Terms" value={uniqueTerms || "—"} icon="📝" tint="bg-blue-100" />
+        <DashCard label="Total Searches" value={stats?.total ?? "-"} icon="🔍" tint="bg-gold/15" />
+        <DashCard label="Unique Terms" value={uniqueTerms || "-"} icon="📝" tint="bg-blue-100" />
         <DashCard label="No-Result Searches" value={`${noResultPct}%`} icon="⚠️" tint="bg-amber-100" />
       </div>
 

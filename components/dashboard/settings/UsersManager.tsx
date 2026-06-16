@@ -54,7 +54,7 @@ export default function UsersManager() {
       </div>
     ) },
     { key: "role", header: "Role", render: (u) => <DashBadge status={roleBadge(u.role)} label={u.role} /> },
-    { key: "last_login", header: "Last Login", render: (u) => u.last_login ? new Date(u.last_login).toLocaleDateString() : "—" },
+    { key: "last_login", header: "Last Login", render: (u) => u.last_login ? new Date(u.last_login).toLocaleDateString() : "-" },
     { key: "status", header: "Status", render: (u) => <DashBadge status={statusBadge(u.status)} label={u.status} /> },
   ];
 

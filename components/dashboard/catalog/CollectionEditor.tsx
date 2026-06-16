@@ -147,7 +147,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
           <DashInput label="Collection Name" value={f.name} required onChange={(v) => set("name", v)} placeholder="e.g. Recliner Sofas" />
           {mode === "create" ? (
             <DashSelect label="Parent Category" required value={f.parent_id} onChange={(v) => set("parent_id", v)}>
-              <option value="">— Select —</option>
+              <option value="">- Select -</option>
               {parents.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </DashSelect>
           ) : (

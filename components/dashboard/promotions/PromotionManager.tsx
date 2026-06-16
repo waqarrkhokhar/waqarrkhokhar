@@ -163,7 +163,7 @@ export default function PromotionManager() {
     { key: "type", header: "Type", render: (p) => <DashBadge status="scheduled" label={typeLabel(p.type)} /> },
     { key: "window", header: "Window", render: (p) => (
       <span className="whitespace-nowrap text-xs text-muted">
-        {p.start_date ? new Date(p.start_date).toLocaleDateString() : "—"} → {p.end_date ? new Date(p.end_date).toLocaleDateString() : "—"}
+        {p.start_date ? new Date(p.start_date).toLocaleDateString() : "-"} → {p.end_date ? new Date(p.end_date).toLocaleDateString() : "-"}
       </span>
     ) },
     { key: "stats", header: "Impr / Clicks", render: (p) => `${p.impressions} / ${p.clicks}` },

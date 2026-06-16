@@ -125,7 +125,7 @@ export default function ReviewManager() {
 
   const columns: Column<Review>[] = [
     { key: "product", header: "Product", render: (r) => (
-      <span className="text-[12px] font-medium text-navy dark:text-cream">{r.product?.name ?? "—"}</span>
+      <span className="text-[12px] font-medium text-navy dark:text-cream">{r.product?.name ?? "-"}</span>
     ) },
     { key: "name", header: "Reviewer", render: (r) => (
       <div><p className="font-medium">{r.name}</p><p className="text-xs text-muted">{r.city ?? ""}</p></div>
@@ -151,16 +151,16 @@ export default function ReviewManager() {
     <div>
       <DashPageHeader
         title="Reviews"
-        subtitle="Manage customer reviews — approve, feature, edit, or add manually"
+        subtitle="Manage customer reviews - approve, feature, edit, or add manually"
         breadcrumbs={[{ label: "Reviews" }]}
         actions={<DashBtn icon="+" onClick={() => setAddOpen(true)}>Add Review</DashBtn>}
       />
 
       <div className="mb-5 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <DashCard label="Average Rating" value={summary?.avg ?? "—"} icon="⭐" tint="bg-gold/15" onClick={() => setTab("all")} />
-        <DashCard label="Total Reviews" value={summary?.total ?? "—"} icon="💬" tint="bg-blue-100" onClick={() => setTab("all")} />
-        <DashCard label="Pending" value={summary?.pending ?? "—"} icon="⏳" tint="bg-amber-100" onClick={() => setTab("pending")} />
-        <DashCard label="Featured" value={summary?.featured ?? "—"} icon="🏆" tint="bg-blue-100" onClick={() => setTab("featured")} />
+        <DashCard label="Average Rating" value={summary?.avg ?? "-"} icon="⭐" tint="bg-gold/15" onClick={() => setTab("all")} />
+        <DashCard label="Total Reviews" value={summary?.total ?? "-"} icon="💬" tint="bg-blue-100" onClick={() => setTab("all")} />
+        <DashCard label="Pending" value={summary?.pending ?? "-"} icon="⏳" tint="bg-amber-100" onClick={() => setTab("pending")} />
+        <DashCard label="Featured" value={summary?.featured ?? "-"} icon="🏆" tint="bg-blue-100" onClick={() => setTab("featured")} />
       </div>
 
       {/* Tabs */}
@@ -212,7 +212,7 @@ export default function ReviewManager() {
         {detail && edit && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted">On: <span className="font-medium text-ink dark:text-cream">{detail.product?.name ?? "—"}</span></p>
+              <p className="text-xs text-muted">On: <span className="font-medium text-ink dark:text-cream">{detail.product?.name ?? "-"}</span></p>
               <DashBadge status={badgeStatus(detail.status)} label={detail.status} />
             </div>
             <div className="grid grid-cols-2 gap-3">

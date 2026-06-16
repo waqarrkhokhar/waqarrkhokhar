@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 /**
  * Lightweight rich-text editor (no external deps) for CMS page content.
  * Supports headings, bold/italic, lists, and links with a target choice
- * (open in a new tab or the same tab) — ideal for internal linking.
+ * (open in a new tab or the same tab) - ideal for internal linking.
  */
 export default function RichTextEditor({
   value,

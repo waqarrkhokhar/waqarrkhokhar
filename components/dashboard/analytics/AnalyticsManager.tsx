@@ -96,7 +96,7 @@ export default function AnalyticsManager() {
       <DashPageHeader title="Analytics" subtitle="Connect your Google properties and view your real store activity"
         breadcrumbs={[{ label: "Analytics" }, { label: "Overview" }]} />
 
-      {/* Integrations — real connections */}
+      {/* Integrations - real connections */}
       <DashSection title="Connected Integrations" subtitle="Connecting GA4 / GTM activates tracking on the live site; Search Console verifies ownership">
         <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
           {(Object.keys(DEFS) as IntKey[]).map((key) => {
@@ -137,13 +137,13 @@ export default function AnalyticsManager() {
       {/* Live Google reports (last 28 days) */}
       {live && !live.configured && (
         <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-700">
-          🔌 Live GA4 &amp; Search Console charts aren&apos;t connected yet. Add a Google service-account key (free) to show traffic &amp; ranking data here — ask the team to set <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> in Vercel, then enter your GA4 Property ID below.
+          🔌 Live GA4 &amp; Search Console charts aren&apos;t connected yet. Add a Google service-account key (free) to show traffic &amp; ranking data here - ask the team to set <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> in Vercel, then enter your GA4 Property ID below.
         </div>
       )}
 
       {live?.configured && (
         <>
-          <DashSection title="Google Analytics — Last 28 Days" subtitle="Live from your GA4 property"
+          <DashSection title="Google Analytics - Last 28 Days" subtitle="Live from your GA4 property"
             actions={<a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GA4 →</DashBtn></a>}>
             {!propId ? (
               <div className="flex flex-wrap items-end gap-2">
@@ -169,11 +169,11 @@ export default function AnalyticsManager() {
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted">No data yet — GA4 needs ~24–48h after connecting, and the service account must have Viewer access to this property.</p>
+              <p className="text-sm text-muted">No data yet - GA4 needs ~24–48h after connecting, and the service account must have Viewer access to this property.</p>
             )}
           </DashSection>
 
-          <DashSection title="Search Console — Last 28 Days" subtitle="Live clicks, impressions & rankings"
+          <DashSection title="Search Console - Last 28 Days" subtitle="Live clicks, impressions & rankings"
             actions={<a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GSC →</DashBtn></a>}>
             {!gscProp ? (
               <div className="flex flex-wrap items-end gap-2">
@@ -201,7 +201,7 @@ export default function AnalyticsManager() {
                 <p className="mt-3 text-[11px] text-muted">Property: {gscProp} · <button onClick={() => setGscProp("")} className="text-gold">change</button></p>
               </>
             ) : (
-              <p className="text-sm text-muted">No data yet for <strong>{gscProp}</strong> — Search Console needs 2–3 days after verification, and the service account must be added as a user in Search Console. <button onClick={() => setGscProp("")} className="text-gold">Change property</button></p>
+              <p className="text-sm text-muted">No data yet for <strong>{gscProp}</strong> - Search Console needs 2–3 days after verification, and the service account must be added as a user in Search Console. <button onClick={() => setGscProp("")} className="text-gold">Change property</button></p>
             )}
           </DashSection>
         </>
@@ -210,10 +210,10 @@ export default function AnalyticsManager() {
       {/* Real store activity */}
       <DashSection title="Store Activity" subtitle="Real numbers from your storefront">
         <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-          <DashCard label="WhatsApp Leads (Total)" value={leads?.total ?? "—"} icon="💬" tint="bg-green-100" href="/dashboard/leads" />
-          <DashCard label="Leads This Month" value={leads?.this_month ?? "—"} icon="📈" tint="bg-blue-100" href="/dashboard/leads" />
-          <DashCard label="Orders via WhatsApp" value={leads?.by_type?.order ?? "—"} icon="🛒" tint="bg-gold/15" href="/dashboard/leads" />
-          <DashCard label="Site Searches" value={search?.total ?? "—"} icon="🔎" tint="bg-blue-100" />
+          <DashCard label="WhatsApp Leads (Total)" value={leads?.total ?? "-"} icon="💬" tint="bg-green-100" href="/dashboard/leads" />
+          <DashCard label="Leads This Month" value={leads?.this_month ?? "-"} icon="📈" tint="bg-blue-100" href="/dashboard/leads" />
+          <DashCard label="Orders via WhatsApp" value={leads?.by_type?.order ?? "-"} icon="🛒" tint="bg-gold/15" href="/dashboard/leads" />
+          <DashCard label="Site Searches" value={search?.total ?? "-"} icon="🔎" tint="bg-blue-100" />
         </div>
       </DashSection>
 
@@ -228,9 +228,9 @@ export default function AnalyticsManager() {
             : search.top.length === 0 ? <p className="text-sm text-muted">No searches logged yet.</p>
             : <ul className="space-y-1.5 text-sm">{search.top.map((s) => <li key={s.query} className="flex justify-between"><span>{s.query}</span><span className="text-muted">{s.count}</span></li>)}</ul>}
         </DashSection>
-        <DashSection title="Zero-Result Searches" subtitle="Searches that found nothing — consider adding these products">
+        <DashSection title="Zero-Result Searches" subtitle="Searches that found nothing - consider adding these products">
           {!search ? <p className="text-sm text-muted">Loading…</p>
-            : search.zero_result.length === 0 ? <p className="text-sm text-muted">None — every search found results. 🎉</p>
+            : search.zero_result.length === 0 ? <p className="text-sm text-muted">None - every search found results. 🎉</p>
             : <ul className="space-y-1.5 text-sm">{search.zero_result.map((s) => <li key={s.query} className="flex justify-between"><span>{s.query}</span><span className="text-amber-500">{s.count}</span></li>)}</ul>}
         </DashSection>
       </div>

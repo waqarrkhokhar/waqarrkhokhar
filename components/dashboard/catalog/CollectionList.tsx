@@ -54,9 +54,9 @@ export default function CollectionList() {
         </div>
       ),
     },
-    { key: "parent", header: "Parent", render: (c) => c.parent ? <DashBadge status="active" label={c.parent.name} /> : "—" },
+    { key: "parent", header: "Parent", render: (c) => c.parent ? <DashBadge status="active" label={c.parent.name} /> : "-" },
     { key: "products_count", header: "Products", render: (c) => c.products_count },
-    { key: "is_featured", header: "Featured", render: (c) => (c.is_featured ? "⭐" : "—") },
+    { key: "is_featured", header: "Featured", render: (c) => (c.is_featured ? "⭐" : "-") },
     { key: "status", header: "Status", render: (c) => <DashBadge status={c.status === "published" ? "published" : "draft"} label={c.status} /> },
     {
       key: "actions", header: "", className: "w-28",
@@ -74,7 +74,7 @@ export default function CollectionList() {
     <div>
       <DashPageHeader
         title="Collections"
-        subtitle={`${rows.length} collections — used across products, SEO & nav`}
+        subtitle={`${rows.length} collections - used across products, SEO & nav`}
         breadcrumbs={[{ label: "Catalog" }, { label: "Collections" }]}
         actions={<DashBtn icon="+" href="/dashboard/collections/new">Add Collection</DashBtn>}
       />

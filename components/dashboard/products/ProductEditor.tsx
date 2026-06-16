@@ -233,7 +233,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               <DashSection title="Long Description">
                 <DashInput textarea rows={8} value={form.long_description} onChange={(v) => set("long_description", v)} placeholder="Detailed description with features, benefits and care instructions" />
               </DashSection>
-              <DashSection title="Key Features" subtitle="One per line — shown in the Features tab on the storefront">
+              <DashSection title="Key Features" subtitle="One per line - shown in the Features tab on the storefront">
                 <DashInput textarea rows={5} value={form.features} onChange={(v) => set("features", v)} placeholder="Solid hardwood frame&#10;Premium velvet upholstery&#10;..." />
               </DashSection>
             </>
@@ -254,7 +254,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
           {tab === "classification" && (
             <DashSection title="Category & Classification">
               <DashSelect label="Sub-Category" required value={form.category_id} onChange={(v) => set("category_id", v)} helper="Choose the most specific collection. The parent category is set automatically.">
-                <option value="">— Select Sub-Category —</option>
+                <option value="">- Select Sub-Category -</option>
                 {catalog?.parents.map((p) => {
                   const kids = catalog.collections.filter((c) => c.parent_id === p.id);
                   if (!kids.length) return null;
@@ -295,7 +295,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               </div>
               {discount > 0 && (
                 <div className="rounded-md bg-green-50 px-3 py-3 text-[13px] text-green-700">
-                  Discount: {discount}% off — Customer saves PKR {(Number(form.price) - Number(form.sale_price)).toLocaleString()}
+                  Discount: {discount}% off - Customer saves PKR {(Number(form.price) - Number(form.sale_price)).toLocaleString()}
                 </div>
               )}
             </DashSection>

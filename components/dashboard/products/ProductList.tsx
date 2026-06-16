@@ -64,7 +64,7 @@ export default function ProductList() {
   async function bulk(updates: Record<string, unknown>, label: string) {
     const res = await apiSend("/api/products/bulk", "PATCH", { ids: selected, updates });
     if (!res.ok) return toast.error(res.error);
-    toast.success(`${label} — ${selected.length} product(s)`);
+    toast.success(`${label} - ${selected.length} product(s)`);
     loadProducts(); loadHealth();
   }
 
@@ -101,12 +101,12 @@ export default function ProductList() {
         </div>
       ),
     },
-    { key: "category", header: "Category", render: (p) => <span className="whitespace-nowrap">{p.category?.name ?? "—"}</span> },
+    { key: "category", header: "Category", render: (p) => <span className="whitespace-nowrap">{p.category?.name ?? "-"}</span> },
     {
       key: "price", header: "Price", sortable: true,
       render: (p) => (
         <div className="whitespace-nowrap">
-          <div className="font-medium">{p.price != null ? `PKR ${p.price.toLocaleString()}` : "—"}</div>
+          <div className="font-medium">{p.price != null ? `PKR ${p.price.toLocaleString()}` : "-"}</div>
           {p.sale_price && <div className="text-[11px] text-green-600">Sale: PKR {p.sale_price.toLocaleString()}</div>}
         </div>
       ),

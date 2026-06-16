@@ -28,7 +28,7 @@ export default function SitemapManager() {
         <DashTable columns={columns} rows={SITEMAPS} getId={(s) => s.url} />
       </DashSection>
       <div className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-[12px] text-blue-600">
-        💡 Sitemaps regenerate automatically from your live catalog, collections and blog — there&apos;s nothing to rebuild manually. Submit the index URL <strong>https://comfyclub.pk/sitemap.xml</strong> in Google Search Console.
+        💡 Sitemaps regenerate automatically from your live catalog, collections and blog - there&apos;s nothing to rebuild manually. Submit the index URL <strong>https://comfyclub.pk/sitemap.xml</strong> in Google Search Console.
       </div>
     </div>
   );

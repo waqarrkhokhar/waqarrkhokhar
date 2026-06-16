@@ -154,7 +154,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     ["❝", () => wrap("\n> ", "", "quote")],
     ["Link", () => wrap("[", "](https://)", "text")],
     ["Image", () => wrap("\n![alt](", ")", "https://")],
-    ["—", () => wrap("\n\n---\n\n")],
+    ["-", () => wrap("\n\n---\n\n")],
   ];
 
   return (
@@ -237,7 +237,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
                 <div className="max-w-xl rounded-lg bg-panel p-4 dark:bg-white/5">
                   <div className="text-[18px] leading-tight text-[#1a0dab] dark:text-blue-400">{f.meta_title || f.title || "Blog Post Title"} | ComfyClub</div>
                   <div className="mt-0.5 text-[13px] text-green-700">comfyclub.pk/blog/{previewSlug}/</div>
-                  <div className="mt-1 text-[13px] leading-snug text-muted">{f.meta_description || f.excerpt || "No description set — add a compelling meta description."}</div>
+                  <div className="mt-1 text-[13px] leading-snug text-muted">{f.meta_description || f.excerpt || "No description set - add a compelling meta description."}</div>
                 </div>
               </DashSection>
               <DashSection title="SEO Metadata">

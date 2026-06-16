@@ -25,8 +25,8 @@ const config: Config = {
         // Dashboard admin palette (from the design prototype)
         panel: "#f5f6fa", // light canvas
         line: "#e8e8ee", // card borders
-        ink: "#3a3f51", // primary text
-        muted: "#8b8fa7", // secondary text
+        ink: "#2b3040", // primary text (darker for readability)
+        muted: "#5a6072", // secondary text (raised contrast)
       },
       boxShadow: {
         card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",

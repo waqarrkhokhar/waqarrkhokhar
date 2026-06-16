@@ -35,7 +35,7 @@ export default function HeaderBuilder() {
         breadcrumbs={[{ label: "Appearance" }, { label: "Header" }]}
         actions={canEdit && <DashBtn onClick={save}>{saving ? "Saving…" : "Save Header"}</DashBtn>} />
 
-      <DashSection title="Announcement Bar" subtitle="The slim bar above the header — updates the storefront instantly">
+      <DashSection title="Announcement Bar" subtitle="The slim bar above the header - updates the storefront instantly">
         <DashToggle label="Show Announcement Bar" checked={bar.enabled} onChange={(v) => setBar({ ...bar, enabled: v })} />
         <DashInput label="Message" value={bar.message} onChange={(v) => setBar({ ...bar, message: v })} disabled={!canEdit} />
         <div className="grid grid-cols-2 gap-x-4">

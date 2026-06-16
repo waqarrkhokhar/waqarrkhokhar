@@ -17,6 +17,7 @@ type Lead = {
   status: string;
   notes: string | null;
   created_at: string;
+  product: { slug: string } | null;
 };
 
 type Stats = {
@@ -77,8 +78,15 @@ export default function LeadManager() {
         <div className="text-[11px] text-muted">{new Date(l.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
       </div>
     ) },
-    { key: "product_name", header: "Product", render: (l) => <span className={l.product_name ? "font-medium" : "text-muted"}>{l.product_name ?? "General enquiry"}</span> },
-    { key: "source_page", header: "Source", render: (l) => <span className="text-muted">{l.source_page ?? "—"}</span> },
+    { key: "product_name", header: "Product", render: (l) => (
+      l.product?.slug ? (
+        <a href={`/product/${l.product.slug}/`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-medium text-navy hover:text-gold dark:text-cream">
+          {l.product_name ?? l.product.slug}
+          <span className="block text-[11px] font-normal text-muted">/product/{l.product.slug}/</span>
+        </a>
+      ) : <span className="text-muted">{l.product_name ?? "General enquiry"}</span>
+    ) },
+    { key: "source_page", header: "Source", render: (l) => <span className="text-muted">{l.source_page ?? "-"}</span> },
     { key: "message_type", header: "Type", render: (l) => <DashBadge status={typeBadge(l.message_type)} label={l.message_type[0].toUpperCase() + l.message_type.slice(1)} /> },
     { key: "status", header: "Status", render: (l) => <DashBadge status={statusBadge(l.status)} label={l.status} /> },
   ];
@@ -103,7 +111,7 @@ export default function LeadManager() {
 
       <div className="mb-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
         {cards.map((c) => (
-          <DashCard key={c.label} label={c.label} value={c.value ?? "—"} icon={c.icon} tint={c.tint} />
+          <DashCard key={c.label} label={c.label} value={c.value ?? "-"} icon={c.icon} tint={c.tint} />
         ))}
       </div>
 
@@ -128,8 +136,13 @@ export default function LeadManager() {
         {detail && (
           <div className="space-y-3">
             <p className="text-sm"><span className="text-muted">Product:</span> {detail.product_name ?? "General enquiry"}</p>
+            {detail.product?.slug && (
+              <p className="text-sm"><span className="text-muted">Product URL:</span>{" "}
+                <a href={`/product/${detail.product.slug}/`} target="_blank" rel="noopener noreferrer" className="text-gold underline">/product/{detail.product.slug}/</a>
+              </p>
+            )}
             <p className="text-sm"><span className="text-muted">Type:</span> {detail.message_type}</p>
-            <p className="text-sm"><span className="text-muted">From page:</span> {detail.source_page ?? "—"}</p>
+            <p className="text-sm"><span className="text-muted">From page:</span> {detail.source_page ?? "-"}</p>
             <Field label="Status">
               <Select value={detail.status} onChange={(e) => updateLead({ status: e.target.value })}>
                 {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
