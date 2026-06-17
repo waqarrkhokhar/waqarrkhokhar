@@ -18,6 +18,7 @@ type Post = {
   status: string;
   published_at: string | null;
   updated_at: string;
+  views?: number;
 };
 
 const statusBadge = (s: string) => (s === "published" ? "published" : s === "scheduled" ? "scheduled" : "draft");
@@ -45,7 +46,17 @@ export default function BlogList() {
     );
     setLoading(false);
     if (!res.ok) return toast.error(res.error);
-    setRows(res.data.data);
+
+    // Real per-post views from GA4 (last 28d), matched by /blog/<slug>/ path.
+    const ga = await apiGet<{ data: { ga4: { topPages?: { path: string; views: number }[] } | null } }>("/api/analytics/google");
+    const views = new Map<string, number>();
+    if (ga.ok && ga.data.data.ga4?.topPages) {
+      for (const tp of ga.data.data.ga4.topPages) {
+        const m = tp.path.match(/\/blog\/([^/]+)\/?$/);
+        if (m) views.set(m[1], tp.views);
+      }
+    }
+    setRows(res.data.data.map((post) => ({ ...post, views: views.get(post.slug) })));
     setTotalPages(res.data.pagination.totalPages);
   }, [page, status, category, search, toast]);
 
@@ -58,7 +69,7 @@ export default function BlogList() {
     const res = await apiSend(`/api/blog/${toDelete.id}`, "DELETE");
     setToDelete(null);
     if (!res.ok) return toast.error(res.error);
-    toast.success("Post deleted");
+    toast.success("Post moved to trash");
     load();
   }
 
@@ -68,6 +79,7 @@ export default function BlogList() {
     ) },
     { key: "category", header: "Category", render: (p) => <DashBadge status="scheduled" label={p.category} /> },
     { key: "author", header: "Author", render: (p) => p.author || "Admin" },
+    { key: "views", header: "Views", render: (p) => <span className="text-muted">{p.views != null ? p.views.toLocaleString() : "—"}</span> },
     { key: "status", header: "Status", render: (p) => <DashBadge status={statusBadge(p.status)} label={p.status} /> },
     { key: "date", header: "Date", render: (p) => new Date(p.published_at ?? p.updated_at).toLocaleDateString() },
     { key: "actions", header: "", className: "w-20", render: (p) => (
@@ -121,9 +133,9 @@ export default function BlogList() {
         open={!!toDelete}
         onClose={() => setToDelete(null)}
         onConfirm={remove}
-        title={`Delete '${toDelete?.title}'?`}
-        message="This permanently removes the post."
-        confirmLabel="Delete"
+        title={`Move '${toDelete?.title}' to trash?`}
+        message="It will be hidden from the blog. Restore it any time from Settings → Trash."
+        confirmLabel="Move to Trash"
         danger
       />
     </div>
