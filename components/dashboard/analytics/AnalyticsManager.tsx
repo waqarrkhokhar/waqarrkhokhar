@@ -12,7 +12,7 @@ type SearchStats = { total: number; top: { query: string; count: number }[]; zer
 type LeadStats = { total: number; this_week: number; this_month: number; by_type: Record<string, number> };
 type Ga4 = { totals: { pageViews: number; users: number; sessions: number }; topPages: { path: string; views: number }[] };
 type Gsc = { totals: { clicks: number; impressions: number; ctr: number; position: number }; topQueries: { query: string; clicks: number; impressions: number; ctr: number; position: number }[] };
-type Live = { configured: boolean; ga4: Ga4 | null; gsc: Gsc | null };
+type Live = { configured: boolean; ga4: Ga4 | null; gsc: Gsc | null; ga4_error?: string | null; gsc_error?: string | null };
 const num = (n: number) => n.toLocaleString();
 
 type IntKey = "ga4" | "gsc" | "gtm";
@@ -169,7 +169,12 @@ export default function AnalyticsManager() {
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted">No data yet - GA4 needs ~24–48h after connecting, and the service account must have Viewer access to this property.</p>
+              <div>
+                {live.ga4_error && (
+                  <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-[12px] text-amber-700"><strong>Why no data:</strong> {live.ga4_error}</p>
+                )}
+                <p className="text-sm text-muted">GA4 needs ~24–48h after connecting, and the service account email must have <strong>Viewer</strong> access to this property.</p>
+              </div>
             )}
           </DashSection>
 
@@ -201,7 +206,12 @@ export default function AnalyticsManager() {
                 <p className="mt-3 text-[11px] text-muted">Property: {gscProp} · <button onClick={() => setGscProp("")} className="text-gold">change</button></p>
               </>
             ) : (
-              <p className="text-sm text-muted">No data yet for <strong>{gscProp}</strong> - Search Console needs 2–3 days after verification, and the service account must be added as a user in Search Console. <button onClick={() => setGscProp("")} className="text-gold">Change property</button></p>
+              <div>
+                {live.gsc_error && (
+                  <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-[12px] text-amber-700"><strong>Why no data:</strong> {live.gsc_error}</p>
+                )}
+                <p className="text-sm text-muted">For <strong>{gscProp}</strong>: Search Console needs 2–3 days after verification, and the service account email must be added as a <strong>user</strong> in Search Console settings. <button onClick={() => setGscProp("")} className="text-gold">Change property</button></p>
+              </div>
             )}
           </DashSection>
         </>

@@ -15,16 +15,23 @@ export async function GET() {
   if (!guard.ok) return guard.response;
 
   const configured = googleConfigured();
-  if (!configured) return ok({ configured: false, ga4: null, gsc: null });
+  if (!configured) {
+    const msg = "Google service account not connected. Add the GOOGLE_SERVICE_ACCOUNT_JSON environment variable in Vercel and redeploy.";
+    return ok({ configured: false, ga4: null, gsc: null, ga4_error: msg, gsc_error: msg });
+  }
 
   const s = await getSettings(["ga4_property_id", "search_console_property"]);
   const propertyId = typeof s.ga4_property_id === "string" ? s.ga4_property_id : "";
   const gscProp = typeof s.search_console_property === "string" ? s.search_console_property : "";
 
-  const [ga4, gsc] = await Promise.all([
-    propertyId ? fetchGa4(propertyId) : Promise.resolve(null),
-    gscProp ? fetchGsc(gscProp) : Promise.resolve(null),
+  const [ga4Res, gscRes] = await Promise.all([
+    propertyId ? fetchGa4(propertyId) : Promise.resolve({ report: null, error: "GA4 Property ID not set (add it below)." }),
+    gscProp ? fetchGsc(gscProp) : Promise.resolve({ report: null, error: "Search Console property not set (add it below)." }),
   ]);
 
-  return ok({ configured: true, ga4, gsc });
+  return ok({
+    configured: true,
+    ga4: ga4Res.report, ga4_error: ga4Res.error,
+    gsc: gscRes.report, gsc_error: gscRes.error,
+  });
 }
