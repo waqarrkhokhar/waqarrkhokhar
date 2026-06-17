@@ -37,6 +37,7 @@ export async function listProducts(db: DB, p: ProductListParams) {
       { count: "exact" },
     );
 
+  q = q.is("deleted_at", null);
   if (p.onlyPublished) {
     q = q.eq("status", "published");
   } else if (p.status) {
@@ -80,7 +81,8 @@ export async function productHealth(db: DB) {
     .select(
       `id, status, price, short_description,
        product_images(id), reviews(id)`,
-    );
+    )
+    .is("deleted_at", null);
   if (error) throw new Error(error.message);
 
   const rows = data ?? [];

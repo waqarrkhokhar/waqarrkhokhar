@@ -5,10 +5,11 @@ import { logActivity } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
 
-type TrashType = "blog" | "collection" | "parent" | "page" | "promotion" | "review";
+type TrashType = "product" | "blog" | "collection" | "parent" | "page" | "promotion" | "review";
 
 // type → { table, label, name column, optional secondary text }
 const SOURCES: Record<TrashType, { table: string; label: string; name: string; extra?: string }> = {
+  product: { table: "products", label: "Product", name: "name", extra: "sku" },
   blog: { table: "blog_posts", label: "Blog post", name: "title" },
   collection: { table: "categories", label: "Collection", name: "name" },
   parent: { table: "parent_categories", label: "Category", name: "name" },

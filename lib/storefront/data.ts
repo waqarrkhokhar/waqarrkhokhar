@@ -118,6 +118,7 @@ export async function getHomepageData() {
            product_images(url, is_primary, sort_order)`,
         )
         .eq("status", "published")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(200),
       supabase
@@ -260,7 +261,8 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
        category:categories(name, slug, parent:parent_categories(name, slug)),
        product_images(url, alt_text, is_primary, sort_order)`,
     )
-    .eq("slug", slug);
+    .eq("slug", slug)
+    .is("deleted_at", null);
   if (!preview) q = q.eq("status", "published");
   const { data: p } = await q.maybeSingle();
 
@@ -297,6 +299,7 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
       )
       .eq("category_id", row.category_id)
       .eq("status", "published")
+      .is("deleted_at", null)
       .neq("id", row.id)
       .limit(4);
     related = ((rel ?? []) as unknown as RawProduct[]).map((r) => toStoreProduct(r));
@@ -432,7 +435,8 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
       .from("products")
       .select("category_id")
       .in("category_id", childIds)
-      .eq("status", "published");
+      .eq("status", "published")
+      .is("deleted_at", null);
     for (const r of countRows ?? []) counts.set(r.category_id as string, (counts.get(r.category_id as string) ?? 0) + 1);
     for (const c of childRows ?? []) {
       children.push({
@@ -470,6 +474,7 @@ async function productsForCategory(supabase: any, categoryId: string | string[])
        product_images(url, is_primary, sort_order)`,
     )
     .eq("status", "published")
+    .is("deleted_at", null)
     .order("sort_order");
   q = Array.isArray(categoryId) ? q.in("category_id", categoryId) : q.eq("category_id", categoryId);
   const { data } = await q.limit(200);

@@ -22,7 +22,8 @@ export async function listParents(db: DB, staff: boolean) {
   const { data: prods } = await db
     .from("products")
     .select("category_id")
-    .neq("status", "archived");
+    .neq("status", "archived")
+    .is("deleted_at", null);
 
   const catToParent = new Map((cats ?? []).map((c) => [c.id, c.parent_id]));
   const childCount = new Map<string, number>();
@@ -65,7 +66,8 @@ export async function listCollections(
   const { data: prods } = await db
     .from("products")
     .select("category_id")
-    .neq("status", "archived");
+    .neq("status", "archived")
+    .is("deleted_at", null);
   const count = new Map<string, number>();
   for (const p of prods ?? []) {
     if (p.category_id) count.set(p.category_id, (count.get(p.category_id) ?? 0) + 1);

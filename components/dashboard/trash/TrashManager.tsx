@@ -7,10 +7,11 @@ import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 
-type TrashType = "blog" | "collection" | "parent" | "page" | "promotion" | "review";
+type TrashType = "product" | "blog" | "collection" | "parent" | "page" | "promotion" | "review";
 type Item = { type: TrashType; label: string; id: string; name: string; extra: string | null; deleted_at: string };
 
 const ENDPOINT: Record<TrashType, string> = {
+  product: "/api/products",
   blog: "/api/blog",
   collection: "/api/collections",
   parent: "/api/parents",

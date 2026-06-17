@@ -82,18 +82,16 @@ export async function PATCH(request: Request, { params }: Params) {
   return ok(data);
 }
 
-/** DELETE /api/products/:id — soft delete (status → archived). */
-export async function DELETE(_req: Request, { params }: Params) {
+/** DELETE /api/products/:id — soft-delete to Trash (or ?permanent=1 to remove). */
+export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("products");
   if (!guard.ok) return guard.response;
 
+  const permanent = new URL(req.url).searchParams.get("permanent") === "1";
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("products")
-    .update({ status: "archived" })
-    .eq("id", params.id)
-    .select("id, name, slug")
-    .single();
+  const { data, error } = permanent
+    ? await supabase.from("products").delete().eq("id", params.id).select("id, name, slug").single()
+    : await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", params.id).select("id, name, slug").single();
 
   if (error || !data) return apiError(404, "NOT_FOUND", "Product not found");
 
@@ -101,11 +99,11 @@ export async function DELETE(_req: Request, { params }: Params) {
   await logActivity({
     userId: guard.user.id,
     userName: guard.user.name,
-    action: "archived",
+    action: permanent ? "permanently deleted" : "moved to trash",
     entityType: "product",
     entityId: data.id,
     entityName: data.name,
   });
 
-  return action("Product archived");
+  return action(permanent ? "Product permanently deleted" : "Product moved to trash");
 }

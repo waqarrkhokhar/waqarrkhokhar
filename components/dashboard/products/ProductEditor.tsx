@@ -138,7 +138,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
     setConfirmArchive(false);
     const res = await apiSend(`/api/products/${productId}`, "DELETE");
     if (!res.ok) return toast.error(res.error);
-    toast.success("Product archived");
+    toast.success("Product moved to trash");
     router.push("/dashboard/products");
   }
 
@@ -184,7 +184,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
           <>
             {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/product/${previewSlug}/?preview=1`, "_blank")}>👁 Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="secondary" icon="📋" onClick={duplicate}>Duplicate</DashBtn>}
-            {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmArchive(true)}>Archive</DashBtn>}
+            {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmArchive(true)}>Delete</DashBtn>}
             <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save"}</DashBtn>
             <DashBtn onClick={() => save("published")}>Save &amp; Publish</DashBtn>
           </>
@@ -427,9 +427,9 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
         open={confirmArchive}
         onClose={() => setConfirmArchive(false)}
         onConfirm={archive}
-        title="Archive this product?"
-        message="It will be hidden from the storefront but kept in the database. You can republish it later."
-        confirmLabel="Archive"
+        title="Move this product to trash?"
+        message="It will be removed from the storefront. You can restore it any time from Settings → Trash."
+        confirmLabel="Move to Trash"
         danger
       />
     </div>

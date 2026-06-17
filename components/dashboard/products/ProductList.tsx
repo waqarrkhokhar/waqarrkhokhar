@@ -80,7 +80,7 @@ export default function ProductList() {
     const res = await apiSend(`/api/products/${confirmDel.id}`, "DELETE");
     setConfirmDel(null);
     if (!res.ok) return toast.error(res.error);
-    toast.success(`"${confirmDel.name}" archived`);
+    toast.success(`"${confirmDel.name}" moved to trash`);
     loadProducts(); loadHealth();
   }
 
@@ -118,7 +118,7 @@ export default function ProductList() {
         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <button onClick={() => router.push(`/dashboard/products/${p.id}`)} title="Edit" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✏️</button>
           <button onClick={() => duplicate(p)} title="Duplicate" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">📋</button>
-          <button onClick={() => setConfirmDel(p)} title="Archive" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
+          <button onClick={() => setConfirmDel(p)} title="Move to Trash" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
         </div>
       ),
     },
@@ -191,9 +191,9 @@ export default function ProductList() {
         open={!!confirmDel}
         onClose={() => setConfirmDel(null)}
         onConfirm={del}
-        title="Archive product"
-        message={confirmDel ? `Archive "${confirmDel.name}"? It will be hidden from the storefront but kept in the database.` : ""}
-        confirmLabel="Archive"
+        title="Move product to trash"
+        message={confirmDel ? `Move "${confirmDel.name}" to trash? It will be removed from the storefront. Restore it any time from Settings → Trash.` : ""}
+        confirmLabel="Move to Trash"
         danger
       />
     </div>
