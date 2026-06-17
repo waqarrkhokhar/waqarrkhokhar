@@ -105,6 +105,7 @@ export default function ParentManager() {
           breadcrumbs={[{ label: "Catalog" }, { label: "Categories" }, { label: isNew ? "New" : form.name }]}
           actions={
             <>
+              {!isNew && form.slug && <DashBtn variant="secondary" onClick={() => window.open(`${form.slug}?preview=1`, "_blank")}>👁 Preview</DashBtn>}
               <DashBtn variant="secondary" onClick={() => setEditing(null)}>Cancel</DashBtn>
               <DashBtn onClick={save}>{saving ? "Saving…" : "Save"}</DashBtn>
             </>
@@ -174,9 +175,9 @@ export default function ParentManager() {
         open={!!toDelete}
         onClose={() => setToDelete(null)}
         onConfirm={remove}
-        title={`Delete '${toDelete?.name}'?`}
-        message={`This removes ${toDelete?.children_count ?? 0} collection(s). Their products are kept but become uncategorized.`}
-        confirmLabel="Delete"
+        title={`Move '${toDelete?.name}' to trash?`}
+        message="It will be hidden from the storefront navigation. Restore it any time from Settings → Trash."
+        confirmLabel="Move to Trash"
         danger
       />
     </div>

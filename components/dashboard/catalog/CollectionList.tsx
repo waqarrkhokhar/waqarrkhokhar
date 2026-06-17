@@ -93,9 +93,9 @@ export default function CollectionList() {
         open={!!toDelete}
         onClose={() => setToDelete(null)}
         onConfirm={remove}
-        title={`Delete '${toDelete?.name}'?`}
-        message={`Its ${toDelete?.products_count ?? 0} product(s) will be kept but become uncategorized.`}
-        confirmLabel="Delete"
+        title={`Move '${toDelete?.name}' to trash?`}
+        message="It will be hidden from the storefront. Restore it any time from Settings → Trash."
+        confirmLabel="Move to Trash"
         danger
       />
     </div>
