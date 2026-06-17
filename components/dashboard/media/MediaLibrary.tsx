@@ -16,6 +16,7 @@ export default function MediaLibrary() {
   const [rows, setRows] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [del, setDel] = useState<Item | null>(null);
 
   const load = useCallback(async () => {
@@ -40,6 +41,15 @@ export default function MediaLibrary() {
     load();
   }
 
+  async function syncStorage() {
+    setSyncing(true);
+    const res = await apiSend<{ data: { added: number; scanned: number } }>("/api/media/sync", "POST", { bucket: "media" });
+    setSyncing(false);
+    if (!res.ok) return toast.error(res.error);
+    toast.success(`Added ${res.data.data.added} image(s) from storage`);
+    load();
+  }
+
   async function remove() {
     if (!del) return;
     const res = await apiSend(`/api/media/${del.id}`, "DELETE");
@@ -57,7 +67,12 @@ export default function MediaLibrary() {
     <div>
       <DashPageHeader title="Media Library" subtitle="Uploaded images, stored in Supabase Storage"
         breadcrumbs={[{ label: "Media Library" }]}
-        actions={<DashBtn icon="↑" onClick={() => fileRef.current?.click()}>{uploading ? "Uploading…" : "Upload"}</DashBtn>} />
+        actions={
+          <>
+            <DashBtn variant="secondary" icon="🔄" onClick={syncStorage} disabled={syncing}>{syncing ? "Syncing…" : "Sync from Storage"}</DashBtn>
+            <DashBtn icon="↑" onClick={() => fileRef.current?.click()}>{uploading ? "Uploading…" : "Upload"}</DashBtn>
+          </>
+        } />
       <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
         onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(file); e.target.value = ""; }} />
 
