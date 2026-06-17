@@ -113,7 +113,7 @@ export default function ReviewManager() {
     const res = await apiSend(`/api/reviews/${confirmDel.id}`, "DELETE");
     setConfirmDel(null);
     if (!res.ok) return toast.error(res.error);
-    toast.success("Review deleted");
+    toast.success("Review moved to trash");
     setDetail(null);
     refresh();
   }
@@ -239,7 +239,7 @@ export default function ReviewManager() {
       <AddReviewModal open={addOpen} onClose={() => setAddOpen(false)} onDone={() => { setAddOpen(false); refresh(); }} />
 
       <ConfirmDialog open={!!confirmDel} onClose={() => setConfirmDel(null)} onConfirm={del}
-        title="Delete this review?" message="This permanently removes it." confirmLabel="Delete" danger />
+        title="Move this review to trash?" message="It will be hidden from the storefront and ratings. Restore it any time from Settings → Trash." confirmLabel="Move to Trash" danger />
     </div>
   );
 }

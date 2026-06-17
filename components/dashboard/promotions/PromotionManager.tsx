@@ -99,7 +99,7 @@ export default function PromotionManager() {
     const res = await apiSend(`/api/promotions/${toDelete.id}`, "DELETE");
     setToDelete(null);
     if (!res.ok) return toast.error(res.error);
-    toast.success("Deleted");
+    toast.success("Promotion moved to trash");
     load();
   }
 
@@ -188,7 +188,7 @@ export default function PromotionManager() {
         onRowClick={openEdit}
         emptyTitle="No promotions yet" emptyDescription="Create an announcement bar, popup, or banner." />
       <ConfirmDialog open={!!toDelete} onClose={() => setToDelete(null)} onConfirm={remove}
-        title={`Delete '${toDelete?.title}'?`} message="This permanently removes the promotion." confirmLabel="Delete" danger />
+        title={`Move '${toDelete?.title}' to trash?`} message="Restore it any time from Settings → Trash." confirmLabel="Move to Trash" danger />
     </div>
   );
 }
