@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
   let q = supabase
     .from("media")
-    .select("id, filename, url, thumbnail_url, alt_text, mime_type, size_bytes, folder, created_at", { count: "exact" })
+    .select("id, filename, url, thumbnail_url, webp_url, alt_text, mime_type, size_bytes, width, height, folder, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -24,5 +24,21 @@ export async function GET(request: Request) {
 
   const { data, count, error } = await q;
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);
-  return paginated(data ?? [], { page, limit, total: count ?? 0 });
+
+  // Best-effort "used on product": match each image URL to a product image.
+  const rows = (data ?? []) as Record<string, unknown>[];
+  const urls = rows.map((r) => r.url as string);
+  if (urls.length) {
+    const { data: usage } = await supabase
+      .from("product_images")
+      .select("url, product:products(name, slug)")
+      .in("url", urls);
+    const map = new Map<string, { name: string; slug: string }>();
+    for (const u of (usage ?? []) as unknown as { url: string; product: { name: string; slug: string } | null }[]) {
+      if (u.product) map.set(u.url, u.product);
+    }
+    for (const r of rows) r.product = map.get(r.url as string) ?? null;
+  }
+
+  return paginated(rows, { page, limit, total: count ?? 0 });
 }

@@ -42,6 +42,11 @@ export async function POST(request: Request) {
     .from(bucket)
     .getPublicUrl(path, { transform: { width: 1200, quality: 80 } });
 
+  // Replace mode: just return the URLs without creating a new library row.
+  if (String(form?.get("record") ?? "") === "false") {
+    return created({ url: pub.publicUrl, thumbnail_url: thumb.publicUrl, webp_url: webp.publicUrl });
+  }
+
   const { data: media, error: dbErr } = await supabase
     .from("media")
     .insert({
