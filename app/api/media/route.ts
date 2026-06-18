@@ -8,7 +8,10 @@ export async function GET(request: Request) {
   if (!guard.ok) return guard.response;
 
   const url = new URL(request.url);
-  const { page, limit, offset } = parseListParams(url);
+  const { page } = parseListParams(url);
+  // Media is just images — allow a larger page so the whole library shows.
+  const limit = Math.min(1000, Math.max(1, parseInt(url.searchParams.get("limit") || "200", 10) || 200));
+  const offset = (page - 1) * limit;
   const supabase = createClient();
 
   let q = supabase
