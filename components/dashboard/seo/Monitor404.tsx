@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
+import { DashInput } from "@/components/dashboard/shared/Dash";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 
@@ -67,24 +67,20 @@ export default function Monitor404() {
   }
 
   const columns: Column<ErrorLog>[] = [
-    { key: "url", header: "URL", render: (e) => <span className="font-mono text-xs">{e.url}</span> },
+    { key: "url", header: "URL", render: (e) => <code className="rounded bg-panel px-1.5 py-0.5 text-[12px] dark:bg-white/10">{e.url}</code> },
+    { key: "referrer", header: "Referrer", render: (e) => <span className="text-muted">{e.referrer || "—"}</span> },
     { key: "hits", header: "Hits", render: (e) => e.hits },
     {
       key: "last_seen",
-      header: "Last seen",
-      render: (e) => new Date(e.last_seen).toLocaleDateString(),
+      header: "Last Seen",
+      render: (e) => <span className="whitespace-nowrap text-muted">{new Date(e.last_seen).toLocaleDateString()}</span>,
     },
     {
-      key: "actions",
-      header: "",
+      key: "actions", header: "", className: "w-44",
       render: (e) => (
-        <div className="flex gap-2">
-          <button onClick={() => openFix(e)} className="text-sm text-gold hover:underline">
-            Create redirect
-          </button>
-          <button onClick={() => dismiss(e)} className="text-sm text-charcoal/50 hover:underline dark:text-cream/50">
-            Dismiss
-          </button>
+        <div className="flex items-center justify-end gap-2" onClick={(ev) => ev.stopPropagation()}>
+          <button onClick={() => openFix(e)} className="rounded border border-line px-2.5 py-1 text-xs hover:border-gold dark:border-white/10">Create redirect</button>
+          <button onClick={() => dismiss(e)} title="Dismiss" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">✕</button>
         </div>
       ),
     },
@@ -112,12 +108,10 @@ export default function Monitor404() {
           </>
         }
       >
-        <div className="space-y-3">
-          <p className="text-sm text-charcoal/70 dark:text-cream/70">
-            Redirect <span className="font-mono">{fixing?.url}</span> to:
-          </p>
-          <Input placeholder="/new-destination/" value={target} onChange={(e) => setTarget(e.target.value)} />
-        </div>
+        <p className="mb-2 text-[13px] text-muted">
+          Redirect <code className="rounded bg-panel px-1.5 py-0.5 text-[12px] dark:bg-white/10">{fixing?.url}</code> to:
+        </p>
+        <DashInput label="Destination URL" value={target} onChange={setTarget} placeholder="/new-destination/" />
       </Modal>
     </div>
   );

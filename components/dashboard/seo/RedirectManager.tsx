@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
+import { DashBtn, DashBadge, DashInput, DashSelect } from "@/components/dashboard/shared/Dash";
+import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Field";
-import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 
@@ -22,6 +22,7 @@ export default function RedirectManager() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [rows, setRows] = useState<Redirect[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
   const [type, setType] = useState("301");
@@ -35,24 +36,18 @@ export default function RedirectManager() {
     setRows(res.data.data);
   }, [toast]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
-  async function add(e: React.FormEvent) {
-    e.preventDefault();
-    if (!source.trim() || !target.trim()) return;
+  async function add() {
+    if (!source.trim() || !target.trim()) return toast.error("From and To URLs are required");
     setAdding(true);
     const res = await apiSend("/api/redirects", "POST", {
-      source_url: source.trim(),
-      target_url: target.trim(),
-      type: parseInt(type, 10),
+      source_url: source.trim(), target_url: target.trim(), type: parseInt(type, 10),
     });
     setAdding(false);
     if (!res.ok) return toast.error(res.error);
     toast.success("Redirect added");
-    setSource("");
-    setTarget("");
+    setSource(""); setTarget(""); setType("301"); setAddOpen(false);
     load();
   }
 
@@ -78,62 +73,33 @@ export default function RedirectManager() {
     load();
   }
 
+  const code = (v: string) => <code className="rounded bg-panel px-1.5 py-0.5 text-[12px] dark:bg-white/10">{v}</code>;
+
   const columns: Column<Redirect>[] = [
-    { key: "source_url", header: "From", render: (r) => <span className="font-mono text-xs">{r.source_url}</span> },
-    { key: "target_url", header: "To", render: (r) => <span className="font-mono text-xs">{r.target_url}</span> },
-    { key: "type", header: "Type", render: (r) => <Badge tone="info">{r.type}</Badge> },
+    { key: "source_url", header: "From URL", render: (r) => code(r.source_url) },
+    { key: "target_url", header: "To URL", render: (r) => code(r.target_url) },
+    { key: "type", header: "Type", render: (r) => <DashBadge status={r.type === 301 ? "active" : "scheduled"} label={String(r.type)} /> },
     { key: "hits", header: "Hits", render: (r) => r.hits },
+    { key: "status", header: "Status", render: (r) => <DashBadge status={r.is_active ? "active" : "archived"} label={r.is_active ? "active" : "off"} /> },
     {
-      key: "is_active",
-      header: "Active",
+      key: "actions", header: "", className: "w-28",
       render: (r) => (
-        <button onClick={() => toggle(r)} className="text-sm text-gold hover:underline">
-          {r.is_active ? "On" : "Off"}
-        </button>
-      ),
-    },
-    {
-      key: "actions",
-      header: "",
-      render: (r) => (
-        <button onClick={() => remove(r)} className="text-sm text-red-500 hover:underline">
-          Delete
-        </button>
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => toggle(r)} title={r.is_active ? "Turn off" : "Turn on"} className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">{r.is_active ? "⏸️" : "▶️"}</button>
+          <button onClick={() => remove(r)} title="Delete" className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10">🗑️</button>
+        </div>
       ),
     },
   ];
 
   return (
     <div className="space-y-4">
-      <form onSubmit={add} className="flex flex-wrap items-end gap-2 rounded-xl border border-line p-4 dark:border-white/10">
-        <div className="flex-1 min-w-40">
-          <label className="text-xs text-charcoal/60 dark:text-cream/60">From (old URL)</label>
-          <Input placeholder="/old-url/" value={source} onChange={(e) => setSource(e.target.value)} />
-        </div>
-        <div className="flex-1 min-w-40">
-          <label className="text-xs text-charcoal/60 dark:text-cream/60">To (new URL)</label>
-          <Input placeholder="/new-url/" value={target} onChange={(e) => setTarget(e.target.value)} />
-        </div>
-        <Select value={type} onChange={(e) => setType(e.target.value)} className="w-24">
-          <option value="301">301</option>
-          <option value="302">302</option>
-        </Select>
-        <Button type="submit" size="sm" loading={adding}>Add</Button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".csv"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) importCsv(f);
-            e.target.value = "";
-          }}
-        />
-        <Button type="button" size="sm" variant="secondary" onClick={() => fileRef.current?.click()}>
-          Import CSV
-        </Button>
-      </form>
+      <div className="flex justify-end gap-2">
+        <DashBtn variant="secondary" icon="↑" onClick={() => fileRef.current?.click()}>Bulk Import</DashBtn>
+        <DashBtn icon="+" onClick={() => setAddOpen(true)}>Add Redirect</DashBtn>
+        <input ref={fileRef} type="file" accept=".csv" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) importCsv(f); e.target.value = ""; }} />
+      </div>
 
       <DashTable
         columns={columns}
@@ -143,6 +109,20 @@ export default function RedirectManager() {
         emptyTitle="No redirects yet"
         emptyDescription="Add one above, or import your WordPress URL map as CSV."
       />
+
+      <Modal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Add Redirect"
+        footer={<><Button variant="secondary" onClick={() => setAddOpen(false)}>Cancel</Button><Button onClick={add} loading={adding}>Save</Button></>}
+      >
+        <DashInput label="From URL" required value={source} onChange={setSource} placeholder="/old-page-url" />
+        <DashInput label="To URL" required value={target} onChange={setTarget} placeholder="/new-page-url" />
+        <DashSelect label="Type" value={type} onChange={setType}>
+          <option value="301">301 (Permanent)</option>
+          <option value="302">302 (Temporary)</option>
+        </DashSelect>
+      </Modal>
     </div>
   );
 }
