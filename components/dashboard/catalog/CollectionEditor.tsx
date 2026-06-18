@@ -110,6 +110,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     const json = await up.json().catch(() => ({}));
     if (!up.ok) return toast.error(json.error ?? "Upload failed");
     set("banner_image", json.data.url);
+    toast.success("Banner uploaded");
   }
 
   const score = computeSeoScore({

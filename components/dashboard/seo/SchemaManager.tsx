@@ -138,6 +138,7 @@ export default function SchemaManager() {
 
   async function toggle(s: CustomSchema) {
     await persist(list.map((x) => (x.id === s.id ? { ...x, enabled: !x.enabled } : x)));
+    toast.success(s.enabled ? "Schema turned off" : "Schema turned on");
   }
 
   async function remove() {
