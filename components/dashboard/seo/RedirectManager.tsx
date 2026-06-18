@@ -54,12 +54,14 @@ export default function RedirectManager() {
   async function toggle(r: Redirect) {
     const res = await apiSend(`/api/redirects/${r.id}`, "PATCH", { is_active: !r.is_active });
     if (!res.ok) return toast.error(res.error);
+    toast.success(r.is_active ? "Redirect turned off" : "Redirect turned on");
     load();
   }
 
   async function remove(r: Redirect) {
     const res = await apiSend(`/api/redirects/${r.id}`, "DELETE");
     if (!res.ok) return toast.error(res.error);
+    toast.success("Redirect deleted");
     load();
   }
 

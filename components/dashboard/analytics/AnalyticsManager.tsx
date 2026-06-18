@@ -57,21 +57,37 @@ export default function AnalyticsManager() {
     apiGet<{ data: Live }>("/api/analytics/google").then((r) => r.ok && setLive(r.data.data));
   }
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function refreshNow() {
+    setRefreshing(true);
+    const r = await apiGet<{ data: Live }>("/api/analytics/google");
+    setRefreshing(false);
+    if (r.ok) {
+      setLive(r.data.data);
+      toast.success("Refreshed");
+    } else {
+      toast.error("Could not refresh");
+    }
+  }
+
   async function saveProp() {
+    if (!propId.trim()) return toast.error("Enter your GA4 Property ID first");
     setSavingProp(true);
     const res = await apiSend("/api/settings", "PATCH", { key: "ga4_property_id", value: propId.trim() });
     setSavingProp(false);
     if (!res.ok) return toast.error("Could not save (admin only)");
-    toast.success("GA4 Property ID saved");
+    toast.success("GA4 Property ID saved — checking for data…");
     refreshLive();
   }
 
   async function saveGscProp() {
+    if (!gscProp.trim()) return toast.error("Enter your Search Console property first");
     setSavingGsc(true);
     const res = await apiSend("/api/settings", "PATCH", { key: "search_console_property", value: gscProp.trim() });
     setSavingGsc(false);
     if (!res.ok) return toast.error("Could not save (admin only)");
-    toast.success("Search Console property saved");
+    toast.success("Search Console property saved — checking for data…");
     refreshLive();
   }
 
@@ -79,6 +95,7 @@ export default function AnalyticsManager() {
     const res = await apiSend("/api/settings", "PATCH", { key: DEFS[key].settingKey, value });
     if (!res.ok) return toast.error("Could not save (admin only)");
     setValues((v) => ({ ...v, [key]: value }));
+    toast.success(value ? `${DEFS[key].name} connected` : `${DEFS[key].name} disconnected`);
   }
 
   async function handleConnect() {
@@ -86,7 +103,6 @@ export default function AnalyticsManager() {
     setSaving(true);
     await setIntegration(connect, input.trim());
     setSaving(false);
-    toast.success(`${DEFS[connect].name} connected`);
     setConnect(null);
     setInput("");
   }
@@ -136,86 +152,96 @@ export default function AnalyticsManager() {
 
       {/* Live Google reports (last 28 days) */}
       {live && !live.configured && (
-        <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-700">
-          🔌 Live GA4 &amp; Search Console charts aren&apos;t connected yet. Add a Google service-account key (free) to show traffic &amp; ranking data here - ask the team to set <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> in Vercel, then enter your GA4 Property ID below.
+        <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] leading-relaxed text-amber-700">
+          🔌 Live GA4 &amp; Search Console data isn&apos;t connected yet. Add a Google service-account key (free): set <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> in Vercel and redeploy, then enter your GA4 Property ID below.
         </div>
       )}
 
-      {live?.configured && (
-        <>
-          <DashSection title="Google Analytics - Last 28 Days" subtitle="Live from your GA4 property"
-            actions={<a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GA4 →</DashBtn></a>}>
-            {!propId ? (
-              <div className="flex flex-wrap items-end gap-2">
-                <Field label="GA4 Property ID (numeric, from GA4 → Admin → Property Settings)">
-                  <Input value={propId} onChange={(e) => setPropId(e.target.value)} placeholder="123456789" />
-                </Field>
-                <Button loading={savingProp} onClick={saveProp}>Save</Button>
-              </div>
-            ) : live.ga4 ? (
-              <>
-                <div className="grid grid-cols-3 gap-3.5">
-                  <DashCard label="Page Views" value={num(live.ga4.totals.pageViews)} icon="👁️" tint="bg-blue-100" />
-                  <DashCard label="Active Users" value={num(live.ga4.totals.users)} icon="👤" tint="bg-green-100" />
-                  <DashCard label="Sessions" value={num(live.ga4.totals.sessions)} icon="📊" tint="bg-gold/15" />
-                </div>
-                {live.ga4.topPages.length > 0 && (
-                  <div className="mt-4">
-                    <div className="mb-2 text-xs font-semibold text-muted">Top Pages</div>
-                    <ul className="space-y-1.5 text-sm">
-                      {live.ga4.topPages.map((p) => <li key={p.path} className="flex justify-between gap-3"><span className="truncate">{p.path}</span><span className="text-muted">{num(p.views)}</span></li>)}
-                    </ul>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div>
-                {live.ga4_error && (
-                  <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-[12px] text-amber-700"><strong>Why no data:</strong> {live.ga4_error}</p>
-                )}
-                <p className="text-sm text-muted">GA4 needs ~24–48h after connecting, and the service account email must have <strong>Viewer</strong> access to this property.</p>
-              </div>
-            )}
-          </DashSection>
+      <DashSection title="Google Analytics — Last 28 Days" subtitle="Live from your GA4 property"
+        actions={
+          <div className="flex gap-1.5">
+            <DashBtn variant="ghost" size="sm" onClick={refreshNow} disabled={refreshing}>{refreshing ? "Refreshing…" : "↻ Refresh"}</DashBtn>
+            <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GA4 →</DashBtn></a>
+          </div>
+        }>
+        {/* Property ID input — always available */}
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <Field label="GA4 Property ID (numeric — GA4 → Admin → Property Settings)">
+              <Input value={propId} onChange={(e) => setPropId(e.target.value)} placeholder="123456789" />
+            </Field>
+          </div>
+          <Button loading={savingProp} onClick={saveProp} className="w-full sm:w-auto">Save</Button>
+        </div>
 
-          <DashSection title="Search Console - Last 28 Days" subtitle="Live clicks, impressions & rankings"
-            actions={<a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GSC →</DashBtn></a>}>
-            {!gscProp ? (
-              <div className="flex flex-wrap items-end gap-2">
-                <Field label="Search Console property (e.g. sc-domain:comfyclub.pk or https://comfyclub.pk/)">
-                  <Input value={gscProp} onChange={(e) => setGscProp(e.target.value)} placeholder="sc-domain:comfyclub.pk" />
-                </Field>
-                <Button loading={savingGsc} onClick={saveGscProp}>Save</Button>
-              </div>
-            ) : live.gsc ? (
-              <>
-                <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-                  <DashCard label="Clicks" value={num(live.gsc.totals.clicks)} icon="🖱️" tint="bg-green-100" />
-                  <DashCard label="Impressions" value={num(live.gsc.totals.impressions)} icon="📊" tint="bg-blue-100" />
-                  <DashCard label="Avg CTR" value={`${(live.gsc.totals.ctr * 100).toFixed(1)}%`} icon="📈" tint="bg-blue-100" />
-                  <DashCard label="Avg Position" value={live.gsc.totals.position.toFixed(1)} icon="🏆" tint="bg-gold/15" />
-                </div>
-                {live.gsc.topQueries.length > 0 && (
-                  <div className="mt-4">
-                    <div className="mb-2 text-xs font-semibold text-muted">Top Search Queries</div>
-                    <ul className="space-y-1.5 text-sm">
-                      {live.gsc.topQueries.map((q) => <li key={q.query} className="flex justify-between gap-3"><span className="truncate">{q.query}</span><span className="text-muted">{num(q.clicks)} clicks · pos {q.position.toFixed(1)}</span></li>)}
-                    </ul>
-                  </div>
-                )}
-                <p className="mt-3 text-[11px] text-muted">Property: {gscProp} · <button onClick={() => setGscProp("")} className="text-gold">change</button></p>
-              </>
-            ) : (
-              <div>
-                {live.gsc_error && (
-                  <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-[12px] text-amber-700"><strong>Why no data:</strong> {live.gsc_error}</p>
-                )}
-                <p className="text-sm text-muted">For <strong>{gscProp}</strong>: Search Console needs 2–3 days after verification, and the service account email must be added as a <strong>user</strong> in Search Console settings. <button onClick={() => setGscProp("")} className="text-gold">Change property</button></p>
+        {propId && live?.ga4 ? (
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5">
+              <DashCard label="Page Views" value={num(live.ga4.totals.pageViews)} icon="👁️" tint="bg-blue-100" />
+              <DashCard label="Active Users" value={num(live.ga4.totals.users)} icon="👤" tint="bg-green-100" />
+              <DashCard label="Sessions" value={num(live.ga4.totals.sessions)} icon="📊" tint="bg-gold/15" />
+            </div>
+            {live.ga4.topPages.length > 0 && (
+              <div className="mt-4">
+                <div className="mb-2 text-xs font-semibold text-muted">Top Pages</div>
+                <ul className="space-y-1.5 text-sm">
+                  {live.ga4.topPages.map((p) => <li key={p.path} className="flex justify-between gap-3"><span className="truncate">{p.path}</span><span className="flex-shrink-0 text-muted">{num(p.views)}</span></li>)}
+                </ul>
               </div>
             )}
-          </DashSection>
-        </>
-      )}
+          </>
+        ) : propId ? (
+          <div className="rounded-md bg-amber-50 px-3 py-2.5 text-[12px] text-amber-700">
+            {live?.ga4_error && <p className="mb-1"><strong>Status:</strong> {live.ga4_error}</p>}
+            <p>Next: make sure the service-account email has <strong>Viewer</strong> access in GA4 (Admin → Property Access Management). New GA4 data also takes ~24–48h to appear. Then tap <strong>↻ Refresh</strong>.</p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted">Enter your GA4 Property ID above and tap Save to pull live traffic.</p>
+        )}
+      </DashSection>
+
+      <DashSection title="Search Console — Last 28 Days" subtitle="Live clicks, impressions & rankings"
+        actions={
+          <div className="flex gap-1.5">
+            <DashBtn variant="ghost" size="sm" onClick={refreshNow} disabled={refreshing}>{refreshing ? "Refreshing…" : "↻ Refresh"}</DashBtn>
+            <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"><DashBtn variant="ghost" size="sm">Open GSC →</DashBtn></a>
+          </div>
+        }>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <Field label="Search Console property (e.g. sc-domain:comfyclub.pk or https://comfyclub.pk/)">
+              <Input value={gscProp} onChange={(e) => setGscProp(e.target.value)} placeholder="sc-domain:comfyclub.pk" />
+            </Field>
+          </div>
+          <Button loading={savingGsc} onClick={saveGscProp} className="w-full sm:w-auto">Save</Button>
+        </div>
+
+        {gscProp && live?.gsc ? (
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:gap-3.5 lg:grid-cols-4">
+              <DashCard label="Clicks" value={num(live.gsc.totals.clicks)} icon="🖱️" tint="bg-green-100" />
+              <DashCard label="Impressions" value={num(live.gsc.totals.impressions)} icon="📊" tint="bg-blue-100" />
+              <DashCard label="Avg CTR" value={`${(live.gsc.totals.ctr * 100).toFixed(1)}%`} icon="📈" tint="bg-blue-100" />
+              <DashCard label="Avg Position" value={live.gsc.totals.position.toFixed(1)} icon="🏆" tint="bg-gold/15" />
+            </div>
+            {live.gsc.topQueries.length > 0 && (
+              <div className="mt-4">
+                <div className="mb-2 text-xs font-semibold text-muted">Top Search Queries</div>
+                <ul className="space-y-1.5 text-sm">
+                  {live.gsc.topQueries.map((q) => <li key={q.query} className="flex justify-between gap-3"><span className="truncate">{q.query}</span><span className="flex-shrink-0 text-muted">{num(q.clicks)} clicks · pos {q.position.toFixed(1)}</span></li>)}
+                </ul>
+              </div>
+            )}
+          </>
+        ) : gscProp ? (
+          <div className="rounded-md bg-amber-50 px-3 py-2.5 text-[12px] text-amber-700">
+            {live?.gsc_error && <p className="mb-1"><strong>Status:</strong> {live.gsc_error}</p>}
+            <p>Next: add the service-account email as a <strong>user</strong> in Search Console (Settings → Users and permissions). Data takes 2–3 days to appear. Then tap <strong>↻ Refresh</strong>.</p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted">Enter your Search Console property above and tap Save to pull live rankings.</p>
+        )}
+      </DashSection>
 
       {/* Real store activity */}
       <DashSection title="Store Activity" subtitle="Real numbers from your storefront">

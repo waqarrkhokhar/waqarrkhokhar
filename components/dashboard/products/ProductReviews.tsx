@@ -34,6 +34,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
   async function moderate(id: string, status: "approved" | "rejected") {
     const res = await apiSend(`/api/reviews/${id}`, "PATCH", { status });
     if (!res.ok) return toast.error(res.error);
+    toast.success(status === "approved" ? "Review approved" : "Review rejected");
     load();
   }
 

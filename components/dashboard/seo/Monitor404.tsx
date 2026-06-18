@@ -63,6 +63,7 @@ export default function Monitor404() {
   async function dismiss(e: ErrorLog) {
     const res = await apiSend(`/api/errors/${e.id}`, "PATCH", { is_resolved: true });
     if (!res.ok) return toast.error(res.error);
+    toast.success("404 dismissed");
     load();
   }
 

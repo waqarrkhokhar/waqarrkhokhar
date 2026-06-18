@@ -38,6 +38,7 @@ export default function ProductImages({
     const res = await apiSend(base, "POST", { url: url.trim() });
     setBusy(false);
     if (!res.ok) return toast.error(res.error);
+    toast.success("Image added");
     setUrl("");
     onChange();
   }
@@ -56,18 +57,21 @@ export default function ProductImages({
     const res = await apiSend(base, "POST", { url: json.data.url });
     setBusy(false);
     if (!res.ok) return toast.error(res.error);
+    toast.success("Image uploaded");
     onChange();
   }
 
   async function setPrimary(id: string) {
     const res = await apiSend(base, "PATCH", { image_id: id, is_primary: true });
     if (!res.ok) return toast.error(res.error);
+    toast.success("Primary image set");
     onChange();
   }
 
   async function remove(id: string) {
     const res = await apiSend(`${base}?image_id=${id}`, "DELETE");
     if (!res.ok) return toast.error(res.error);
+    toast.success("Image removed");
     onChange();
   }
 

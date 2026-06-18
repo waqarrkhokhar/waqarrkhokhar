@@ -46,6 +46,7 @@ export default function CollectionProducts({ collectionId }: { collectionId: str
   async function add(id: string) {
     const res = await apiSend(`/api/collections/${collectionId}/products`, "PATCH", { add: [id] });
     if (!res.ok) return toast.error(res.error);
+    toast.success("Product added to collection");
     setResults((r) => r.filter((p) => p.id !== id));
     loadAssigned();
   }
@@ -53,6 +54,7 @@ export default function CollectionProducts({ collectionId }: { collectionId: str
   async function removeProduct(id: string) {
     const res = await apiSend(`/api/collections/${collectionId}/products`, "PATCH", { remove: [id] });
     if (!res.ok) return toast.error(res.error);
+    toast.success("Product removed from collection");
     loadAssigned();
   }
 
