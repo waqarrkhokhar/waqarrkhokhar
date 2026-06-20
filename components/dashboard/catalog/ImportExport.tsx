@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DashPageHeader, DashSection, DashTabs, DashBtn } from "@/components/dashboard/shared/Dash";
+import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { apiGet, apiSend } from "@/lib/api/client";
 
 type Tab = "export" | "import";
 type Result = { created: number; updated: number; skipped: number; total: number; errors: string[] };
+type UndoInfo = { available: boolean; at?: string; by?: string; summary?: { created: number; updated: number } };
 
 export default function ImportExport() {
   const [tab, setTab] = useState<Tab>("export");
@@ -13,6 +16,23 @@ export default function ImportExport() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [undo, setUndo] = useState<UndoInfo | null>(null);
+  const [confirmUndo, setConfirmUndo] = useState(false);
+  const [undoing, setUndoing] = useState(false);
+
+  const loadUndo = () => apiGet<{ data: UndoInfo }>("/api/products/import/undo").then((r) => r.ok && setUndo(r.data.data));
+  useEffect(() => { loadUndo(); }, []);
+
+  async function revertImport() {
+    setUndoing(true);
+    const res = await apiSend<{ data: { trashed: number; restored: number } }>("/api/products/import/undo", "POST");
+    setUndoing(false);
+    setConfirmUndo(false);
+    if (!res.ok) return toast.error(res.error);
+    toast.success(`Import reverted — ${res.data.data.trashed} removed, ${res.data.data.restored} restored`);
+    setResult(null);
+    setUndo({ available: false });
+  }
 
   async function handleFile(file: File) {
     if (!file.name.toLowerCase().endsWith(".csv")) return toast.error("Please choose a .csv file");
@@ -29,6 +49,7 @@ export default function ImportExport() {
       if (!res.ok) { toast.error(json.error ?? "Import failed"); return; }
       setResult(json.data as Result);
       toast.success(`Imported: ${json.data.created} added, ${json.data.updated} updated`);
+      loadUndo();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Import failed");
     } finally {
@@ -58,6 +79,14 @@ export default function ImportExport() {
 
       {tab === "import" && (
         <>
+          {undo?.available && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <div className="text-[13px] text-amber-800">
+                ↩ A recent import can be reverted{undo.summary ? ` (${undo.summary.created} added, ${undo.summary.updated} updated)` : ""}{undo.at ? ` · ${new Date(undo.at).toLocaleString()}` : ""}.
+              </div>
+              <DashBtn variant="secondary" onClick={() => setConfirmUndo(true)}>Undo last import</DashBtn>
+            </div>
+          )}
           <DashSection title="Import Products" subtitle="Upload a CSV to add or update products in bulk">
             <div
               onClick={() => !importing && fileRef.current?.click()}
@@ -93,10 +122,20 @@ export default function ImportExport() {
           )}
 
           <div className="rounded-lg bg-blue-50 px-4 py-3 text-[12px] leading-relaxed text-blue-600">
-            💡 Products are matched by <strong>SKU</strong> (or slug) — existing ones are updated, new ones are added. The <strong>Categories</strong> column (e.g. <em>Sofas &gt; Sofa Cum Bed</em>) places each product into the right collection and parent category automatically. Image URLs in the <strong>Images</strong> column are attached too.
+            💡 Products are matched by <strong>SKU</strong> (or slug) — existing ones are updated, new ones are added. The <strong>Categories</strong> column (e.g. <em>Sofas &gt; Sofa Cum Bed</em>) places each product into the right collection and parent category automatically. Image URLs in the <strong>Images</strong> column are attached too. The CSV file itself is never stored — it&apos;s read once and discarded.
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmUndo}
+        onClose={() => setConfirmUndo(false)}
+        onConfirm={revertImport}
+        title="Undo the last import?"
+        message="Products added by the import move to Trash; products it changed are restored to their previous values (including images). This affects only the most recent import."
+        confirmLabel={undoing ? "Reverting…" : "Undo import"}
+        danger
+      />
     </div>
   );
 }

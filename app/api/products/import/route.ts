@@ -2,9 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { ok } from "@/lib/api/respond";
 import { logActivity } from "@/lib/activity";
+import { setSetting } from "@/lib/settings";
 import { slugify } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
+
+type ImageSnap = { url: string; alt_text: string | null; sort_order: number; is_primary: boolean };
+type UpdatedSnap = { id: string; prev: Record<string, unknown>; prevImages?: ImageSnap[] };
 
 /** Minimal RFC-4180 CSV parser (handles quotes, commas & newlines in fields). */
 function parseCsv(text: string): string[][] {
@@ -108,6 +112,8 @@ export async function POST(request: Request) {
 
   let created = 0, updated = 0, skipped = 0;
   const errors: string[] = [];
+  const batchCreated: string[] = [];
+  const batchUpdated: UpdatedSnap[] = [];
 
   for (const row of rows) {
     const name = pick(row, ["Name", "Optimized Product Title", "Verified Product Name", "Product Name"]);
@@ -133,27 +139,34 @@ export async function POST(request: Request) {
       status: published ? "published" : "draft",
     };
 
-    // Find existing by SKU (preferred) or slug.
-    let existingId: string | null = null;
+    // Find existing by SKU (preferred) or slug — capture prior values for undo.
+    const SNAP = "id, name, slug, sku, price, sale_price, short_description, long_description, meta_title, meta_description, focus_keyword, category_id, status, published_at";
+    let existing: Record<string, unknown> | null = null;
     if (sku) {
-      const { data } = await supabase.from("products").select("id").eq("sku", sku).is("deleted_at", null).maybeSingle();
-      existingId = data?.id ?? null;
+      const { data } = await supabase.from("products").select(SNAP).eq("sku", sku).is("deleted_at", null).maybeSingle();
+      existing = data ?? null;
     }
-    if (!existingId) {
-      const { data } = await supabase.from("products").select("id").eq("slug", slug).is("deleted_at", null).maybeSingle();
-      existingId = data?.id ?? null;
+    if (!existing) {
+      const { data } = await supabase.from("products").select(SNAP).eq("slug", slug).is("deleted_at", null).maybeSingle();
+      existing = data ?? null;
     }
+    const existingId = existing ? (existing.id as string) : null;
 
     let productId = existingId;
-    if (existingId) {
+    if (existing && existingId) {
+      // Snapshot only the fields this import overwrites.
+      const prev: Record<string, unknown> = {};
+      for (const k of Object.keys(record)) prev[k] = existing[k] ?? null;
       const { error } = await supabase.from("products").update(record).eq("id", existingId);
       if (error) { errors.push(`${name}: ${error.message}`); continue; }
+      batchUpdated.push({ id: existingId, prev });
       updated++;
     } else {
       if (published) record.published_at = new Date().toISOString();
       const { data, error } = await supabase.from("products").insert(record).select("id").single();
       if (error) { errors.push(`${name}: ${error.message}`); continue; }
       productId = data.id;
+      batchCreated.push(data.id);
       created++;
     }
 
@@ -162,6 +175,13 @@ export async function POST(request: Request) {
     if (productId && imagesRaw) {
       const urls = imagesRaw.split(",").map((s) => s.trim()).filter((s) => /^https?:\/\//.test(s));
       if (urls.length) {
+        // Snapshot prior images of updated products so undo can restore them.
+        if (existingId) {
+          const { data: prevImgs } = await supabase
+            .from("product_images").select("url, alt_text, sort_order, is_primary").eq("product_id", productId);
+          const u = batchUpdated.find((b) => b.id === productId);
+          if (u) u.prevImages = (prevImgs ?? []) as ImageSnap[];
+        }
         await supabase.from("product_images").delete().eq("product_id", productId);
         await supabase.from("product_images").insert(
           urls.map((url, i) => ({ product_id: productId, url, alt_text: name, sort_order: i, is_primary: i === 0 })),
@@ -170,10 +190,20 @@ export async function POST(request: Request) {
     }
   }
 
+  // Record this import so it can be reverted (most recent only). Small JSON in
+  // the settings table — the CSV itself is never stored.
+  await setSetting("last_product_import", {
+    at: new Date().toISOString(),
+    by: guard.user.name,
+    created: batchCreated,
+    updated: batchUpdated,
+    summary: { created, updated, skipped },
+  } as never);
+
   await logActivity({
     userId: guard.user.id, userName: guard.user.name, action: "created",
     entityType: "product", entityName: `CSV import: ${created} added, ${updated} updated`,
   });
 
-  return ok({ created, updated, skipped, errors: errors.slice(0, 20), total: rows.length });
+  return ok({ created, updated, skipped, errors: errors.slice(0, 20), total: rows.length, canUndo: created + updated > 0 });
 }
