@@ -1,31 +1,35 @@
--- Swap Sofa Cum Bed product images from the old WordPress URLs to your Supabase
--- uploads, matched by file name. No project URL needed — the Supabase URL comes
--- straight from the Media Library.
---
--- BEFORE running this:
---   1. Upload the sofa-cum-bed images to Supabase (done).
---   2. Dashboard → Media Library → "Sync from Storage" (so they're indexed).
--- The image file names in Supabase must match the WordPress file names
--- (the part after the last "/"), e.g. comfyclub-velvet-futon-sofa-bed-1.webp.
+-- Swap Sofa Cum Bed product images from WordPress to Supabase.
+-- Your Supabase files use the SAME file names as WordPress and live at:
+--   https://nycfgqrilqvwsugbksev.supabase.co/storage/v1/object/public/media/<filename>
+-- This keeps each file name and just changes the domain. Run in Supabase.
+-- Only touches sofa-cum-bed products (other collections keep their WP images
+-- until their Supabase images are uploaded).
 
--- ── Preview: how many images will be swapped vs still unmatched ──
--- (Run this SELECT first to check; it changes nothing.)
-SELECT
-  count(*) FILTER (WHERE m.url IS NOT NULL) AS will_swap,
-  count(*) FILTER (WHERE m.url IS NULL)     AS unmatched
+-- ── Preview first (changes nothing): old vs new URL ──
+SELECT pi.url AS current_url,
+       'https://nycfgqrilqvwsugbksev.supabase.co/storage/v1/object/public/media/'
+         || regexp_replace(pi.url, '^.*/', '') AS new_url
 FROM product_images pi
 JOIN products p   ON p.id = pi.product_id
 JOIN categories c ON c.id = p.category_id
-LEFT JOIN media m ON m.filename = regexp_replace(pi.url, '^.*/', '')
 WHERE (c.slug = '/sofas/sofa-come-bed/' OR c.name ILIKE 'Sofa C_m Bed%')
-  AND pi.url LIKE '%wp-content%';
+  AND pi.url LIKE '%wp-content%'
+LIMIT 10;
 
--- ── Swap: replace WordPress URLs with the matching Supabase URL ──
+-- ── Apply the swap ──
 UPDATE product_images pi
-SET url = m.url
-FROM products p, categories c, media m
+SET url = 'https://nycfgqrilqvwsugbksev.supabase.co/storage/v1/object/public/media/'
+          || regexp_replace(pi.url, '^.*/', '')
+FROM products p, categories c
 WHERE pi.product_id = p.id
   AND p.category_id = c.id
   AND (c.slug = '/sofas/sofa-come-bed/' OR c.name ILIKE 'Sofa C_m Bed%')
-  AND pi.url LIKE '%wp-content%'
-  AND m.filename = regexp_replace(pi.url, '^.*/', '');
+  AND pi.url LIKE '%wp-content%';
+
+-- ── Verify none remain ──
+SELECT count(*) AS remaining_wordpress_images
+FROM product_images pi
+JOIN products p   ON p.id = pi.product_id
+JOIN categories c ON c.id = p.category_id
+WHERE (c.slug = '/sofas/sofa-come-bed/' OR c.name ILIKE 'Sofa C_m Bed%')
+  AND pi.url LIKE '%wp-content%';
