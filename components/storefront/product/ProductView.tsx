@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { ProductDetail } from "@/lib/storefront/data";
 import { waLink, productUrl, formatPrice } from "@/lib/whatsapp";
 import { whatsappOrder } from "@/components/storefront/ProductCard";
@@ -199,6 +199,19 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
 
   const onSale = !!(p.sale_price && p.price && p.sale_price < p.price);
   const images = p.images.length ? p.images : [{ url: "", alt: null }];
+
+  // Swipe gallery on touch devices (mobile). Cycles through the shown images.
+  const galleryCount = Math.min(images.length, 5);
+  const touchX = useRef<number | null>(null);
+  function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX; }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current === null || galleryCount < 2) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 40) {
+      setActiveImg((i) => dx < 0 ? (i + 1) % galleryCount : (i - 1 + galleryCount) % galleryCount);
+    }
+    touchX.current = null;
+  }
   const featureList = p.features;
   const dims = p.dimensions
     ? [
@@ -235,10 +248,14 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
       <div className="block md:mx-auto md:flex md:max-w-[1100px] md:gap-8 md:px-10 lg:gap-12">
         {/* GALLERY */}
         <div className="md:flex-1 md:self-start md:sticky md:top-20">
-          <div className="relative aspect-[4/5] w-full overflow-hidden bg-cream">
+          <div
+            className="relative aspect-[4/5] w-full touch-pan-y select-none overflow-hidden bg-cream"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
             {images[activeImg]?.url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={images[activeImg].url} alt={images[activeImg].alt ?? p.name} referrerPolicy="no-referrer" className="h-full w-full object-contain transition-opacity duration-300" />
+              <img src={images[activeImg].url} alt={images[activeImg].alt ?? p.name} referrerPolicy="no-referrer" draggable={false} className="h-full w-full object-contain transition-opacity duration-300" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm text-charcoal/30">No image</div>
             )}
