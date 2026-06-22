@@ -1,6 +1,5 @@
--- 011_consolidate_roles.sql — collapse to three roles:
---   Super Admin · Admin · SEO & Product Manager
--- Run in Supabase → SQL Editor. Safe to run once.
+-- Consolidate dashboard roles to three: Super Admin, Admin, SEO & Product Manager.
+-- Run the WHOLE file in Supabase SQL Editor. Safe to run once.
 
 -- 1. Remap existing users to the new roles (before tightening the constraint).
 UPDATE users SET role = 'SEO & Product Manager'
@@ -14,9 +13,9 @@ ALTER TABLE users ADD CONSTRAINT users_role_check
 -- 3. New users default to the manager role.
 ALTER TABLE users ALTER COLUMN role SET DEFAULT 'SEO & Product Manager';
 
--- 4. has_role(): 'SEO & Product Manager' satisfies any policy that allowed the
---    old Product Manager / SEO Manager / Content Editor roles, so the existing
---    RLS policies keep working without rewriting all of them.
+-- 4. has_role(): the manager role satisfies any policy that allowed the old
+--    Product Manager / SEO Manager / Content Editor roles, so existing RLS
+--    policies keep working without rewriting all of them.
 CREATE OR REPLACE FUNCTION has_role(VARIADIC roles TEXT[])
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -35,7 +34,7 @@ AS $$
   );
 $$;
 
--- 5. Promotions were admin-only; let the manager role handle them too.
+-- 5. Promotions were admin-only; allow the manager role to handle them too.
 DROP POLICY IF EXISTS "staff read all promotions" ON promotions;
 CREATE POLICY "staff read all promotions" ON promotions
   FOR SELECT TO authenticated
@@ -47,7 +46,7 @@ CREATE POLICY "manage promotions" ON promotions
   USING (has_role('Super Admin','Admin','SEO & Product Manager'))
   WITH CHECK (has_role('Super Admin','Admin','SEO & Product Manager'));
 
--- 6. New Supabase Auth users land as 'SEO & Product Manager'.
+-- 6. New Supabase Auth users land as the manager role.
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE display_name text;
