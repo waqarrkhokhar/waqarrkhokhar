@@ -36,10 +36,11 @@ const MATRIX: Record<UserRole, Capability[]> = {
     "promotions", "leads", "analytics", "settings", "backups",
     "import_export", "pages",
   ],
-  // Day-to-day content, catalog, SEO and marketing — no users/settings/backups.
+  // Products, Collections, Categories, Blog, Pages, SEO, Media, Reviews,
+  // Promotions only — no leads, analytics, import/export, users or settings.
   "SEO & Product Manager": [
     "products", "categories", "seo", "blog", "reviews", "media",
-    "promotions", "leads", "analytics", "import_export", "pages",
+    "promotions", "pages",
   ],
 };
 

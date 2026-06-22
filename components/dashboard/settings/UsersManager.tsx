@@ -14,7 +14,7 @@ type User = { id: string; name: string; email: string; role: string; status: str
 const ROLES = [
   { name: "Super Admin", desc: "Full access to everything, including users, settings & backups" },
   { name: "Admin", desc: "Everything except adding/removing team members" },
-  { name: "SEO & Product Manager", desc: "Products, collections, blog, pages, SEO, media, reviews, promotions, leads & analytics — no users or settings" },
+  { name: "SEO & Product Manager", desc: "Products, Collections, Categories, Blog, Pages, SEO, Media, Reviews & Promotions only" },
 ];
 const roleBadge = (r: string) => (r === "Super Admin" || r === "Admin" ? "active" : "scheduled");
 const statusBadge = (s: string) => (s === "active" ? "active" : s === "invited" ? "pending" : "archived");
