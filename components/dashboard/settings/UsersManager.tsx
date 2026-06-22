@@ -12,11 +12,9 @@ import { apiGet, apiSend } from "@/lib/api/client";
 type User = { id: string; name: string; email: string; role: string; status: string; last_login: string | null };
 
 const ROLES = [
-  { name: "Super Admin", desc: "Full access to everything, including users & settings" },
-  { name: "Admin", desc: "Everything except user management" },
-  { name: "SEO Manager", desc: "SEO, blog, media & analytics" },
-  { name: "Product Manager", desc: "Products, collections, categories, media & reviews" },
-  { name: "Content Editor", desc: "Blog posts, pages & media uploads" },
+  { name: "Super Admin", desc: "Full access to everything, including users, settings & backups" },
+  { name: "Admin", desc: "Everything except adding/removing team members" },
+  { name: "SEO & Product Manager", desc: "Products, collections, blog, pages, SEO, media, reviews, promotions, leads & analytics — no users or settings" },
 ];
 const roleBadge = (r: string) => (r === "Super Admin" || r === "Admin" ? "active" : "scheduled");
 const statusBadge = (s: string) => (s === "active" ? "active" : s === "invited" ? "pending" : "archived");
@@ -79,7 +77,7 @@ export default function UsersManager() {
       </DashSection>
 
       <div className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-[12px] leading-relaxed text-blue-600">
-        💡 To add a team member: in <strong>Supabase → Authentication → Add user</strong>, enter their email. They&apos;ll automatically appear here — then click their row to set their <strong>role</strong> (new users start as “Content Editor”).
+        💡 To add a team member: in <strong>Supabase → Authentication → Add user</strong>, enter their email. They&apos;ll automatically appear here — then click their row to set their <strong>role</strong> (new users start as “SEO &amp; Product Manager”).
       </div>
 
       <Modal open={!!edit} onClose={() => setEdit(null)} title={edit ? `Edit: ${edit.name}` : "Edit User"}

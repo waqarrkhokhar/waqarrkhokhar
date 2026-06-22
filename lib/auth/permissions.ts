@@ -24,20 +24,23 @@ export type Capability =
   | "pages";
 
 const MATRIX: Record<UserRole, Capability[]> = {
+  // Full access, including users, settings and backups.
   "Super Admin": [
     "products", "categories", "seo", "blog", "reviews", "media",
     "promotions", "leads", "analytics", "users", "settings", "backups",
     "import_export", "pages",
   ],
+  // Everything except managing team members (only Super Admin adds users).
   Admin: [
     "products", "categories", "seo", "blog", "reviews", "media",
-    "promotions", "leads", "analytics", "settings", "import_export", "pages",
+    "promotions", "leads", "analytics", "settings", "backups",
+    "import_export", "pages",
   ],
-  "SEO Manager": ["seo", "blog", "media", "analytics", "pages"],
-  "Product Manager": [
-    "products", "categories", "reviews", "media", "leads", "import_export",
+  // Day-to-day content, catalog, SEO and marketing — no users/settings/backups.
+  "SEO & Product Manager": [
+    "products", "categories", "seo", "blog", "reviews", "media",
+    "promotions", "leads", "analytics", "import_export", "pages",
   ],
-  "Content Editor": ["blog", "media", "pages"],
 };
 
 /** True if the role is allowed the given capability. */

@@ -33,9 +33,7 @@ export type PromotionStatus = "draft" | "active" | "expired" | "paused";
 export type UserRole =
   | "Super Admin"
   | "Admin"
-  | "SEO Manager"
-  | "Product Manager"
-  | "Content Editor";
+  | "SEO & Product Manager";
 export type UserStatus = "active" | "suspended" | "invited";
 
 type Timestamps = { created_at: string };

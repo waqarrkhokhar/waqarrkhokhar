@@ -7,7 +7,7 @@ import { logActivity } from "@/lib/activity";
 type Params = { params: { id: string } };
 
 const schema = z.object({
-  role: z.enum(["Super Admin", "Admin", "SEO Manager", "Product Manager", "Content Editor"]).optional(),
+  role: z.enum(["Super Admin", "Admin", "SEO & Product Manager"]).optional(),
   status: z.enum(["active", "suspended", "invited"]).optional(),
   name: z.string().min(2).max(100).optional(),
 });
