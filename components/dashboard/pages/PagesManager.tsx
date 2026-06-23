@@ -30,19 +30,19 @@ export default function PagesManager() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [res, ga] = await Promise.all([
-      apiGet<{ data: Page[] }>("/api/pages"),
-      apiGet<{ data: { ga4: { topPages?: { path: string; views: number }[] } | null } }>("/api/analytics/google"),
-    ]);
+    const res = await apiGet<{ data: Page[] }>("/api/pages");
     setLoading(false);
     if (!res.ok) return toast.error(res.error);
 
-    // Real per-page views from GA4 (last 28d), matched by URL path. No data → "—".
-    const views = new Map<string, number>();
-    if (ga.ok && ga.data.data.ga4?.topPages) {
+    // Show pages immediately; fetch GA4 traffic afterwards so the slow Google
+    // call never blocks the list from rendering.
+    setRows(res.data.data);
+    apiGet<{ data: { ga4: { topPages?: { path: string; views: number }[] } | null } }>("/api/analytics/google").then((ga) => {
+      if (!ga.ok || !ga.data.data.ga4?.topPages) return;
+      const views = new Map<string, number>();
       for (const tp of ga.data.data.ga4.topPages) views.set(fmtSlug(tp.path), tp.views);
-    }
-    setRows(res.data.data.map((p) => ({ ...p, traffic: views.get(fmtSlug(p.slug)) })));
+      setRows((rs) => rs.map((p) => ({ ...p, traffic: views.get(fmtSlug(p.slug)) })));
+    });
   }, [toast]);
 
   useEffect(() => { load(); }, [load]);

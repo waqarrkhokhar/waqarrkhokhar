@@ -22,7 +22,7 @@ export default function CategorySlider({ categories }: { categories: StoreCatego
           >
             {c.image && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={c.image} alt={c.name} referrerPolicy="no-referrer" className="h-full w-full object-cover transition duration-700 hover:scale-105" />
+              <img src={c.image} alt={c.name} referrerPolicy="no-referrer" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-700 hover:scale-105" />
             )}
             <div className="absolute inset-0 flex flex-col justify-end p-3.5" style={{ background: "linear-gradient(transparent 40%, rgba(15,29,53,0.75))" }}>
               <p className="font-heading text-[17px] font-semibold text-white">{c.name}</p>

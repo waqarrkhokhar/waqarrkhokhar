@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, ProductStatus } from "@/lib/types/database";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 type DB = SupabaseClient<Database>;
 
@@ -44,7 +45,10 @@ export async function listProducts(db: DB, p: ProductListParams) {
     q = q.eq("status", p.status);
   }
   if (p.categoryId) q = q.eq("category_id", p.categoryId);
-  if (p.search) q = q.or(`name.ilike.%${p.search}%,sku.ilike.%${p.search}%`);
+  if (p.search) {
+    const s = sanitizeSearchTerm(p.search);
+    if (s) q = q.or(`name.ilike.%${s}%,sku.ilike.%${s}%`);
+  }
 
   const sort = SORTABLE.has(p.sort) ? p.sort : "created_at";
   q = q.order(sort, { ascending: p.order === "asc" });

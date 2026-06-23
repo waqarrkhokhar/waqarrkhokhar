@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { paginated, created, parseListParams } from "@/lib/api/respond";
+import { sanitizeSearchTerm } from "@/lib/search";
 
 /** GET /api/reviews — moderation list (staff). */
 export async function GET(request: Request) {
@@ -28,7 +29,10 @@ export async function GET(request: Request) {
   if (ratingMin) q = q.gte("rating", Number(ratingMin));
   if (url.searchParams.get("featured") === "true") q = q.eq("is_featured", true);
   const search = url.searchParams.get("search");
-  if (search) q = q.or(`name.ilike.%${search}%,text.ilike.%${search}%`);
+  if (search) {
+    const s = sanitizeSearchTerm(search);
+    if (s) q = q.or(`name.ilike.%${s}%,text.ilike.%${s}%`);
+  }
 
   const { data, count, error } = await q;
   if (error) return apiError(500, "INTERNAL_ERROR", error.message);

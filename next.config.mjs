@@ -11,6 +11,11 @@ const securityHeaders = [
     key: "Strict-Transport-Security",
     value: "max-age=31536000; includeSubDomains",
   },
+  // Disable browser features the site never uses.
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()",
+  },
 ];
 
 /** @type {import('next').NextConfig} */

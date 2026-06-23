@@ -47,17 +47,20 @@ export default function BlogList() {
     setLoading(false);
     if (!res.ok) return toast.error(res.error);
 
-    // Real per-post views from GA4 (last 28d), matched by /blog/<slug>/ path.
-    const ga = await apiGet<{ data: { ga4: { topPages?: { path: string; views: number }[] } | null } }>("/api/analytics/google");
-    const views = new Map<string, number>();
-    if (ga.ok && ga.data.data.ga4?.topPages) {
+    // Show posts immediately; fill in GA4 views afterwards (the Google call is
+    // slow and must not block the list from rendering).
+    setRows(res.data.data);
+    setTotalPages(res.data.pagination.totalPages);
+
+    apiGet<{ data: { ga4: { topPages?: { path: string; views: number }[] } | null } }>("/api/analytics/google").then((ga) => {
+      if (!ga.ok || !ga.data.data.ga4?.topPages) return;
+      const views = new Map<string, number>();
       for (const tp of ga.data.data.ga4.topPages) {
         const m = tp.path.match(/\/blog\/([^/]+)\/?$/);
         if (m) views.set(m[1], tp.views);
       }
-    }
-    setRows(res.data.data.map((post) => ({ ...post, views: views.get(post.slug) })));
-    setTotalPages(res.data.pagination.totalPages);
+      setRows((rs) => rs.map((post) => ({ ...post, views: views.get(post.slug) })));
+    });
   }, [page, status, category, search, toast]);
 
   useEffect(() => {

@@ -49,6 +49,8 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
               src={product.image}
               alt={product.name}
               referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.04]"
             />
           ) : (

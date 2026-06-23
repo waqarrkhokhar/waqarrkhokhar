@@ -37,7 +37,7 @@ export default function BlogListView({ posts }: { posts: BlogCard[] }) {
               <div className="aspect-[16/10] w-full overflow-hidden bg-cream">
                 {post.featured_image && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={post.featured_image} alt={post.title} referrerPolicy="no-referrer" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
+                  <img src={post.featured_image} alt={post.title} referrerPolicy="no-referrer" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
                 )}
               </div>
               <div className="flex flex-1 flex-col pt-3">
