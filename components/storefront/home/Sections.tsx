@@ -54,19 +54,26 @@ export function ProductRow({
 
 export function TrustedBy({ clients }: { clients: { name: string; href?: string | null }[] }) {
   if (clients.length === 0) return null;
+  // Duplicate the list so the marquee can loop seamlessly on a single line.
+  const loop = [...clients, ...clients];
   return (
-    <div className="bg-cream px-5 pb-7 pt-6 text-center">
+    <div className="bg-cream pb-7 pt-6 text-center">
       <div className="mb-4 text-[11px] uppercase tracking-[2.5px] text-[#999]">Trusted By</div>
-      <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-3">
-        {clients.map((c) =>
-          c.href ? (
-            <a key={c.name} href={c.href} target="_blank" rel="nofollow noopener noreferrer" className="whitespace-nowrap font-heading text-sm font-semibold text-navy/55 transition hover:text-navy">
-              {c.name}
-            </a>
-          ) : (
-            <span key={c.name} className="whitespace-nowrap font-heading text-sm font-semibold text-navy/55">{c.name}</span>
-          ),
-        )}
+      <div className="cc-marquee-wrap relative overflow-hidden">
+        {/* edge fades */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-cream to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-cream to-transparent" />
+        <div className="cc-marquee flex w-max items-center gap-x-12 whitespace-nowrap">
+          {loop.map((c, i) =>
+            c.href ? (
+              <a key={`${c.name}-${i}`} href={c.href} target="_blank" rel="nofollow noopener noreferrer" aria-hidden={i >= clients.length} className="font-heading text-[17px] font-semibold text-navy/80 transition hover:text-navy">
+                {c.name}
+              </a>
+            ) : (
+              <span key={`${c.name}-${i}`} aria-hidden={i >= clients.length} className="font-heading text-[17px] font-semibold text-navy/80">{c.name}</span>
+            ),
+          )}
+        </div>
       </div>
     </div>
   );
