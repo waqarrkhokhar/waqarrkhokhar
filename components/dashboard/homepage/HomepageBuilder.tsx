@@ -30,10 +30,10 @@ const ALL_SECTIONS: { key: string; label: string }[] = [
   { key: "trusted_by", label: "Trusted By" },
   { key: "categories", label: "Shop by Category" },
   { key: "trending", label: "Trending Now" },
-  { key: "offers", label: "Limited-Time Offers" },
   { key: "why", label: "Why ComfyClub" },
-  { key: "how_it_works", label: "How It Works" },
+  { key: "offers", label: "Limited-Time Offers" },
   { key: "cta", label: "Need Help CTA" },
+  { key: "how_it_works", label: "How It Works" },
 ];
 
 const DEFAULT: Config = {

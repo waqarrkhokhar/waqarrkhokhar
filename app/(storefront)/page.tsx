@@ -82,22 +82,28 @@ export default async function HomePage() {
     cta: <NeedHelpCTA />,
   };
 
-  const DEFAULT_ORDER = ["hero", "trusted_by", "categories", "trending", "offers", "why", "how_it_works", "cta"];
+  // Default = the original prototype order. Only changes if you reorder/hide
+  // sections in Dashboard → Homepage (which saves section_order).
+  const DEFAULT_ORDER = ["hero", "trusted_by", "categories", "trending", "why", "offers", "cta", "how_it_works"];
   const rawOrder = Array.isArray(config.section_order) ? (config.section_order as string[]) : [];
-  // Honour the dashboard's order + visibility; unknown/removed keys are skipped.
   const order = rawOrder.filter((k) => k in sectionNodes);
   const finalOrder = order.length ? order : DEFAULT_ORDER;
+
+  // The secondary featured collection row sits right after the offers section
+  // (its original position) unless offers is hidden, in which case it appends.
+  const featureRow = feature.products.length > 0
+    ? <ProductRow title={feature.title} subtitle={feature.subtitle} viewAll={feature.link} products={feature.products} />
+    : null;
 
   return (
     <div>
       {finalOrder.map((key) => (
-        <div key={key}>{sectionNodes[key]}</div>
+        <div key={key}>
+          {sectionNodes[key]}
+          {key === "offers" && featureRow}
+        </div>
       ))}
-
-      {/* Secondary featured collection row (always shown when populated). */}
-      {feature.products.length > 0 && (
-        <ProductRow title={feature.title} subtitle={feature.subtitle} viewAll={feature.link} products={feature.products} />
-      )}
+      {!finalOrder.includes("offers") && featureRow}
     </div>
   );
 }
