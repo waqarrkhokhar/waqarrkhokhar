@@ -157,8 +157,13 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
           <>
             {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/blog/${previewSlug}/?preview=1`, "_blank")}>Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmDelete(true)}>Delete</DashBtn>}
-            <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save Draft"}</DashBtn>
-            <DashBtn onClick={() => save("published")}>Publish</DashBtn>
+            {/* Save always keeps the post's current status (edit a live post without unpublishing it). */}
+            <DashBtn onClick={() => save()} disabled={saving}>{saving ? "Saving…" : f.status === "published" ? "Save Changes" : "Save"}</DashBtn>
+            {f.status === "published" ? (
+              <DashBtn variant="secondary" onClick={() => save("draft")} disabled={saving}>Unpublish</DashBtn>
+            ) : (
+              <DashBtn variant="secondary" onClick={() => save("published")} disabled={saving}>Publish</DashBtn>
+            )}
           </>
         }
       />
