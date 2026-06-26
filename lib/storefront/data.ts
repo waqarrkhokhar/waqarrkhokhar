@@ -207,18 +207,22 @@ export async function getHomepageData() {
     }))
     .filter((c) => c.count > 0 || c.image);
 
-  // Feature row: products from the "2 Seater Sofas" collection (design's
-  // dedicated section). Falls back gracefully if that collection is empty.
-  const featureSlug = "/seater-sofas/2-seater-sofas/";
-  const featureCat = (categories ?? []).find((c) => c.slug === featureSlug);
-  const feature = {
-    title: featureCat?.name ?? "2 Seater Sofas",
-    subtitle: "Compact luxury for every space",
-    link: featureSlug,
-    products: shuffle(raw.filter((p) => p.category?.slug === featureSlug)).slice(0, 4).map((p) => toStoreProduct(p, ratingMap.get(p.id))),
+  // Dedicated collection feature rows (design's named sections). Each shows up
+  // to 4 shuffled products from that collection; falls back gracefully if empty.
+  const featureRow = (slug: string, fallbackTitle: string, subtitle: string) => {
+    const cat = (categories ?? []).find((c) => c.slug === slug);
+    return {
+      title: cat?.name ?? fallbackTitle,
+      subtitle,
+      link: slug,
+      products: shuffle(raw.filter((p) => p.category?.slug === slug)).slice(0, 4).map((p) => toStoreProduct(p, ratingMap.get(p.id))),
+    };
   };
 
-  return { config, trending, offers, categories: cats, feature };
+  const featureSofaCumBed = featureRow("/sofas/sofa-come-bed/", "Sofa Cum Beds", "Seating by day, sleeping by night");
+  const feature = featureRow("/seater-sofas/2-seater-sofas/", "2 Seater Sofas", "Compact luxury for every space");
+
+  return { config, trending, offers, categories: cats, feature, featureSofaCumBed };
 }
 
 // ── Product detail ──────────────────────────────────────────────────────────

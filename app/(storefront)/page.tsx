@@ -39,7 +39,7 @@ const DEFAULT_HOW = [
 ];
 
 export default async function HomePage() {
-  const { config, trending, offers, categories, feature } = await getHomepageData();
+  const { config, trending, offers, categories, feature, featureSofaCumBed } = await getHomepageData();
 
   const find = (slug: string) => categories.find((c) => c.slug === slug);
 
@@ -89,11 +89,19 @@ export default async function HomePage() {
   const order = rawOrder.filter((k) => k in sectionNodes);
   const finalOrder = order.length ? order : DEFAULT_ORDER;
 
-  // The secondary featured collection row sits right after the offers section
-  // (its original position) unless offers is hidden, in which case it appends.
-  const featureRow = feature.products.length > 0
-    ? <ProductRow title={feature.title} subtitle={feature.subtitle} viewAll={feature.link} products={feature.products} />
-    : null;
+  // The secondary featured collection rows sit right after the offers section
+  // (their original position) unless offers is hidden, in which case they append.
+  // Sofa Cum Beds comes before the 2-Seater Sofas row.
+  const featureRow = (
+    <>
+      {featureSofaCumBed.products.length > 0 && (
+        <ProductRow title={featureSofaCumBed.title} subtitle={featureSofaCumBed.subtitle} viewAll={featureSofaCumBed.link} products={featureSofaCumBed.products} background="cream" />
+      )}
+      {feature.products.length > 0 && (
+        <ProductRow title={feature.title} subtitle={feature.subtitle} viewAll={feature.link} products={feature.products} />
+      )}
+    </>
+  );
 
   return (
     <div>

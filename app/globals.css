@@ -2,16 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Single-line "Trusted By" marquee (pauses on hover). */
+/* Single-line "Trusted By" marquee — scrolls on all screen sizes, pauses on hover. */
 @keyframes cc-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-.cc-marquee { animation: cc-marquee 35s linear infinite; }
-.cc-marquee-wrap:hover .cc-marquee { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) {
-  .cc-marquee { animation: none; }
+.cc-marquee {
+  animation: cc-marquee 35s linear infinite;
+  will-change: transform;
 }
+.cc-marquee-wrap:hover .cc-marquee { animation-play-state: paused; }
 
 :root {
   --background: #f7f4ee; /* cream */
