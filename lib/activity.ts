@@ -28,7 +28,8 @@ export type ActivityEntity =
   | "media"
   | "lead"
   | "setting"
-  | "contact";
+  | "contact"
+  | "trash";
 
 /**
  * Record an admin action in activity_logs (Blueprint §3 — shared helper).

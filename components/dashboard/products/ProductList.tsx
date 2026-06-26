@@ -77,11 +77,15 @@ export default function ProductList() {
 
   async function del() {
     if (!confirmDel) return;
-    const res = await apiSend(`/api/products/${confirmDel.id}`, "DELETE");
+    const target = confirmDel;
     setConfirmDel(null);
-    if (!res.ok) return toast.error(res.error);
-    toast.success(`"${confirmDel.name}" moved to trash`);
-    loadProducts(); loadHealth();
+    // Remove the row instantly; restore it if the request fails.
+    const prev = rows;
+    setRows((cur) => cur.filter((r) => r.id !== target.id));
+    const res = await apiSend(`/api/products/${target.id}`, "DELETE");
+    if (!res.ok) { setRows(prev); return toast.error(res.error); }
+    toast.success(`"${target.name}" moved to trash`);
+    loadHealth();
   }
 
   const columns: Column<ProductRow>[] = [

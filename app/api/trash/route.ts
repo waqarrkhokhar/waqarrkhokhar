@@ -56,28 +56,106 @@ export async function GET() {
   return ok(out);
 }
 
-/** POST /api/trash — restore an item: { type, id }. */
+type RestoreClient = {
+  from: (t: string) => {
+    update: (v: Record<string, unknown>) => {
+      in: (c: string, v: string[]) => Promise<{ error: { message: string } | null }>;
+    };
+  };
+};
+
+/**
+ * POST /api/trash — restore items. Accepts a single { type, id } or a bulk
+ * { items: [{ type, id }] }. Items are grouped by type so each table is
+ * updated in one round-trip.
+ */
 export async function POST(request: Request) {
   const guard = await requireAuth();
   if (!guard.ok) return guard.response;
 
-  const body = (await request.json().catch(() => null)) as { type?: TrashType; id?: string } | null;
-  if (!body?.type || !body?.id || !SOURCES[body.type]) {
-    return apiError(400, "VALIDATION_ERROR", "type and id are required");
+  const body = (await request.json().catch(() => null)) as
+    | { type?: TrashType; id?: string; items?: { type: TrashType; id: string }[] }
+    | null;
+
+  const items = body?.items ?? (body?.type && body?.id ? [{ type: body.type, id: body.id }] : []);
+  const valid = items.filter((it) => it && SOURCES[it.type] && it.id);
+  if (valid.length === 0) return apiError(400, "VALIDATION_ERROR", "Nothing to restore");
+
+  const supabase = createClient() as unknown as RestoreClient;
+  const byType = new Map<TrashType, string[]>();
+  for (const it of valid) byType.set(it.type, [...(byType.get(it.type) ?? []), it.id]);
+
+  for (const [type, ids] of byType) {
+    const { error } = await supabase.from(SOURCES[type].table).update({ deleted_at: null }).in("id", ids);
+    if (error) return apiError(500, "INTERNAL_ERROR", error.message);
   }
-  const src = SOURCES[body.type];
-  const supabase = createClient() as unknown as {
-    from: (t: string) => { update: (v: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> } };
-  };
-  const { error } = await supabase.from(src.table).update({ deleted_at: null }).eq("id", body.id);
-  if (error) return apiError(500, "INTERNAL_ERROR", error.message);
 
   await logActivity({
     userId: guard.user.id,
     userName: guard.user.name,
     action: "restored",
-    entityType: body.type === "parent" ? "category" : body.type,
-    entityId: body.id,
+    entityType: "trash",
+    entityName: `${valid.length} item(s)`,
   });
-  return action(`${src.label} restored`);
+  return action(valid.length === 1 ? `${SOURCES[valid[0].type].label} restored` : `${valid.length} items restored`);
+}
+
+type PurgeClient = {
+  from: (t: string) => {
+    delete: () => {
+      in: (c: string, v: string[]) => Promise<{ error: { message: string } | null }>;
+      not: (c: string, op: string, v: null) => Promise<{ error: { message: string } | null }>;
+    };
+  };
+};
+
+/**
+ * DELETE /api/trash — permanently delete trashed items. Accepts a bulk
+ * { items: [{ type, id }] } or { all: true } to empty the entire trash.
+ * Only ever touches rows that are already soft-deleted.
+ */
+export async function DELETE(request: Request) {
+  const guard = await requireAuth();
+  if (!guard.ok) return guard.response;
+
+  const body = (await request.json().catch(() => null)) as
+    | { items?: { type: TrashType; id: string }[]; all?: boolean }
+    | null;
+
+  const supabase = createClient() as unknown as PurgeClient;
+
+  if (body?.all) {
+    for (const src of Object.values(SOURCES)) {
+      const { error } = await supabase.from(src.table).delete().not("deleted_at", "is", null);
+      if (error) return apiError(500, "INTERNAL_ERROR", error.message);
+    }
+    await logActivity({
+      userId: guard.user.id,
+      userName: guard.user.name,
+      action: "permanently deleted",
+      entityType: "trash",
+      entityName: "emptied trash",
+    });
+    return action("Trash emptied");
+  }
+
+  const valid = (body?.items ?? []).filter((it) => it && SOURCES[it.type] && it.id);
+  if (valid.length === 0) return apiError(400, "VALIDATION_ERROR", "Nothing to delete");
+
+  const byType = new Map<TrashType, string[]>();
+  for (const it of valid) byType.set(it.type, [...(byType.get(it.type) ?? []), it.id]);
+
+  for (const [type, ids] of byType) {
+    const { error } = await supabase.from(SOURCES[type].table).delete().in("id", ids);
+    if (error) return apiError(500, "INTERNAL_ERROR", error.message);
+  }
+
+  await logActivity({
+    userId: guard.user.id,
+    userName: guard.user.name,
+    action: "permanently deleted",
+    entityType: "trash",
+    entityName: `${valid.length} item(s)`,
+  });
+  return action(valid.length === 1 ? "Permanently deleted" : `${valid.length} items permanently deleted`);
 }

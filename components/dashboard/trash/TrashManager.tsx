@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DashPageHeader, DashBadge, DashBtn } from "@/components/dashboard/shared/Dash";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
+import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -10,15 +11,7 @@ import { apiGet, apiSend } from "@/lib/api/client";
 type TrashType = "product" | "blog" | "collection" | "parent" | "page" | "promotion" | "review";
 type Item = { type: TrashType; label: string; id: string; name: string; extra: string | null; deleted_at: string };
 
-const ENDPOINT: Record<TrashType, string> = {
-  product: "/api/products",
-  blog: "/api/blog",
-  collection: "/api/collections",
-  parent: "/api/parents",
-  page: "/api/pages",
-  promotion: "/api/promotions",
-  review: "/api/reviews",
-};
+const rowId = (it: Item) => `${it.type}:${it.id}`;
 
 function fmt(d: string) {
   return new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
@@ -28,7 +21,9 @@ export default function TrashManager() {
   const toast = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
-  const [confirmPurge, setConfirmPurge] = useState<Item | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [confirmPurge, setConfirmPurge] = useState<{ items: Item[]; all?: boolean } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -40,22 +35,40 @@ export default function TrashManager() {
 
   useEffect(() => { load(); }, [load]);
 
-  async function restore(it: Item) {
-    const r = await apiSend("/api/trash", "POST", { type: it.type, id: it.id });
-    if (!r.ok) return toast.error(r.error);
-    toast.success(`${it.label} restored`);
-    load();
+  // Restore one or many. The list updates instantly; we only reload on error.
+  async function restore(targets: Item[]) {
+    if (busy || targets.length === 0) return;
+    setBusy(true);
+    const ids = new Set(targets.map(rowId));
+    const prev = items;
+    setItems((cur) => cur.filter((it) => !ids.has(rowId(it))));
+    setSelected((cur) => cur.filter((id) => !ids.has(id)));
+
+    const r = await apiSend("/api/trash", "POST", { items: targets.map((t) => ({ type: t.type, id: t.id })) });
+    setBusy(false);
+    if (!r.ok) { setItems(prev); return toast.error(r.error); }
+    toast.success(targets.length === 1 ? `${targets[0].label} restored` : `${targets.length} items restored`);
   }
 
-  async function purge() {
-    if (!confirmPurge) return;
-    const it = confirmPurge;
-    setConfirmPurge(null);
-    const r = await apiSend(`${ENDPOINT[it.type]}/${it.id}?permanent=1`, "DELETE");
-    if (!r.ok) return toast.error(r.error);
-    toast.success(`${it.label} permanently deleted`);
-    load();
+  // Permanently delete one, many, or empty the whole trash.
+  async function purge(targets: Item[], all?: boolean) {
+    if (busy) return;
+    setBusy(true);
+    const prev = items;
+    if (all) setItems([]);
+    else {
+      const ids = new Set(targets.map(rowId));
+      setItems((cur) => cur.filter((it) => !ids.has(rowId(it))));
+    }
+    setSelected([]);
+
+    const r = await apiSend("/api/trash", "DELETE", all ? { all: true } : { items: targets.map((t) => ({ type: t.type, id: t.id })) });
+    setBusy(false);
+    if (!r.ok) { setItems(prev); return toast.error(r.error); }
+    toast.success(all ? "Trash emptied" : targets.length === 1 ? `${targets[0].label} permanently deleted` : `${targets.length} items permanently deleted`);
   }
+
+  const selectedItems = items.filter((it) => selected.includes(rowId(it)));
 
   const columns: Column<Item>[] = [
     {
@@ -73,8 +86,8 @@ export default function TrashManager() {
       key: "actions", header: "", className: "w-52",
       render: (it) => (
         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-          <DashBtn size="sm" variant="secondary" onClick={() => restore(it)}>↩ Restore</DashBtn>
-          <DashBtn size="sm" variant="danger" onClick={() => setConfirmPurge(it)}>Delete forever</DashBtn>
+          <DashBtn size="sm" variant="secondary" onClick={() => restore([it])} disabled={busy}>↩ Restore</DashBtn>
+          <DashBtn size="sm" variant="danger" onClick={() => setConfirmPurge({ items: [it] })} disabled={busy}>Delete forever</DashBtn>
         </div>
       ),
     },
@@ -86,24 +99,50 @@ export default function TrashManager() {
         title="Trash"
         subtitle="Deleted items are kept here so you can restore them. Nothing is lost by accident."
         breadcrumbs={[{ label: "Trash" }]}
+        actions={
+          items.length > 0 && (
+            <DashBtn variant="danger" onClick={() => setConfirmPurge({ items: [], all: true })} disabled={busy}>
+              Empty Trash ({items.length})
+            </DashBtn>
+          )
+        }
       />
 
       <DashTable
         columns={columns}
         rows={items}
-        getId={(it) => `${it.type}:${it.id}`}
+        getId={rowId}
         loading={loading}
+        selectable
+        selectedIds={selected}
+        onSelectionChange={setSelected}
         emptyTitle="Trash is empty"
         emptyDescription="Anything you delete - products, collections, blog posts, pages, reviews - lands here first."
+        bulkActions={
+          <>
+            <Button size="sm" onClick={() => restore(selectedItems)}>↩ Restore {selectedItems.length}</Button>
+            <Button size="sm" variant="danger" onClick={() => setConfirmPurge({ items: selectedItems })}>Delete forever</Button>
+          </>
+        }
       />
 
       <ConfirmDialog
         open={!!confirmPurge}
         onClose={() => setConfirmPurge(null)}
-        onConfirm={purge}
-        title="Delete forever?"
-        message={confirmPurge ? `Permanently delete "${confirmPurge.name}"? This cannot be undone.` : ""}
-        confirmLabel="Delete forever"
+        onConfirm={() => {
+          const c = confirmPurge;
+          setConfirmPurge(null);
+          if (c) purge(c.items, c.all);
+        }}
+        title={confirmPurge?.all ? "Empty the trash?" : "Delete forever?"}
+        message={
+          confirmPurge?.all
+            ? `Permanently delete all ${items.length} item(s) in the trash? This cannot be undone.`
+            : confirmPurge && confirmPurge.items.length === 1
+              ? `Permanently delete "${confirmPurge.items[0].name}"? This cannot be undone.`
+              : `Permanently delete ${confirmPurge?.items.length ?? 0} selected item(s)? This cannot be undone.`
+        }
+        confirmLabel={confirmPurge?.all ? "Empty Trash" : "Delete forever"}
         danger
       />
     </div>
