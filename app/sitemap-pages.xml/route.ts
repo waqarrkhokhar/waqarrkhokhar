@@ -8,7 +8,8 @@ export async function GET() {
   const { data } = await supabase
     .from("pages")
     .select("slug, updated_at")
-    .eq("status", "published");
+    .eq("status", "published")
+    .is("deleted_at", null);
 
   const entries: UrlEntry[] = [
     { loc: `${SITE}/`, changefreq: "daily", priority: 1.0 },

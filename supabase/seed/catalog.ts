@@ -39,8 +39,9 @@ const COLLECTIONS: CollectionSeed[] = [
   { name: "5 Seater Sofas", slug: "/seater-sofas/5-seater-sofas/", parentSlug: "/seater-sofas/", sort: 3 },
   { name: "6 Seater Sofas", slug: "/seater-sofas/6-seater-sofas/", parentSlug: "/seater-sofas/", sort: 4 },
   // Furniture
-  { name: "Wooden Beds", slug: "/furniture/wooden-beds/", parentSlug: "/furniture/", sort: 0 },
-  { name: "Poshish Bed Sets", slug: "/furniture/poshish-bed-sets/", parentSlug: "/furniture/", sort: 1 },
+  { name: "Single Bed", slug: "/furniture/single-bed/", parentSlug: "/furniture/", sort: 0 },
+  { name: "Double Bed", slug: "/furniture/double-bed/", parentSlug: "/furniture/", sort: 1 },
+  { name: "Dining Table Sets", slug: "/furniture/dining-table-sets/", parentSlug: "/furniture/", sort: 2 },
 ];
 
 /** Optional long-form intro content shipped with the package. */

@@ -8,7 +8,8 @@ export async function GET() {
   const { data } = await supabase
     .from("products")
     .select("slug, updated_at")
-    .eq("status", "published");
+    .eq("status", "published")
+    .is("deleted_at", null);
 
   return xml(
     urlset(

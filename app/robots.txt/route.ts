@@ -9,14 +9,21 @@ export async function GET() {
   const blockAi = (await getSetting("robots_block_ai").catch(() => false)) as boolean;
 
   const lines = [
+    "# ComfyClub — comfyclub.pk",
     "User-agent: *",
     "Allow: /",
+    // Dashboard, APIs and auth pages must never be indexed.
     "Disallow: /dashboard/",
     "Disallow: /api/",
+    // Admin draft previews (already noindex + auth-gated) and crawl traps.
+    "Disallow: /*?preview=",
+    "Disallow: /*&preview=",
+    // Let crawlers fetch CSS/JS so pages render correctly.
+    "Allow: /_next/static/",
   ];
   if (extra.trim()) lines.push(...extra.trim().split("\n").map((l) => l.trim()).filter(Boolean));
   if (blockAi) {
-    for (const bot of ["GPTBot", "ClaudeBot", "CCBot", "Google-Extended", "anthropic-ai", "PerplexityBot"]) {
+    for (const bot of ["GPTBot", "ChatGPT-User", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "PerplexityBot", "Bytespider", "Amazonbot"]) {
       lines.push("", `User-agent: ${bot}`, "Disallow: /");
     }
   }

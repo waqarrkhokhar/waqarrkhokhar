@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const supabase = createClient();
   const [{ data: parents }, { data: collections }] = await Promise.all([
-    supabase.from("parent_categories").select("slug, updated_at").eq("status", "published"),
-    supabase.from("categories").select("slug, updated_at").eq("status", "published"),
+    supabase.from("parent_categories").select("slug, updated_at").eq("status", "published").is("deleted_at", null),
+    supabase.from("categories").select("slug, updated_at").eq("status", "published").is("deleted_at", null),
   ]);
 
   const entries: UrlEntry[] = [
