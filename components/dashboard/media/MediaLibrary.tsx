@@ -38,6 +38,9 @@ export default function MediaLibrary() {
   const [syncing, setSyncing] = useState(false);
   const [del, setDel] = useState<Item | null>(null);
   const [folder, setFolder] = useState("all");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [sortBy, setSortBy] = useState<"date" | "name" | "size">("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [sel, setSel] = useState<Item | null>(null);
   const [altDraft, setAltDraft] = useState("");
   const [selectMode, setSelectMode] = useState(false);
@@ -56,7 +59,14 @@ export default function MediaLibrary() {
   useEffect(() => { load(); }, [load]);
 
   const folders = ["all", ...Array.from(new Set(rows.map((r) => r.folder)))];
-  const shown = folder === "all" ? rows : rows.filter((r) => r.folder === folder);
+  const filtered = folder === "all" ? rows : rows.filter((r) => r.folder === folder);
+  const shown = [...filtered].sort((a, b) => {
+    let cmp = 0;
+    if (sortBy === "name") cmp = fileLabel(a).toLowerCase().localeCompare(fileLabel(b).toLowerCase());
+    else if (sortBy === "size") cmp = (a.size_bytes ?? 0) - (b.size_bytes ?? 0);
+    else cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return sortDir === "asc" ? cmp : -cmp;
+  });
   const missingAlt = rows.filter((r) => !r.alt_text).length;
 
   function toggleSelect(id: string) {
@@ -170,14 +180,37 @@ export default function MediaLibrary() {
         onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
 
       <DashSection>
-        {/* Filter chips */}
-        <div className="mb-4 flex flex-wrap gap-2">
+        {/* Filter chips + view / sort controls */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           {folders.map((f) => (
             <button key={f} onClick={() => setFolder(f)}
               className={`rounded-full border px-3.5 py-1.5 text-[12px] capitalize transition ${folder === f ? "border-gold bg-gold/15 text-gold" : "border-line text-muted hover:border-gold/50 dark:border-white/10"}`}>
               {f === "all" ? "All Files" : f}
             </button>
           ))}
+
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {/* Sort field */}
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as "date" | "name" | "size")}
+              className="rounded-md border border-line bg-white px-2.5 py-1.5 text-[12px] outline-none focus:border-gold dark:border-white/10 dark:bg-white/5">
+              <option value="date">Sort: Date</option>
+              <option value="name">Sort: Name</option>
+              <option value="size">Sort: Size</option>
+            </select>
+            {/* Sort direction */}
+            <button onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+              title={sortDir === "asc" ? "Ascending" : "Descending"}
+              className="rounded-md border border-line px-2.5 py-1.5 text-[12px] text-muted transition hover:border-gold/50 dark:border-white/10">
+              {sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+            </button>
+            {/* View toggle */}
+            <div className="flex overflow-hidden rounded-md border border-line dark:border-white/10">
+              <button onClick={() => setView("grid")} title="Grid view"
+                className={`px-2.5 py-1.5 text-[13px] transition ${view === "grid" ? "bg-gold/15 text-gold" : "text-muted hover:bg-black/5 dark:hover:bg-white/10"}`}>▦</button>
+              <button onClick={() => setView("list")} title="List view"
+                className={`border-l border-line px-2.5 py-1.5 text-[13px] transition dark:border-white/10 ${view === "list" ? "bg-gold/15 text-gold" : "text-muted hover:bg-black/5 dark:hover:bg-white/10"}`}>☰</button>
+            </div>
+          </div>
         </div>
 
         {/* Missing-alt warning */}
@@ -200,12 +233,12 @@ export default function MediaLibrary() {
           </div>
         )}
 
-        {/* Grid */}
+        {/* Grid / List */}
         {loading ? (
           <p className="py-10 text-center text-sm text-muted">Loading…</p>
         ) : shown.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted">No images yet. Upload, or click “Sync from Storage”.</p>
-        ) : (
+        ) : view === "grid" ? (
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
             {shown.map((it) => {
               const isSel = selected.has(it.id);
@@ -221,6 +254,42 @@ export default function MediaLibrary() {
                   <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-4 text-left text-[9px] text-white">
                     {kb(it.size_bytes)} · {dims(it)}
                   </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-line dark:border-white/10">
+            {/* Header row */}
+            <div className="hidden grid-cols-[auto_1fr_90px_90px_110px] items-center gap-3 border-b border-line bg-panel px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted dark:border-white/10 dark:bg-white/5 sm:grid">
+              <span className="w-10" />
+              <span>Name</span>
+              <span>Size</span>
+              <span>Format</span>
+              <span>Uploaded</span>
+            </div>
+            {shown.map((it) => {
+              const isSel = selected.has(it.id);
+              return (
+                <button key={it.id} onClick={() => (selectMode ? toggleSelect(it.id) : openDetail(it))}
+                  className={`grid w-full grid-cols-[auto_1fr] items-center gap-3 border-b border-line px-3 py-2 text-left transition last:border-b-0 hover:bg-black/[0.03] dark:border-white/10 dark:hover:bg-white/5 sm:grid-cols-[auto_1fr_90px_90px_110px] ${isSel ? "bg-gold/10" : ""}`}>
+                  <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={it.thumbnail_url || it.url} alt={it.alt_text ?? ""} referrerPolicy="no-referrer" className="h-10 w-10 rounded-md border border-line object-cover dark:border-white/10" />
+                    {selectMode && (
+                      <span className={`absolute -left-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border text-[9px] font-bold ${isSel ? "border-gold bg-gold text-white" : "border-white bg-black/40 text-transparent"}`}>✓</span>
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 truncate text-[13px] font-medium text-charcoal dark:text-cream">
+                      {fileLabel(it).length > 50 ? fileLabel(it).slice(0, 50) + "…" : fileLabel(it)}
+                      {!it.alt_text && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Missing alt text" />}
+                    </span>
+                    <span className="truncate text-[11px] text-muted sm:hidden">{kb(it.size_bytes)} · {fmt(it.mime_type)} · {new Date(it.created_at).toLocaleDateString()}</span>
+                  </span>
+                  <span className="hidden text-[12px] text-muted sm:block">{kb(it.size_bytes)}</span>
+                  <span className="hidden text-[12px] text-muted sm:block">{fmt(it.mime_type)}</span>
+                  <span className="hidden text-[12px] text-muted sm:block">{new Date(it.created_at).toLocaleDateString()}</span>
                 </button>
               );
             })}
