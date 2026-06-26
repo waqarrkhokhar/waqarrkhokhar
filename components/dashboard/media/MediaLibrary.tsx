@@ -105,10 +105,13 @@ export default function MediaLibrary() {
 
   async function syncStorage() {
     setSyncing(true);
-    const res = await apiSend<{ data: { added: number } }>("/api/media/sync", "POST", { bucket: "media" });
+    const res = await apiSend<{ data: { added: number; restamped?: number } }>("/api/media/sync", "POST", { bucket: "media" });
     setSyncing(false);
     if (!res.ok) return toast.error(res.error);
-    toast.success(`Added ${res.data.data.added} image(s) from storage`);
+    const { added, restamped = 0 } = res.data.data;
+    const parts = [`Added ${added} image(s)`];
+    if (restamped) parts.push(`fixed ${restamped} upload date(s)`);
+    toast.success(parts.join(" · "));
     load();
   }
 
