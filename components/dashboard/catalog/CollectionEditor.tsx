@@ -230,7 +230,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
         onClose={() => setConfirmDelete(false)}
         onConfirm={remove}
         title="Move this collection to trash?"
-        message="It will be hidden from the storefront. Restore it any time from Settings → Trash."
+        message="It will be hidden from the storefront. Restore it any time from the Trash page."
         confirmLabel="Move to Trash"
         danger
       />

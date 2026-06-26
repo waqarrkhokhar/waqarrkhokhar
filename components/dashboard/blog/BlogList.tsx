@@ -137,7 +137,7 @@ export default function BlogList() {
         onClose={() => setToDelete(null)}
         onConfirm={remove}
         title={`Move '${toDelete?.title}' to trash?`}
-        message="It will be hidden from the blog. Restore it any time from Settings → Trash."
+        message="It will be hidden from the blog. Restore it any time from the Trash page."
         confirmLabel="Move to Trash"
         danger
       />

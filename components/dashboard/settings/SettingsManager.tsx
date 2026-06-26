@@ -42,7 +42,8 @@ export default function SettingsManager() {
       apiSend("/api/settings", "PATCH", { key: "site_url", value: siteUrl.trim().replace(/\/$/, "") }),
     ]);
     setSaving(false);
-    if (res.some((r) => !r.ok)) return toast.error("Could not save (admin only)");
+    const failed = res.filter((r) => !r.ok);
+    if (failed.length) return toast.error(failed[0].error || "Could not save settings");
     toast.success("Settings saved");
   }
 

@@ -239,7 +239,7 @@ export default function ReviewManager() {
       <AddReviewModal open={addOpen} onClose={() => setAddOpen(false)} onDone={() => { setAddOpen(false); refresh(); }} />
 
       <ConfirmDialog open={!!confirmDel} onClose={() => setConfirmDel(null)} onConfirm={del}
-        title="Move this review to trash?" message="It will be hidden from the storefront and ratings. Restore it any time from Settings → Trash." confirmLabel="Move to Trash" danger />
+        title="Move this review to trash?" message="It will be hidden from the storefront and ratings. Restore it any time from the Trash page." confirmLabel="Move to Trash" danger />
     </div>
   );
 }

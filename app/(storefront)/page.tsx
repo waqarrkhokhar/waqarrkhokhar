@@ -65,29 +65,39 @@ export default async function HomePage() {
 
   const firstCat = categories[0]?.slug ?? "/";
 
-  // Order matches the prototype exactly.
-  return (
-    <div>
-      <HeroSlider slides={slides} />
-
-      <TrustedBy clients={trusted} />
-
+  // Each builder-managed section keyed for ordering/visibility.
+  const sectionNodes: Record<string, React.ReactNode> = {
+    hero: <HeroSlider slides={slides} />,
+    trusted_by: <TrustedBy clients={trusted} />,
+    categories: (
       <section className="py-8">
         <SectionHeading title="Shop by Category" />
         <CategorySlider categories={categories} />
       </section>
+    ),
+    trending: <ProductRow title="Trending Now" subtitle="Our most popular pieces this month" viewAll={firstCat} products={trending} background="cream" />,
+    offers: <LimitedOffers products={offers} />,
+    why: <WhyComfyClub items={why} />,
+    how_it_works: <HowItWorks steps={how} />,
+    cta: <NeedHelpCTA />,
+  };
 
-      <ProductRow title="Trending Now" subtitle="Our most popular pieces this month" viewAll={firstCat} products={trending} background="cream" />
+  const DEFAULT_ORDER = ["hero", "trusted_by", "categories", "trending", "offers", "why", "how_it_works", "cta"];
+  const rawOrder = Array.isArray(config.section_order) ? (config.section_order as string[]) : [];
+  // Honour the dashboard's order + visibility; unknown/removed keys are skipped.
+  const order = rawOrder.filter((k) => k in sectionNodes);
+  const finalOrder = order.length ? order : DEFAULT_ORDER;
 
-      <WhyComfyClub items={why} />
+  return (
+    <div>
+      {finalOrder.map((key) => (
+        <div key={key}>{sectionNodes[key]}</div>
+      ))}
 
-      <LimitedOffers products={offers} />
-
-      <ProductRow title={feature.title} subtitle={feature.subtitle} viewAll={feature.link} products={feature.products} />
-
-      <NeedHelpCTA />
-
-      <HowItWorks steps={how} />
+      {/* Secondary featured collection row (always shown when populated). */}
+      {feature.products.length > 0 && (
+        <ProductRow title={feature.title} subtitle={feature.subtitle} viewAll={feature.link} products={feature.products} />
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ export async function GET() {
   const head = (build: (q: ReturnType<typeof base>) => ReturnType<typeof base>) =>
     build(base()).then((r) => r.count ?? 0);
   function base() {
-    return supabase.from("reviews").select("id", { count: "exact", head: true });
+    return supabase.from("reviews").select("id", { count: "exact", head: true }).is("deleted_at", null);
   }
 
   const [total, pending, approved, featured, ratingRows] = await Promise.all([
@@ -19,7 +19,7 @@ export async function GET() {
     head((q) => q.eq("status", "pending")),
     head((q) => q.eq("status", "approved")),
     head((q) => q.eq("is_featured", true)),
-    supabase.from("reviews").select("rating").eq("status", "approved"),
+    supabase.from("reviews").select("rating").eq("status", "approved").is("deleted_at", null),
   ]);
 
   if (ratingRows.error) return apiError(500, "INTERNAL_ERROR", ratingRows.error.message);

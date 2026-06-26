@@ -188,7 +188,7 @@ export default function PromotionManager() {
         onRowClick={openEdit}
         emptyTitle="No promotions yet" emptyDescription="Create an announcement bar, popup, or banner." />
       <ConfirmDialog open={!!toDelete} onClose={() => setToDelete(null)} onConfirm={remove}
-        title={`Move '${toDelete?.title}' to trash?`} message="Restore it any time from Settings → Trash." confirmLabel="Move to Trash" danger />
+        title={`Move '${toDelete?.title}' to trash?`} message="Restore it any time from the Trash page." confirmLabel="Move to Trash" danger />
     </div>
   );
 }

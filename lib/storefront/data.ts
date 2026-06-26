@@ -171,10 +171,20 @@ export async function getHomepageData() {
   }
   trending = trending.slice(0, 8);
 
-  const offers = all
-    .filter((p) => p.sale_price && p.price && p.sale_price < p.price)
-    .sort((a, b) => (b.price! - b.sale_price!) / b.price! - (a.price! - a.sale_price!) / a.price!)
-    .slice(0, 8);
+  // Offers: manual mode honours the dashboard's pinned_offers order; auto mode
+  // (default) sorts every on-sale product by biggest discount.
+  const onSale = all.filter((p) => p.sale_price && p.price && p.sale_price < p.price);
+  const pinnedOffers = Array.isArray(config.pinned_offers) ? (config.pinned_offers as string[]) : [];
+  let offers: StoreProduct[];
+  if (config.offers_mode === "manual" && pinnedOffers.length) {
+    const pinned = pinnedOffers.map((id) => byId.get(id)).filter(Boolean) as StoreProduct[];
+    const rest = onSale.filter((p) => !pinned.includes(p));
+    offers = [...pinned, ...rest].slice(0, 8);
+  } else {
+    offers = [...onSale]
+      .sort((a, b) => (b.price! - b.sale_price!) / b.price! - (a.price! - a.sale_price!) / a.price!)
+      .slice(0, 8);
+  }
 
   // Category cards: count + representative image (banner or first product image).
   const catCount = new Map<string, number>();

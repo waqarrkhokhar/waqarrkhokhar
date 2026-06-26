@@ -429,7 +429,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
         onClose={() => setConfirmArchive(false)}
         onConfirm={archive}
         title="Move this product to trash?"
-        message="It will be removed from the storefront. You can restore it any time from Settings → Trash."
+        message="It will be removed from the storefront. You can restore it any time from the Trash page."
         confirmLabel="Move to Trash"
         danger
       />

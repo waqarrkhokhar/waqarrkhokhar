@@ -288,7 +288,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
       </div>
 
       <ConfirmDialog open={confirmDelete} onClose={() => setConfirmDelete(false)} onConfirm={remove}
-        title="Move this post to trash?" message="It will be hidden from the blog. You can restore it any time from Settings → Trash." confirmLabel="Move to Trash" danger />
+        title="Move this post to trash?" message="It will be hidden from the blog. You can restore it any time from the Trash page." confirmLabel="Move to Trash" danger />
     </div>
   );
 }

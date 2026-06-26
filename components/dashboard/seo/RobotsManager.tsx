@@ -39,7 +39,7 @@ export default function RobotsManager() {
   return (
     <div>
       <DashPageHeader title="Robots.txt Manager" subtitle="Control how search engines crawl your site" breadcrumbs={[{ label: "SEO" }, { label: "Robots" }]}
-        actions={canEdit && <DashBtn onClick={save}>{saving ? "Saving…" : "Save Changes"}</DashBtn>} />
+        actions={canEdit && <DashBtn onClick={save} disabled={saving}>{saving ? "Saving…" : "Save Changes"}</DashBtn>} />
 
       <DashSection title="Extra Rules" subtitle="Added below the defaults (one directive per line, e.g. Disallow: /search)">
         <textarea value={extra} onChange={(e) => setExtra(e.target.value)} rows={6} disabled={!canEdit}

@@ -15,10 +15,12 @@ export async function GET() {
     supabase
       .from("parent_categories")
       .select("id, name, slug, sort_order")
+      .is("deleted_at", null)
       .order("sort_order"),
     supabase
       .from("categories")
       .select("id, name, slug, parent_id, sort_order, status")
+      .is("deleted_at", null)
       .order("sort_order"),
   ]);
 

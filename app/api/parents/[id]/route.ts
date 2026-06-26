@@ -46,11 +46,11 @@ export async function PATCH(request: Request, { params }: Params) {
 export async function DELETE(req: Request, { params }: Params) {
   const guard = await requireCapability("categories");
   if (!guard.ok) return guard.response;
-  if (guard.user.role !== "Super Admin" && guard.user.role !== "Admin") {
-    return apiError(403, "FORBIDDEN", "Only an Admin can delete a parent category");
-  }
 
   const permanent = new URL(req.url).searchParams.get("permanent") === "1";
+  if (permanent && guard.user.role !== "Super Admin" && guard.user.role !== "Admin") {
+    return apiError(403, "FORBIDDEN", "Only an Admin can permanently delete a parent category");
+  }
   const supabase = createClient();
   const { data: parent } = await supabase
     .from("parent_categories")

@@ -183,7 +183,7 @@ export default function ParentManager() {
         onClose={() => setToDelete(null)}
         onConfirm={remove}
         title={`Move '${toDelete?.name}' to trash?`}
-        message="It will be hidden from the storefront navigation. Restore it any time from Settings → Trash."
+        message="It will be hidden from the storefront navigation. Restore it any time from the Trash page."
         confirmLabel="Move to Trash"
         danger
       />

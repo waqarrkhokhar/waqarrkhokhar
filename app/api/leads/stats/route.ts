@@ -17,6 +17,8 @@ export async function GET() {
   const now = Date.now();
   const weekAgo = now - 7 * 864e5;
   const monthAgo = now - 30 * 864e5;
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const todayMs = todayStart.getTime();
 
   const tally = <T extends string>(key: (r: (typeof rows)[number]) => T) =>
     rows.reduce<Record<string, number>>((a, r) => {
@@ -33,6 +35,7 @@ export async function GET() {
 
   return ok({
     total: rows.length,
+    today: rows.filter((r) => new Date(r.created_at).getTime() >= todayMs).length,
     this_week: rows.filter((r) => new Date(r.created_at).getTime() >= weekAgo).length,
     this_month: rows.filter((r) => new Date(r.created_at).getTime() >= monthAgo).length,
     by_status: tally((r) => r.status),

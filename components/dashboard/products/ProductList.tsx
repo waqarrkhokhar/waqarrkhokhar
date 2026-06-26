@@ -196,7 +196,7 @@ export default function ProductList() {
         onClose={() => setConfirmDel(null)}
         onConfirm={del}
         title="Move product to trash"
-        message={confirmDel ? `Move "${confirmDel.name}" to trash? It will be removed from the storefront. Restore it any time from Settings → Trash.` : ""}
+        message={confirmDel ? `Move "${confirmDel.name}" to trash? It will be removed from the storefront. Restore it any time from the Trash page.` : ""}
         confirmLabel="Move to Trash"
         danger
       />

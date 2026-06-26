@@ -94,7 +94,7 @@ export default function CollectionList() {
         onClose={() => setToDelete(null)}
         onConfirm={remove}
         title={`Move '${toDelete?.name}' to trash?`}
-        message="It will be hidden from the storefront. Restore it any time from Settings → Trash."
+        message="It will be hidden from the storefront. Restore it any time from the Trash page."
         confirmLabel="Move to Trash"
         danger
       />

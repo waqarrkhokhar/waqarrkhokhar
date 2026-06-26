@@ -119,7 +119,7 @@ export default function PagesManager() {
             <DashSection title="Media"><ImageField label="Banner Image" value={f.banner_image} onChange={(v) => setF({ ...f, banner_image: v })} helper="Choose from your library or upload." /></DashSection>
             <DashSection title="SEO">
               <DashInput label="Meta Title" value={f.meta_title} onChange={(v) => setF({ ...f, meta_title: v })} helper={`${f.meta_title.length}/70`} />
-              <DashInput label="Meta Description" textarea rows={2} value={f.meta_description} onChange={(v) => setF({ ...f, meta_description: v })} helper={`${f.meta_description.length}/160`} />
+              <DashInput label="Meta Description" textarea rows={2} value={f.meta_description} onChange={(v) => setF({ ...f, meta_description: v })} helper={`${f.meta_description.length}/200`} />
             </DashSection>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function PagesManager() {
         actions={<DashBtn icon="+" onClick={openNew}>Create Page</DashBtn>} />
       <DashTable columns={columns} rows={rows} getId={(p) => p.id} loading={loading} onRowClick={(p) => openEdit(p.id)}
         emptyTitle="No pages yet" emptyDescription="Create a custom or landing page." />
-      <ConfirmDialog open={!!del} onClose={() => setDel(null)} onConfirm={remove} title={`Delete '${del?.title}'?`} message="This permanently removes the page." confirmLabel="Delete" danger />
+      <ConfirmDialog open={!!del} onClose={() => setDel(null)} onConfirm={remove} title={`Move '${del?.title}' to trash?`} message="It will be hidden from the site. Restore it any time from the Trash page." confirmLabel="Move to Trash" danger />
     </div>
   );
 }

@@ -22,16 +22,17 @@ export default function CustomFields() {
   const [del, setDel] = useState<Field | null>(null);
 
   useEffect(() => {
-    apiGet<{ data: Record<string, unknown> }>("/api/settings").then((r) => {
+    apiGet<{ data: { fields: Field[] } }>("/api/custom-fields").then((r) => {
       if (!r.ok) { setCanEdit(false); return; }
-      setFields(Array.isArray(r.data.data.custom_fields) ? (r.data.data.custom_fields as Field[]) : []);
+      setFields(Array.isArray(r.data.data.fields) ? r.data.data.fields : []);
     });
   }, []);
 
   async function persist(next: Field[]) {
-    const res = await apiSend("/api/settings", "PATCH", { key: "custom_fields", value: next });
-    if (!res.ok) return toast.error("Could not save (admin only)");
+    const res = await apiSend("/api/custom-fields", "PATCH", { fields: next });
+    if (!res.ok) { toast.error(res.error || "Could not save"); return false; }
     setFields(next);
+    return true;
   }
 
   function openNew() { setEditId(null); setF({ ...blank }); setOpen(true); }
@@ -41,16 +42,16 @@ export default function CustomFields() {
     if (!f.name.trim()) return toast.error("Field name is required");
     const next = editId
       ? fields.map((x) => (x.id === editId ? { ...x, ...f } : x))
-      : [...fields, { id: Date.now().toString(36), ...f }];
-    await persist(next);
-    toast.success(editId ? "Field updated" : "Field added");
-    setOpen(false);
+      : [...fields, { id: `${Date.now().toString(36)}${Math.round(performance.now())}`, ...f }];
+    if (await persist(next)) {
+      toast.success(editId ? "Field updated" : "Field added");
+      setOpen(false);
+    }
   }
 
   async function remove() {
     if (!del) return;
-    await persist(fields.filter((x) => x.id !== del.id));
-    toast.success(`"${del.name}" deleted`);
+    if (await persist(fields.filter((x) => x.id !== del.id))) toast.success(`"${del.name}" deleted`);
     setDel(null);
   }
 

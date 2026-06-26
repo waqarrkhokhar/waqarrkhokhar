@@ -45,13 +45,8 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
     apiGet<{ data: ProductHealth }>("/api/products/health").then((r) => r.ok && setHealth(r.data.data));
     apiGet<{ data: { count: number } }>("/api/reviews/pending").then((r) => r.ok && setPending(r.data.data.count));
     apiGet<{ data: unknown[] }>("/api/collections").then((r) => r.ok && setCollections(r.data.data.length));
-    apiGet<{ data: Lead[] }>("/api/leads?limit=6").then((r) => {
-      if (r.ok) {
-        setLeads(r.data.data);
-        const today = new Date().toDateString();
-        setLeadsToday(r.data.data.filter((l) => new Date(l.created_at).toDateString() === today).length);
-      }
-    });
+    apiGet<{ data: Lead[] }>("/api/leads?limit=6").then((r) => r.ok && setLeads(r.data.data));
+    apiGet<{ data: { today: number } }>("/api/leads/stats").then((r) => r.ok && setLeadsToday(r.data.data.today));
   }, []);
 
   const total = health?.total ?? "-";

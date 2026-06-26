@@ -12,7 +12,12 @@ import type { ProductStatus } from "@/lib/types/database";
 /** GET /api/products — list (public sees published; staff see all statuses). */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const { page, limit, sort, order, offset } = parseListParams(url);
+  const parsed = parseListParams(url);
+  const { page, sort, order } = parsed;
+  // Allow a higher explicit limit (up to 1000) so the SEO/metadata index and
+  // exports can fetch the whole catalog; default list views still use 20.
+  const limit = Math.min(1000, Math.max(1, parseInt(url.searchParams.get("limit") || String(parsed.limit), 10) || parsed.limit));
+  const offset = (page - 1) * limit;
   const user = await getCurrentUser();
   const isStaff = !!user && can(user.role, "products");
 
