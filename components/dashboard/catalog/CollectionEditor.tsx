@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   DashPageHeader, DashSection, DashTabs, DashInput, DashSelect, DashToggle, DashBtn,
 } from "@/components/dashboard/shared/Dash";
 import RichTextEditor from "@/components/dashboard/shared/RichTextEditor";
+import ImageField from "@/components/dashboard/shared/ImageField";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -21,7 +22,6 @@ const EMPTY_SEO: SeoContent = { whyBuy: "", shopByRoom: "", howToChoose: "", bot
 export default function CollectionEditor({ mode, collectionId }: { mode: Mode; collectionId?: string }) {
   const router = useRouter();
   const toast = useToast();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [tab, setTab] = useState<Tab>("basic");
   const [parents, setParents] = useState<{ id: string; name: string }[]>([]);
@@ -103,15 +103,6 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     router.push("/dashboard/collections");
   }
 
-  async function uploadBanner(file: File) {
-    const form = new FormData();
-    form.append("file", file); form.append("folder", "media");
-    const up = await fetch("/api/media/upload", { method: "POST", body: form });
-    const json = await up.json().catch(() => ({}));
-    if (!up.ok) return toast.error(json.error ?? "Upload failed");
-    set("banner_image", json.data.url);
-    toast.success("Banner uploaded");
-  }
 
   const score = computeSeoScore({
     metaTitle: f.meta_title, metaDescription: f.meta_description, focusKeyword: f.focus_keyword,
@@ -167,13 +158,10 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
 
       {tab === "media" && (
         <DashSection title="Hero Banner" subtitle="Shown at the top of the collection page">
-          <DashInput label="Banner Image URL" value={f.banner_image} onChange={(v) => set("banner_image", v)} placeholder="Upload or paste an image URL" />
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-            onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadBanner(file); e.target.value = ""; }} />
-          <DashBtn variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>Upload file</DashBtn>
+          <ImageField label="Banner Image" value={f.banner_image} onChange={(v) => set("banner_image", v)} helper="Choose from your library or upload a new image." />
           {f.banner_image && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={f.banner_image} alt="" referrerPolicy="no-referrer" className="mt-3 h-40 w-full rounded-lg object-cover" />
+            <img src={f.banner_image} alt="" referrerPolicy="no-referrer" className="mt-1 h-40 w-full rounded-lg object-cover" />
           )}
         </DashSection>
       )}
@@ -215,8 +203,8 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
               <DashInput label="Focus Keyword" value={f.focus_keyword} onChange={(v) => set("focus_keyword", v)} />
               <DashInput label="Canonical URL" value={f.canonical_url} onChange={(v) => set("canonical_url", v)} />
-              <DashInput label="OG Image URL" value={f.og_image} onChange={(v) => set("og_image", v)} />
             </div>
+            <ImageField label="Social Share Image (OG)" value={f.og_image} onChange={(v) => set("og_image", v)} helper="Optional. Shown when the page is shared on social media. Falls back to the banner." />
             <div className="mt-2 rounded-lg border border-line p-3 dark:border-white/10">
               <DashToggle label="Index this collection" checked={!/noindex/.test(f.robots)} onChange={(v) => set("robots", `${v ? "index" : "noindex"}, ${/nofollow/.test(f.robots) ? "nofollow" : "follow"}`)} helper="Off = hide this collection page from Google (noindex)" />
               <DashToggle label="Follow links" checked={!/nofollow/.test(f.robots)} onChange={(v) => set("robots", `${/noindex/.test(f.robots) ? "noindex" : "index"}, ${v ? "follow" : "nofollow"}`)} helper="Off = tell Google not to follow links on this page (nofollow)" />

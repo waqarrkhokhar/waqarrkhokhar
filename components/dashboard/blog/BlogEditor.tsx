@@ -8,6 +8,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
+import ImageField from "@/components/dashboard/shared/ImageField";
 import { computeSeoScore, countWords } from "@/lib/seo/score";
 import { slugify } from "@/lib/slug";
 import { BLOG_CATEGORIES } from "@/lib/blog/schema";
@@ -21,7 +22,6 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
   const router = useRouter();
   const toast = useToast();
   const contentRef = useRef<HTMLTextAreaElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [tab, setTab] = useState<Tab>("content");
   const [loading, setLoading] = useState(mode === "edit");
@@ -117,15 +117,6 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     if (!res.ok) return toast.error(res.error);
     toast.success("Post moved to trash");
     router.push("/dashboard/blog");
-  }
-
-  async function upload(file: File) {
-    const form = new FormData();
-    form.append("file", file); form.append("folder", "blog");
-    const up = await fetch("/api/media/upload", { method: "POST", body: form });
-    const json = await up.json().catch(() => ({}));
-    if (!up.ok) return toast.error(json.error ?? "Upload failed");
-    set("featured_image", json.data.url);
   }
 
   const score = computeSeoScore({
@@ -291,14 +282,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
             <DashInput textarea rows={3} value={f.excerpt} onChange={(v) => set("excerpt", v)} helper={`${f.excerpt.length}/300`} />
           </DashSection>
           <DashSection title="Featured Image">
-            <DashInput value={f.featured_image} onChange={(v) => set("featured_image", v)} placeholder="Image URL" />
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-              onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(file); e.target.value = ""; }} />
-            <DashBtn variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>Upload</DashBtn>
-            {f.featured_image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={f.featured_image} alt="" referrerPolicy="no-referrer" className="mt-2 h-28 w-full rounded-lg object-cover" />
-            )}
+            <ImageField value={f.featured_image} onChange={(v) => set("featured_image", v)} folder="blog" helper="Used as the blog cover and social share image." />
           </DashSection>
         </div>
       </div>

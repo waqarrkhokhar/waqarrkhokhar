@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { DashPageHeader, DashSection, DashInput, DashBtn } from "@/components/dashboard/shared/Dash";
+import ImageField from "@/components/dashboard/shared/ImageField";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 
@@ -12,95 +13,6 @@ type Branding = { favicon: string; header_logo: string; footer_logo: string };
 const EMPTY_BIZ: Biz = { name: "ComfyClub", tagline: "Furniture Worth Keeping", whatsapp: "", email: "", phone: "", address: "" };
 const EMPTY_SOCIAL: Social = { facebook: "", instagram: "", tiktok: "", linkedin: "", youtube: "" };
 const EMPTY_BRANDING: Branding = { favicon: "", header_logo: "", footer_logo: "" };
-
-/** Upload control for a single branding image (favicon / logo). */
-function LogoUpload({
-  label,
-  helper,
-  value,
-  onChange,
-  disabled,
-  dark,
-}: {
-  label: string;
-  helper?: string;
-  value: string;
-  onChange: (url: string) => void;
-  disabled?: boolean;
-  dark?: boolean;
-}) {
-  const toast = useToast();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function upload(file: File) {
-    setBusy(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "media");
-      const res = await fetch("/api/media/upload", { method: "POST", body: fd });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) {
-        toast.error(json?.error?.message || "Upload failed");
-        return;
-      }
-      onChange(json?.data?.url ?? "");
-      toast.success(`${label} uploaded`);
-    } catch {
-      toast.error("Upload failed");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="mb-4">
-      <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">{label}</label>
-      <div className="flex items-center gap-3">
-        <div
-          className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line dark:border-white/10 ${
-            dark ? "bg-navy" : "bg-cream/40 dark:bg-white/5"
-          }`}
-        >
-          {value ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={value} alt={label} className="max-h-full max-w-full object-contain" />
-          ) : (
-            <span className="text-[10px] text-muted">No image</span>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/x-icon,image/vnd.microsoft.icon"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) upload(f);
-              e.target.value = "";
-            }}
-          />
-          <DashBtn variant="ghost" onClick={() => inputRef.current?.click()} disabled={disabled || busy}>
-            {busy ? "Uploading…" : value ? "Replace" : "Upload"}
-          </DashBtn>
-          {value && (
-            <button
-              type="button"
-              onClick={() => onChange("")}
-              disabled={disabled || busy}
-              className="text-xs font-medium text-red-600 hover:underline disabled:opacity-40"
-            >
-              Remove
-            </button>
-          )}
-        </div>
-      </div>
-      {helper && <p className="mt-1.5 text-[11px] leading-relaxed text-muted">{helper}</p>}
-    </div>
-  );
-}
 
 export default function SettingsManager() {
   const toast = useToast();
@@ -153,21 +65,21 @@ export default function SettingsManager() {
 
       <DashSection title="Branding & Logos" subtitle="Favicon and logos shown in the browser tab, site header and footer">
         <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
-          <LogoUpload
+          <ImageField
             label="Favicon"
             helper="The small icon in the browser tab and bookmarks. Use a square PNG/ICO (32×32 or 48×48)."
             value={branding.favicon}
             onChange={bg("favicon")}
             disabled={!canEdit}
           />
-          <LogoUpload
+          <ImageField
             label="Header Logo"
             helper="Shown top-left of every page. A transparent PNG works best. Leave empty to show the “ComfyClub” text."
             value={branding.header_logo}
             onChange={bg("header_logo")}
             disabled={!canEdit}
           />
-          <LogoUpload
+          <ImageField
             label="Footer Logo"
             helper="Shown in the footer (on a dark background). A white/transparent PNG works best."
             value={branding.footer_logo}

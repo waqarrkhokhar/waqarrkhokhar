@@ -20,6 +20,7 @@ import { slugify } from "@/lib/slug";
 import type { Catalog } from "./types";
 import ProductImages, { type ProductImage } from "./ProductImages";
 import ProductReviews from "./ProductReviews";
+import ImageField from "@/components/dashboard/shared/ImageField";
 
 type Mode = "create" | "edit";
 type Tab =
@@ -343,7 +344,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               <DashSection title="Social Sharing">
                 <DashInput label="OG Title" value={form.og_title} onChange={(v) => set("og_title", v)} placeholder="Same as meta title if empty" />
                 <DashInput label="OG Description" textarea rows={2} value={form.og_description} onChange={(v) => set("og_description", v)} placeholder="Same as meta description if empty" />
-                <DashInput label="OG Image" value={form.og_image} onChange={(v) => set("og_image", v)} placeholder="Image URL (defaults to the first product image)" />
+                <ImageField label="OG Image" value={form.og_image} onChange={(v) => set("og_image", v)} folder="products" helper="Optional social-share image. Defaults to the first product image." />
               </DashSection>
 
               <DashSection title="Robots & Score">

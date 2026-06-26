@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Field";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 import { apiSend } from "@/lib/api/client";
+import MediaPicker from "@/components/dashboard/shared/MediaPicker";
 
 export type ProductImage = {
   id: string;
@@ -28,6 +29,19 @@ export default function ProductImages({
   const fileRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  async function addFromLibrary(urls: string[]) {
+    setBusy(true);
+    let added = 0;
+    for (const u of urls) {
+      const res = await apiSend(base, "POST", { url: u });
+      if (res.ok) added++;
+    }
+    setBusy(false);
+    if (added) { toast.success(`${added} image(s) added`); onChange(); }
+    else toast.error("Could not add images");
+  }
 
   const base = `/api/products/${productId}/images`;
   const sorted = [...images].sort((a, b) => a.sort_order - b.sort_order);
@@ -112,12 +126,22 @@ export default function ProductImages({
         <Button
           variant="secondary"
           size="sm"
+          onClick={() => setPickerOpen(true)}
+          disabled={busy}
+        >
+          Choose from Library
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => fileRef.current?.click()}
           loading={busy}
         >
           Upload file
         </Button>
       </div>
+
+      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelectMany={addFromLibrary} folder="products" title="Add Product Images" />
 
       {sorted.length === 0 ? (
         <p className="rounded-lg border border-dashed border-black/10 p-6 text-center text-sm text-charcoal/60 dark:border-white/10 dark:text-cream/60">

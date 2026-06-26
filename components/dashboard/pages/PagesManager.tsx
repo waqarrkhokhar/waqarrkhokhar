@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DashPageHeader, DashSection, DashBadge, DashBtn, DashInput, DashSelect } from "@/components/dashboard/shared/Dash";
+import ImageField from "@/components/dashboard/shared/ImageField";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -115,7 +116,7 @@ export default function PagesManager() {
               </DashSelect>
               {pageType !== "custom" && <p className="text-[11px] text-muted">This is a {pageType} page.</p>}
             </DashSection>
-            <DashSection title="Media"><DashInput label="Banner Image URL" value={f.banner_image} onChange={(v) => setF({ ...f, banner_image: v })} /></DashSection>
+            <DashSection title="Media"><ImageField label="Banner Image" value={f.banner_image} onChange={(v) => setF({ ...f, banner_image: v })} helper="Choose from your library or upload." /></DashSection>
             <DashSection title="SEO">
               <DashInput label="Meta Title" value={f.meta_title} onChange={(v) => setF({ ...f, meta_title: v })} helper={`${f.meta_title.length}/70`} />
               <DashInput label="Meta Description" textarea rows={2} value={f.meta_description} onChange={(v) => setF({ ...f, meta_description: v })} helper={`${f.meta_description.length}/160`} />

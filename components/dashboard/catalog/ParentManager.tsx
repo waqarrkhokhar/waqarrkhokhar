@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
 import { DashPageHeader, DashSection, DashBtn, DashBadge, DashInput, DashSelect, DashToggle } from "@/components/dashboard/shared/Dash";
+import ImageField from "@/components/dashboard/shared/ImageField";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -126,7 +127,7 @@ export default function ParentManager() {
             </DashSelect>
             <DashInput label="Sort Order" type="number" value={form.sort_order} onChange={(v) => setForm((f) => ({ ...f, sort_order: v }))} />
           </div>
-          <DashInput label="Banner Image" value={form.banner_image} onChange={(v) => setForm((f) => ({ ...f, banner_image: v }))} placeholder="Image URL for the category banner" />
+          <ImageField label="Banner Image" value={form.banner_image} onChange={(v) => setForm((f) => ({ ...f, banner_image: v }))} helper="Choose from your library or upload. Shown on the category page." />
           <DashInput label="Description" textarea rows={3} value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} />
         </DashSection>
         <DashSection title="SEO">

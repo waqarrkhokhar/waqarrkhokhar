@@ -6,6 +6,7 @@ import { Field, Input, Textarea, Select } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 import ProductPinPicker from "./ProductPinPicker";
+import ImageField from "@/components/dashboard/shared/ImageField";
 
 type Slide = { image: string; subtitle: string; title: string; desc: string; cta: string; link: string };
 type Client = { name: string; href: string; type: string };
@@ -64,7 +65,7 @@ function ListEditor<T extends Record<string, string>>({
   addLabel,
 }: {
   items: T[];
-  fields: { key: keyof T; label: string; textarea?: boolean }[];
+  fields: { key: keyof T; label: string; textarea?: boolean; image?: boolean }[];
   blank: T;
   onChange: (items: T[]) => void;
   addLabel: string;
@@ -87,25 +88,34 @@ function ListEditor<T extends Record<string, string>>({
             </div>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
-            {fields.map((f) => (
-              <Field key={String(f.key)} label={f.label}>
-                {f.textarea ? (
-                  <Textarea
-                    value={item[f.key]}
-                    onChange={(e) =>
-                      onChange(items.map((it, x) => (x === i ? { ...it, [f.key]: e.target.value } : it)))
-                    }
-                  />
-                ) : (
-                  <Input
-                    value={item[f.key]}
-                    onChange={(e) =>
-                      onChange(items.map((it, x) => (x === i ? { ...it, [f.key]: e.target.value } : it)))
-                    }
-                  />
-                )}
-              </Field>
-            ))}
+            {fields.map((f) =>
+              f.image ? (
+                <ImageField
+                  key={String(f.key)}
+                  label={f.label}
+                  value={item[f.key]}
+                  onChange={(url) => onChange(items.map((it, x) => (x === i ? { ...it, [f.key]: url } : it)))}
+                />
+              ) : (
+                <Field key={String(f.key)} label={f.label}>
+                  {f.textarea ? (
+                    <Textarea
+                      value={item[f.key]}
+                      onChange={(e) =>
+                        onChange(items.map((it, x) => (x === i ? { ...it, [f.key]: e.target.value } : it)))
+                      }
+                    />
+                  ) : (
+                    <Input
+                      value={item[f.key]}
+                      onChange={(e) =>
+                        onChange(items.map((it, x) => (x === i ? { ...it, [f.key]: e.target.value } : it)))
+                      }
+                    />
+                  )}
+                </Field>
+              ),
+            )}
           </div>
         </div>
       ))}
@@ -201,7 +211,7 @@ export default function HomepageBuilder() {
           addLabel="Add slide"
           blank={{ image: "", subtitle: "", title: "", desc: "", cta: "", link: "" }}
           fields={[
-            { key: "image", label: "Image URL" },
+            { key: "image", label: "Slide Image", image: true },
             { key: "link", label: "Link (e.g. /sofas/sofa-chair/)" },
             { key: "subtitle", label: "Subtitle" },
             { key: "title", label: "Title" },
