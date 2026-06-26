@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
-import { DashPageHeader, DashSection, DashBtn, DashBadge, DashInput, DashSelect } from "@/components/dashboard/shared/Dash";
+import { DashPageHeader, DashSection, DashBtn, DashBadge, DashInput, DashSelect, DashToggle } from "@/components/dashboard/shared/Dash";
 import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
@@ -18,6 +18,7 @@ type Parent = {
   focus_keyword: string | null;
   banner_image: string | null;
   description: string | null;
+  robots: string | null;
   children_count: number;
   products_count: number;
 };
@@ -25,12 +26,12 @@ type Parent = {
 type FormState = {
   name: string; slug: string; status: string; sort_order: string;
   banner_image: string; description: string;
-  meta_title: string; meta_description: string; focus_keyword: string;
+  meta_title: string; meta_description: string; focus_keyword: string; robots: string;
 };
 
 const EMPTY: FormState = {
   name: "", slug: "", status: "published", sort_order: "0",
-  banner_image: "", description: "", meta_title: "", meta_description: "", focus_keyword: "",
+  banner_image: "", description: "", meta_title: "", meta_description: "", focus_keyword: "", robots: "index, follow",
 };
 
 export default function ParentManager() {
@@ -63,6 +64,7 @@ export default function ParentManager() {
       name: p.name, slug: p.slug, status: p.status, sort_order: String(p.sort_order),
       banner_image: p.banner_image ?? "", description: p.description ?? "",
       meta_title: p.meta_title ?? "", meta_description: p.meta_description ?? "", focus_keyword: p.focus_keyword ?? "",
+      robots: p.robots ?? "index, follow",
     });
     setEditing(p);
   }
@@ -74,7 +76,7 @@ export default function ParentManager() {
       name: form.name.trim(), status: form.status, sort_order: parseInt(form.sort_order, 10) || 0,
       banner_image: form.banner_image.trim() || null, description: form.description.trim() || null,
       meta_title: form.meta_title.trim() || null, meta_description: form.meta_description.trim() || null,
-      focus_keyword: form.focus_keyword.trim() || null,
+      focus_keyword: form.focus_keyword.trim() || null, robots: form.robots,
     };
     const res = editing !== "new" && editing
       ? await apiSend(`/api/parents/${editing.id}`, "PATCH", payload)
@@ -131,6 +133,10 @@ export default function ParentManager() {
           <DashInput label="Meta Title" value={form.meta_title} onChange={(v) => setForm((f) => ({ ...f, meta_title: v }))} helper={`${form.meta_title.length}/60`} />
           <DashInput label="Meta Description" textarea rows={2} value={form.meta_description} onChange={(v) => setForm((f) => ({ ...f, meta_description: v }))} helper={`${form.meta_description.length}/160`} />
           <DashInput label="Focus Keyword" value={form.focus_keyword} onChange={(v) => setForm((f) => ({ ...f, focus_keyword: v }))} />
+          <div className="mt-2 rounded-lg border border-line p-3 dark:border-white/10">
+            <DashToggle label="Index this category" checked={!/noindex/.test(form.robots)} onChange={(v) => setForm((f) => ({ ...f, robots: `${v ? "index" : "noindex"}, ${/nofollow/.test(f.robots) ? "nofollow" : "follow"}` }))} helper="Off = hide this category page from Google (noindex)" />
+            <DashToggle label="Follow links" checked={!/nofollow/.test(form.robots)} onChange={(v) => setForm((f) => ({ ...f, robots: `${/noindex/.test(f.robots) ? "noindex" : "index"}, ${v ? "follow" : "nofollow"}` }))} helper="Off = tell Google not to follow links on this page (nofollow)" />
+          </div>
         </DashSection>
       </div>
     );

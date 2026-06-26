@@ -216,7 +216,10 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
               <DashInput label="Focus Keyword" value={f.focus_keyword} onChange={(v) => set("focus_keyword", v)} />
               <DashInput label="Canonical URL" value={f.canonical_url} onChange={(v) => set("canonical_url", v)} />
               <DashInput label="OG Image URL" value={f.og_image} onChange={(v) => set("og_image", v)} />
-              <DashInput label="Robots" value={f.robots} onChange={(v) => set("robots", v)} />
+            </div>
+            <div className="mt-2 rounded-lg border border-line p-3 dark:border-white/10">
+              <DashToggle label="Index this collection" checked={!/noindex/.test(f.robots)} onChange={(v) => set("robots", `${v ? "index" : "noindex"}, ${/nofollow/.test(f.robots) ? "nofollow" : "follow"}`)} helper="Off = hide this collection page from Google (noindex)" />
+              <DashToggle label="Follow links" checked={!/nofollow/.test(f.robots)} onChange={(v) => set("robots", `${/noindex/.test(f.robots) ? "noindex" : "index"}, ${v ? "follow" : "nofollow"}`)} helper="Off = tell Google not to follow links on this page (nofollow)" />
             </div>
             <DashToggle label="Enable schema markup (CollectionPage + FAQ)" checked={f.schema_enabled} onChange={(v) => set("schema_enabled", v)} />
           </DashSection>

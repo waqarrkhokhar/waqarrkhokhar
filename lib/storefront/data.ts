@@ -243,6 +243,7 @@ export type ProductDetail = {
   meta_title: string | null;
   meta_description: string | null;
   og_image: string | null;
+  robots: string | null;
   images: ProductImage[];
   category: { name: string; slug: string; parent_name: string; parent_slug: string } | null;
   rating: number | null;
@@ -258,7 +259,7 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
     .from("products")
     .select(
       `id, name, slug, sku, price, sale_price, short_description, long_description,
-       features, whatsapp_message_template, meta_title, meta_description, og_image, category_id,
+       features, whatsapp_message_template, meta_title, meta_description, og_image, robots, category_id,
        category:categories(name, slug, parent:parent_categories(name, slug)),
        product_images(url, alt_text, is_primary, sort_order)`,
     )
@@ -331,6 +332,7 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
     meta_title: row.meta_title,
     meta_description: row.meta_description,
     og_image: row.og_image,
+    robots: row.robots ?? null,
     images,
     category: row.category
       ? {
@@ -358,6 +360,7 @@ export type CategoryPage = {
   banner_image: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  robots: string | null;
   breadcrumb: { name: string; slug: string }[];
   products: StoreProduct[];
   /** For a parent: its child collections (with counts) to show as cards. */
@@ -373,7 +376,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
   let colQ = supabase
     .from("categories")
     .select(
-      `id, name, slug, description, intro_content, content_html, banner_image, meta_title, meta_description,
+      `id, name, slug, description, intro_content, content_html, banner_image, meta_title, meta_description, robots,
        parent:parent_categories(name, slug)`,
     )
     .eq("slug", slug)
@@ -394,6 +397,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
       banner_image: c.banner_image,
       meta_title: c.meta_title,
       meta_description: c.meta_description,
+      robots: c.robots ?? null,
       breadcrumb: c.parent ? [{ name: c.parent.name, slug: c.parent.slug }, { name: c.name, slug: c.slug }] : [{ name: c.name, slug: c.slug }],
       products,
       children: [],
@@ -403,7 +407,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
   // Otherwise a parent category.
   let parentQ = supabase
     .from("parent_categories")
-    .select("id, name, slug, description, banner_image, meta_title, meta_description")
+    .select("id, name, slug, description, banner_image, meta_title, meta_description, robots")
     .eq("slug", slug)
     .is("deleted_at", null);
   if (!preview) parentQ = parentQ.eq("status", "published");
@@ -460,6 +464,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
     banner_image: parent.banner_image,
     meta_title: parent.meta_title,
     meta_description: parent.meta_description,
+    robots: parent.robots ?? null,
     breadcrumb: [{ name: parent.name, slug: parent.slug }],
     products,
     children,

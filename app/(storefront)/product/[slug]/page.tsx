@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProductDetail } from "@/lib/storefront/data";
+import { robotsMeta } from "@/lib/seo/robots";
 import { isPreviewRequest } from "@/lib/storefront/preview";
 import ProductView from "@/components/storefront/product/ProductView";
 import { ProductRow } from "@/components/storefront/home/Sections";
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title,
     description,
+    robots: robotsMeta(p.robots),
     openGraph: { title, description, images: image ? [image] : undefined, type: "website" },
   };
 }

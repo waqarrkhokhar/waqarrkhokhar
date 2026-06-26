@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategoryPage } from "@/lib/storefront/data";
+import { robotsMeta } from "@/lib/seo/robots";
 import { isPreviewRequest } from "@/lib/storefront/preview";
 import CollectionGrid from "@/components/storefront/CollectionGrid";
 import CollapsibleContent from "@/components/storefront/CollapsibleContent";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: { params: { path: string[] } 
   const title = page.meta_title || `${page.name} | ComfyClub`;
   const description = page.meta_description || page.description || `Browse ${page.name} — handcrafted, made to order in Lahore by ComfyClub.`;
   const image = page.banner_image || undefined;
-  return { title, description, openGraph: { title, description, images: image ? [image] : undefined } };
+  return { title, description, robots: robotsMeta(page.robots), openGraph: { title, description, images: image ? [image] : undefined } };
 }
 
 export default async function CategoryPage({ params, searchParams }: { params: { path: string[] }; searchParams: { preview?: string } }) {
