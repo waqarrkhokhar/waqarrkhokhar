@@ -5,10 +5,11 @@ import Link from "next/link";
 import type { NavParent } from "@/lib/storefront/data";
 import SearchOverlay from "./SearchOverlay";
 
-export default function Header({ nav }: { nav: NavParent[] }) {
+export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: string; brand?: string }) {
   const [drawer, setDrawer] = useState(false);
   const [search, setSearch] = useState(false);
   const [openParent, setOpenParent] = useState<string | null>(null);
+  const brandName = brand || "ComfyClub";
 
   return (
     <>
@@ -24,8 +25,13 @@ export default function Header({ nav }: { nav: NavParent[] }) {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="font-heading text-2xl font-semibold tracking-wide text-navy">
-            ComfyClub
+          <Link href="/" className="font-heading text-2xl font-semibold tracking-wide text-navy" aria-label={brandName}>
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt={brandName} className="h-9 w-auto max-w-[180px] object-contain" />
+            ) : (
+              brandName
+            )}
           </Link>
 
           {/* Desktop nav */}
@@ -76,7 +82,12 @@ export default function Header({ nav }: { nav: NavParent[] }) {
           <div className="absolute inset-0 bg-black/50" onClick={() => setDrawer(false)} />
           <div className="absolute inset-y-0 left-0 w-[300px] overflow-y-auto bg-white p-6">
             <div className="mb-6 flex items-center justify-between">
-              <span className="font-heading text-xl font-semibold text-navy">ComfyClub</span>
+              {logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logo} alt={brandName} className="h-8 w-auto max-w-[150px] object-contain" />
+              ) : (
+                <span className="font-heading text-xl font-semibold text-navy">{brandName}</span>
+              )}
               <button onClick={() => setDrawer(false)} aria-label="Close">✕</button>
             </div>
             <nav className="space-y-1">

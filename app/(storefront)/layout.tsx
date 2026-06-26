@@ -11,7 +11,7 @@ export default async function StorefrontLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { nav, business, social, announcement, footer } = await getChrome();
+  const { nav, business, social, announcement, footer, branding } = await getChrome();
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -21,9 +21,9 @@ export default async function StorefrontLayout({
         bg={announcement.bg}
         color={announcement.color}
       />
-      <Header nav={nav} />
+      <Header nav={nav} logo={branding.header_logo} brand={business.name} />
       <main>{children}</main>
-      <Footer nav={nav} business={business} social={social} footer={footer} />
+      <Footer nav={nav} business={business} social={social} footer={footer} logo={branding.footer_logo} />
       <FloatingButtons />
     </div>
   );

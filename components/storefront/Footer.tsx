@@ -42,11 +42,13 @@ export default function Footer({
   business,
   social,
   footer,
+  logo,
 }: {
   nav: NavParent[];
   business: Record<string, string>;
   social: Record<string, string>;
   footer?: { brand?: string; copyright?: string };
+  logo?: string;
 }) {
   const existing = new Set(nav.flatMap((p) => p.children.map((c) => c.slug)));
   const menuItem = ([label, slug]: string[]) =>
@@ -62,7 +64,12 @@ export default function Footer({
   return (
     <footer className="bg-navy px-5 pb-6 pt-10 text-white sm:px-10 sm:pt-12">
       <div className="mx-auto max-w-[1400px]">
-        <p className="font-heading text-[22px] font-semibold uppercase tracking-[2px] text-gold">ComfyClub</p>
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logo} alt={business.name || "ComfyClub"} className="h-10 w-auto max-w-[200px] object-contain" />
+        ) : (
+          <p className="font-heading text-[22px] font-semibold uppercase tracking-[2px] text-gold">{business.name || "ComfyClub"}</p>
+        )}
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/45">
           {footer?.brand ||
             "Pakistan's premium handcrafted furniture brand. We create sofas, chairs, and seating made to order using solid hardwood frames and premium upholstery — designed to last generations."}

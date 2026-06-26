@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { created } from "@/lib/api/respond";
 
-const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/x-icon", "image/vnd.microsoft.icon"];
 const MAX_BYTES = 5 * 1024 * 1024; // 5MB
 const BUCKETS = new Set(["products", "blog", "media", "reviews", "promotions"]);
 

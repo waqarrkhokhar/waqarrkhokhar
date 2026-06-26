@@ -25,15 +25,20 @@ const siteUrl =
 // dashboard. A self-referencing canonical is applied to every page.
 export async function generateMetadata(): Promise<Metadata> {
   let verification: string | undefined;
+  let favicon: string | undefined;
   let base = siteUrl;
   try {
     const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["search_console_verification", "site_url"]);
+    const s = await getSettings(["search_console_verification", "site_url", "branding"]);
     if (typeof s.search_console_verification === "string" && s.search_console_verification) {
       verification = s.search_console_verification;
     }
     if (typeof s.site_url === "string" && /^https?:\/\//.test(s.site_url)) {
       base = s.site_url.replace(/\/$/, "");
+    }
+    const branding = (s.branding ?? {}) as { favicon?: string };
+    if (typeof branding.favicon === "string" && branding.favicon) {
+      favicon = branding.favicon;
     }
   } catch {
     // settings unavailable — fall back to env site URL
@@ -49,6 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { canonical: "./" },
     openGraph: { type: "website", siteName: "ComfyClub", url: base },
     twitter: { card: "summary_large_image" },
+    ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
     ...(verification ? { verification: { google: verification } } : {}),
   };
 }

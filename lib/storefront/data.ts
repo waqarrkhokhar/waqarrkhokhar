@@ -49,7 +49,7 @@ export async function getChrome() {
       supabase
         .from("settings")
         .select("key, value")
-        .in("key", ["business_info", "social_links", "announcement_bar", "footer_config"]),
+        .in("key", ["business_info", "social_links", "announcement_bar", "footer_config", "branding"]),
     ]);
 
   const nav: NavParent[] = (parents ?? []).map((p) => ({
@@ -70,6 +70,7 @@ export async function getChrome() {
     social: (settingsMap.social_links ?? {}) as Record<string, string>,
     announcement: (settingsMap.announcement_bar ?? {}) as { enabled?: boolean; message?: string; bg?: string; color?: string },
     footer: (settingsMap.footer_config ?? {}) as { brand?: string; copyright?: string },
+    branding: (settingsMap.branding ?? {}) as { favicon?: string; header_logo?: string; footer_logo?: string },
   };
 }
 
