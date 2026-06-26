@@ -28,7 +28,7 @@ export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: 
           <Link href="/" className="font-heading text-2xl font-semibold tracking-wide text-navy" aria-label={brandName}>
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={brandName} className="h-9 w-auto max-w-[180px] object-contain" />
+              <img src={logo} alt={brandName} className="h-11 w-auto max-w-[220px] object-contain" />
             ) : (
               brandName
             )}
