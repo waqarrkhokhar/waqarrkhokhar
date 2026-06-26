@@ -40,10 +40,14 @@ export default function MediaLibrary() {
   const [folder, setFolder] = useState("all");
   const [sel, setSel] = useState<Item | null>(null);
   const [altDraft, setAltDraft] = useState("");
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await apiGet<{ data: Item[] }>("/api/media?limit=200");
+    const res = await apiGet<{ data: Item[] }>("/api/media?limit=500");
     setLoading(false);
     if (!res.ok) return toast.error(res.error);
     setRows(res.data.data);
@@ -54,6 +58,28 @@ export default function MediaLibrary() {
   const folders = ["all", ...Array.from(new Set(rows.map((r) => r.folder)))];
   const shown = folder === "all" ? rows : rows.filter((r) => r.folder === folder);
   const missingAlt = rows.filter((r) => !r.alt_text).length;
+
+  function toggleSelect(id: string) {
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  }
+  function selectAllShown() { setSelected(new Set(shown.map((i) => i.id))); }
+  function clearSelection() { setSelected(new Set()); }
+  function exitSelectMode() { setSelectMode(false); clearSelection(); }
+
+  async function bulkDelete() {
+    setBulkDeleting(true);
+    const res = await apiSend<{ message: string }>("/api/media/bulk-delete", "POST", { ids: Array.from(selected) });
+    setBulkDeleting(false);
+    setConfirmBulk(false);
+    if (!res.ok) return toast.error(res.error);
+    toast.success(`${selected.size} image(s) deleted`);
+    exitSelectMode();
+    load();
+  }
 
   async function upload(file: File) {
     setUploading(true);
@@ -131,6 +157,11 @@ export default function MediaLibrary() {
         breadcrumbs={[{ label: "Media" }]}
         actions={
           <>
+            {selectMode ? (
+              <DashBtn variant="secondary" onClick={exitSelectMode}>Done</DashBtn>
+            ) : (
+              <DashBtn variant="secondary" onClick={() => setSelectMode(true)}>Select</DashBtn>
+            )}
             <DashBtn variant="secondary" icon="🔄" onClick={syncStorage} disabled={syncing}>{syncing ? "Syncing…" : "Sync from Storage"}</DashBtn>
             <DashBtn icon="↑" onClick={() => fileRef.current?.click()}>{uploading ? "Uploading…" : "Upload"}</DashBtn>
           </>
@@ -150,10 +181,22 @@ export default function MediaLibrary() {
         </div>
 
         {/* Missing-alt warning */}
-        {missingAlt > 0 && (
+        {missingAlt > 0 && !selectMode && (
           <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-[12px] text-amber-700">
             <span>⚠️</span>
             <span>{missingAlt} image{missingAlt > 1 ? "s are" : " is"} missing alt text. <button onClick={autoGenerateAll} className="font-semibold underline">Auto-generate from product names →</button></span>
+          </div>
+        )}
+
+        {/* Bulk-select toolbar */}
+        {selectMode && (
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-[13px]">
+            <span className="font-semibold text-charcoal dark:text-cream">{selected.size} selected</span>
+            <button onClick={selectAllShown} className="text-gold hover:underline">Select all ({shown.length})</button>
+            {selected.size > 0 && <button onClick={clearSelection} className="text-muted hover:underline">Clear</button>}
+            <div className="ml-auto">
+              <DashBtn variant="danger" size="sm" disabled={selected.size === 0} onClick={() => setConfirmBulk(true)}>🗑️ Delete {selected.size > 0 ? `(${selected.size})` : ""}</DashBtn>
+            </div>
           </div>
         )}
 
@@ -164,17 +207,23 @@ export default function MediaLibrary() {
           <p className="py-10 text-center text-sm text-muted">No images yet. Upload, or click “Sync from Storage”.</p>
         ) : (
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-            {shown.map((it) => (
-              <button key={it.id} onClick={() => openDetail(it)}
-                className="group relative aspect-square overflow-hidden rounded-lg border border-line bg-cream transition hover:shadow-card dark:border-white/10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={it.thumbnail_url || it.url} alt={it.alt_text ?? ""} referrerPolicy="no-referrer" className="h-full w-full object-cover" />
-                {!it.alt_text && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-500" title="Missing alt text" />}
-                <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-4 text-left text-[9px] text-white">
-                  {kb(it.size_bytes)} · {dims(it)}
-                </span>
-              </button>
-            ))}
+            {shown.map((it) => {
+              const isSel = selected.has(it.id);
+              return (
+                <button key={it.id} onClick={() => (selectMode ? toggleSelect(it.id) : openDetail(it))}
+                  className={`group relative aspect-square overflow-hidden rounded-lg border bg-cream transition hover:shadow-card dark:border-white/10 ${isSel ? "border-gold ring-2 ring-gold" : "border-line"}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={it.thumbnail_url || it.url} alt={it.alt_text ?? ""} referrerPolicy="no-referrer" className={`h-full w-full object-cover transition ${isSel ? "scale-95 opacity-90" : ""}`} />
+                  {selectMode && (
+                    <span className={`absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 text-[11px] font-bold ${isSel ? "border-gold bg-gold text-white" : "border-white bg-black/30 text-transparent"}`}>✓</span>
+                  )}
+                  {!it.alt_text && !selectMode && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-500" title="Missing alt text" />}
+                  <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-4 text-left text-[9px] text-white">
+                    {kb(it.size_bytes)} · {dims(it)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
       </DashSection>
@@ -266,6 +315,11 @@ export default function MediaLibrary() {
 
       <ConfirmDialog open={!!del} onClose={() => setDel(null)} onConfirm={remove}
         title="Delete this image?" message="It may break product pages that use it. This cannot be undone." confirmLabel="Delete" danger />
+
+      <ConfirmDialog open={confirmBulk} onClose={() => setConfirmBulk(false)} onConfirm={bulkDelete}
+        title={`Delete ${selected.size} image(s)?`}
+        message="These images will be permanently removed from storage. Any product pages using them may lose those photos. This cannot be undone."
+        confirmLabel={bulkDeleting ? "Deleting…" : `Delete ${selected.size}`} danger />
     </div>
   );
 }
