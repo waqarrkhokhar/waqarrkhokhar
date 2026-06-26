@@ -9,19 +9,35 @@ export async function GET() {
   const blockAi = (await getSetting("robots_block_ai").catch(() => false)) as boolean;
 
   const lines = [
-    "# ComfyClub — comfyclub.pk",
+    "# ComfyClub - comfyclub.pk",
+    "# Clean, canonical URLs only. No query-string URLs are indexable.",
+    "",
     "User-agent: *",
-    "Allow: /",
-    // Dashboard, APIs and auth pages must never be indexed.
-    "Disallow: /dashboard/",
+    "",
+    "# Private / non-content areas",
+    "Disallow: /dashboard",
     "Disallow: /api/",
-    // Admin draft previews (already noindex + auth-gated) and crawl traps.
+    "",
+    "# This site uses NO query parameters for content (filters, sort and",
+    "# pagination are client-side). Block every parameterised URL so search",
+    "# engines never index duplicate, filter, tracking or preview variants.",
+    "Disallow: /*?",
     "Disallow: /*?preview=",
-    "Disallow: /*&preview=",
-    // Let crawlers fetch CSS/JS so pages render correctly.
+    "Disallow: /*?sort=",
+    "Disallow: /*?filter=",
+    "Disallow: /*?page=",
+    "Disallow: /*?utm_",
+    "Disallow: /*?gclid=",
+    "Disallow: /*?fbclid=",
+    "",
+    "# Allow assets so pages render correctly for crawlers",
     "Allow: /_next/static/",
+    "Allow: /favicon.ico",
+    "",
+    "# Everything else is crawlable",
+    "Allow: /",
   ];
-  if (extra.trim()) lines.push(...extra.trim().split("\n").map((l) => l.trim()).filter(Boolean));
+  if (extra.trim()) lines.push("", ...extra.trim().split("\n").map((l) => l.trim()).filter(Boolean));
   if (blockAi) {
     for (const bot of ["GPTBot", "ChatGPT-User", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "PerplexityBot", "Bytespider", "Amazonbot"]) {
       lines.push("", `User-agent: ${bot}`, "Disallow: /");
