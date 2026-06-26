@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import ResetPasswordForm from "./ResetPasswordForm";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
  * Landing page for the password-reset email link.

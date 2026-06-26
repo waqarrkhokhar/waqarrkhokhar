@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import DashShell from "@/components/dashboard/DashShell";
+
+/** Private area — keep every dashboard page out of search engines. */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true },
+};
 
 /**
  * Authenticated dashboard layout. Middleware already gates /dashboard, but we

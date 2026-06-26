@@ -18,6 +18,9 @@ const securityHeaders = [
   },
 ];
 
+/** The dashboard is private — never index or follow any of its URLs. */
+const noIndexHeader = [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" }];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -31,7 +34,12 @@ const nextConfig = {
     formats: ["image/webp"],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Private dashboard (and login/reset/API under it) — block all indexing.
+      { source: "/dashboard", headers: noIndexHeader },
+      { source: "/dashboard/:path*", headers: noIndexHeader },
+    ];
   },
 };
 
