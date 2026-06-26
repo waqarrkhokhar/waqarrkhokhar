@@ -191,7 +191,9 @@ CREATE POLICY "public read public settings" ON settings
     key IN (
       'business_info', 'social_links', 'whatsapp_templates',
       'homepage_config', 'ga4_id', 'gtm_id', 'search_console_property',
-      'announcement_bar'
+      'announcement_bar', 'branding', 'footer_config', 'site_url',
+      'search_console_verification', 'custom_schemas',
+      'robots_extra', 'robots_block_ai'
     )
   );
 CREATE POLICY "staff read all settings" ON settings
