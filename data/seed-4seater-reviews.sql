@@ -1,9 +1,3 @@
--- 4 Seater Sofas reviews + enforce a 4.3 minimum rating on the 3 & 4 seater
--- collections. Safe to run multiple times. Run in Supabase → SQL Editor.
--- Note: only touches the 3-seater and 4-seater collections, never your other
--- (real) product reviews.
-
--- ── 1. Seed unique reviews for 4 Seater products (only those with none) ──
 DO $$
 DECLARE
   prod RECORD;
@@ -96,7 +90,6 @@ BEGIN
   END LOOP;
 END $$;
 
--- ── 2. Enforce a 4.3 minimum average on 3 & 4 seater products ──
 DO $$
 DECLARE
   prod RECORD;
@@ -124,5 +117,5 @@ BEGIN
   END LOOP;
 END $$;
 
--- ── 3. Update the rating badges ──
 REFRESH MATERIALIZED VIEW product_ratings;
+
