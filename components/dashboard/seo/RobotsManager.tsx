@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { DashPageHeader, DashSection, DashToggle, DashBtn } from "@/components/dashboard/shared/Dash";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
+import { buildRobotsTxt } from "@/lib/seo/robots-txt";
 
 export default function RobotsManager() {
   const toast = useToast();
@@ -31,10 +32,7 @@ export default function RobotsManager() {
     toast.success("robots.txt updated");
   }
 
-  const preview = ["User-agent: *", "Allow: /", "Disallow: /dashboard/", "Disallow: /api/",
-    ...(extra.trim() ? extra.trim().split("\n") : []),
-    ...(blockAi ? ["", "User-agent: GPTBot", "Disallow: /", "User-agent: ClaudeBot", "Disallow: /"] : []),
-    "", "Sitemap: https://comfyclub.pk/sitemap.xml"].join("\n");
+  const preview = buildRobotsTxt({ site: "https://comfyclub.pk", extra, blockAi });
 
   return (
     <div>
@@ -46,8 +44,9 @@ export default function RobotsManager() {
           placeholder="Disallow: /search&#10;Disallow: /cart" className="w-full rounded-md border border-line bg-white px-3.5 py-3 font-mono text-[13px] text-ink outline-none focus:border-gold disabled:bg-panel dark:border-white/10 dark:bg-white/5 dark:text-cream" />
       </DashSection>
 
-      <DashSection title="Settings">
-        <DashToggle label="Block AI crawlers" checked={blockAi} onChange={setBlockAi} helper="Stop GPTBot, ClaudeBot and similar bots from crawling the site" />
+      <DashSection title="AI Crawlers" subtitle="GPTBot, ClaudeBot, PerplexityBot, Google-Extended and similar">
+        <DashToggle label="Block AI crawlers" checked={blockAi} onChange={setBlockAi}
+          helper="Leave OFF (recommended) so AI assistants can read and feature ComfyClub in their answers. Turn ON only if you want to keep the site out of AI tools." />
       </DashSection>
 
       <DashSection title="Live Preview" subtitle="This is what /robots.txt will output">
