@@ -34,7 +34,7 @@ export default function ContactPage() {
       <div className="bg-navy px-6 py-12 text-center md:px-10 md:py-14">
         <div className="mb-3 text-xs uppercase tracking-[3px] text-gold">We&apos;re Here to Help</div>
         <h1 className="m-0 font-heading text-[36px] font-semibold leading-tight text-white md:text-[44px]">Get in Touch</h1>
-        <p className="mx-auto mt-3.5 max-w-lg text-[17px] leading-relaxed text-white/70">
+        <p className="mx-auto mt-3.5 max-w-lg text-[18px] leading-relaxed text-white/70">
           Have a question about our furniture? Need help with an order? We&apos;d love to hear from you.
         </p>
       </div>
@@ -77,26 +77,26 @@ export default function ContactPage() {
 
       {/* Form */}
       <section className="mx-auto max-w-5xl px-5 py-12 md:px-10">
-        <h2 className="mb-1.5 font-heading text-[28px] font-semibold text-charcoal">Send Us a Message</h2>
-        <p className="mb-6 text-[15px] leading-relaxed text-[#777]">Fill in the form below and we&apos;ll get back to you at comfyclub.pk@gmail.com</p>
+        <h2 className="mb-1.5 font-heading text-[30px] font-semibold text-charcoal md:text-[38px]">Send Us a Message</h2>
+        <p className="mb-6 text-[16px] leading-relaxed text-[#777]">Fill in the form below and we&apos;ll get back to you at comfyclub.pk@gmail.com</p>
         <ContactForm />
       </section>
 
       {/* Workshop + map */}
       <section className="mx-auto max-w-5xl px-5 pb-12 md:px-10">
-        <h2 className="mb-1.5 font-heading text-[28px] font-semibold text-charcoal">Visit Our Workshop</h2>
-        <p className="mb-5 text-[15px] leading-relaxed text-[#777]">Come see and feel our furniture in person</p>
+        <h2 className="mb-1.5 font-heading text-[30px] font-semibold text-charcoal md:text-[38px]">Visit Our Workshop</h2>
+        <p className="mb-5 text-[16px] leading-relaxed text-[#777]">Come see and feel our furniture in person</p>
         <div className="mb-4 rounded-xl bg-cream p-6">
           <div className="mb-4 flex items-start gap-3">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" className="mt-0.5 flex-shrink-0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
             <div>
-              <div className="font-heading text-[17px] font-semibold text-charcoal">ComfyClub Workshop</div>
-              <div className="mt-1 text-[16px] leading-relaxed text-[#5a5a5a]">Jan Muhammad Road, Nawab Town,<br />Lahore, Pakistan</div>
+              <div className="font-heading text-[19px] font-semibold text-charcoal">ComfyClub Workshop</div>
+              <div className="mt-1 text-[17px] leading-relaxed text-[#5a5a5a]">Jan Muhammad Road, Nawab Town,<br />Lahore, Pakistan</div>
             </div>
           </div>
           <div className="mb-4 flex items-center gap-3">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" className="flex-shrink-0"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-            <div className="text-[16px] text-[#5a5a5a]">Mon – Sat: 8:00 AM – 9:00 PM</div>
+            <div className="text-[17px] text-[#5a5a5a]">Mon – Sat: 8:00 AM – 9:00 PM</div>
           </div>
           <a href="https://www.google.com/maps/place/31%C2%B027'01.2%22N+74%C2%B014'47.7%22E" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md bg-navy px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-110">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
@@ -114,14 +114,14 @@ export default function ContactPage() {
 
       {/* FAQ */}
       <section className="mx-auto max-w-5xl px-5 pb-14 md:px-10">
-        <h2 className="mb-5 font-heading text-[28px] font-semibold text-charcoal">Common Questions</h2>
+        <h2 className="mb-5 font-heading text-[30px] font-semibold text-charcoal md:text-[38px]">Common Questions</h2>
         {FAQS.map((faq) => (
           <details key={faq.q} className="group border-b border-black/[0.07]">
-            <summary className="flex cursor-pointer list-none items-center justify-between py-4 font-heading text-[17px] font-semibold text-charcoal">
+            <summary className="flex cursor-pointer list-none items-center justify-between py-4 font-heading text-[19px] font-semibold text-charcoal">
               {faq.q}
               <span className="ml-3 flex-shrink-0 text-xl text-[#ccc] transition group-open:rotate-45">+</span>
             </summary>
-            <p className="pb-4 text-[16px] leading-relaxed text-[#6a6a6a]">{faq.a}</p>
+            <p className="pb-4 text-[17px] leading-relaxed text-[#6a6a6a]">{faq.a}</p>
           </details>
         ))}
       </section>
