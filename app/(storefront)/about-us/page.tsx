@@ -103,7 +103,7 @@ export default async function AboutPage() {
       {/* Our story */}
       <section className="mx-auto max-w-4xl px-5 py-16 md:px-10 md:py-20">
         <Reveal className="mb-3 text-xs uppercase tracking-[3px] text-gold">Our Story</Reveal>
-        <Reveal delay={60}><h2 className="mb-7 font-heading text-[30px] font-semibold leading-tight text-charcoal md:text-[38px]">Built on Craft, Driven by Trust</h2></Reveal>
+        <Reveal delay={60}><h2 className="mb-7 font-heading text-[28px] font-semibold leading-tight text-charcoal md:text-[32px]">Built on Craft, Driven by Trust</h2></Reveal>
         <Reveal delay={120} className="space-y-6 border-l-2 border-gold/40 pl-6 text-[17px] leading-[1.85] text-[#4a4a4a] md:text-[18px]">
           <p>ComfyClub started with one conviction: Pakistani homes deserve better furniture. Not mass-produced, not imported, but handcrafted with real materials by people who take pride in their work.</p>
           <p>Our workshop sits on Jan Muhammad Road in Nawab Town, Lahore, where seasoned artisans shape solid hardwood into frames, layer high-density foam by hand, and upholster each piece in premium velvet, linen, or boucle. Every sofa, every chair, every bed is made to order. Nothing leaves our workshop until it&apos;s right.</p>
@@ -115,7 +115,7 @@ export default async function AboutPage() {
       <section className="bg-cream py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-5 md:px-10">
           <Reveal className="mb-3 text-xs uppercase tracking-[3px] text-gold">Our Process</Reveal>
-          <Reveal delay={60}><h2 className="mb-9 font-heading text-[30px] font-semibold leading-tight text-charcoal md:text-[38px]">From Raw Wood to Your Living Room</h2></Reveal>
+          <Reveal delay={60}><h2 className="mb-9 font-heading text-[28px] font-semibold leading-tight text-charcoal md:text-[32px]">From Raw Wood to Your Living Room</h2></Reveal>
           <div className="flex flex-col">
             {PROCESS.map((item, i) => (
               <Reveal key={item.step} delay={i * 80}>
@@ -135,7 +135,7 @@ export default async function AboutPage() {
       {/* Clients */}
       <section className="mx-auto max-w-6xl px-5 py-16 md:px-10 md:py-20">
         <Reveal className="mb-3 text-xs uppercase tracking-[3px] text-gold">Our Clients</Reveal>
-        <Reveal delay={60}><h2 className="mb-2 font-heading text-[30px] font-semibold leading-tight text-charcoal md:text-[38px]">Trusted by Pakistan&apos;s Leading Names</h2></Reveal>
+        <Reveal delay={60}><h2 className="mb-2 font-heading text-[28px] font-semibold leading-tight text-charcoal md:text-[32px]">Trusted by Pakistan&apos;s Leading Names</h2></Reveal>
         <Reveal delay={120}><p className="mb-9 text-[16px] leading-relaxed text-[#777]">From real estate giants to media houses, 200+ organizations trust ComfyClub to deliver quality at scale.</p></Reveal>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           {CLIENTS.map((c, i) => {
@@ -159,7 +159,7 @@ export default async function AboutPage() {
         <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: "linear-gradient(90deg,#C9A84C,transparent)" }} />
         <div className="mx-auto max-w-6xl px-5 md:px-10">
           <Reveal className="mb-2 text-center text-xs uppercase tracking-[3px] text-gold">By the Numbers</Reveal>
-          <Reveal delay={60}><h2 className="mb-10 text-center font-heading text-[28px] font-semibold text-white md:text-[36px]">The ComfyClub Journey So Far</h2></Reveal>
+          <Reveal delay={60}><h2 className="mb-10 text-center font-heading text-[28px] font-semibold text-white md:text-[32px]">The ComfyClub Journey So Far</h2></Reveal>
           <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
             {STATS.map((s, i) => (
               <Reveal key={s.label} delay={i * 70}>
@@ -177,7 +177,7 @@ export default async function AboutPage() {
       {/* Values */}
       <section className="mx-auto max-w-6xl px-5 py-16 md:px-10 md:py-20">
         <Reveal className="mb-3 text-xs uppercase tracking-[3px] text-gold">What We Stand For</Reveal>
-        <Reveal delay={60}><h2 className="mb-9 font-heading text-[30px] font-semibold leading-tight text-charcoal md:text-[38px]">Our Principles</h2></Reveal>
+        <Reveal delay={60}><h2 className="mb-9 font-heading text-[28px] font-semibold leading-tight text-charcoal md:text-[32px]">Our Principles</h2></Reveal>
         <div className="grid gap-5 md:grid-cols-2">
           {VALUES.map((v, i) => (
             <Reveal key={v.title} delay={i * 80}>
@@ -193,7 +193,7 @@ export default async function AboutPage() {
       {/* CTA */}
       <section className="bg-navy px-6 py-16 text-center md:py-20">
         <Reveal as="div">
-          <div className="mb-3 font-heading text-[30px] font-semibold leading-tight text-white md:text-[38px]">Ready to Experience the Difference?</div>
+          <div className="mb-3 font-heading text-[28px] font-semibold leading-tight text-white md:text-[32px]">Ready to Experience the Difference?</div>
           <p className="mx-auto mb-8 max-w-md text-[16px] leading-relaxed text-white/60">Browse our collection or chat with our furniture experts. We&apos;re one message away.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/" className="rounded-md bg-gold px-8 py-4 text-[15px] font-semibold text-white transition hover:brightness-110">Browse Collection</Link>

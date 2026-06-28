@@ -51,7 +51,7 @@ export default async function BlogPostPage({ params, searchParams }: { params: {
       {preview && <PreviewBanner editHref="/dashboard/blog" />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <nav className="px-5 pb-2 pt-3 text-xs text-charcoal/50 md:px-10" aria-label="Breadcrumb">
+      <nav className="mx-auto max-w-2xl px-5 pb-2 pt-4 text-[13px] text-charcoal/50 md:px-10" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-gold">Home</Link>
         <span className="mx-1.5">›</span>
         <Link href="/blog/" className="hover:text-gold">Blog</Link>
@@ -59,10 +59,10 @@ export default async function BlogPostPage({ params, searchParams }: { params: {
         <span className="text-charcoal/70">{p.title.length > 32 ? p.title.slice(0, 32) + "…" : p.title}</span>
       </nav>
 
-      <header className="px-5 pb-4 md:px-10">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[1.5px] text-gold">{p.category}</div>
-        <h1 className="m-0 font-heading text-[28px] font-semibold leading-tight text-charcoal md:text-[34px]">{p.title}</h1>
-        <div className="mt-3 flex gap-3 text-xs text-[#999]"><span>{fmt(p.published_at)}</span><span>·</span><span>{p.read_minutes} min read</span>{p.author && <><span>·</span><span>{p.author}</span></>}</div>
+      <header className="mx-auto max-w-2xl px-5 pb-4 md:px-10">
+        <div className="mb-2 text-xs font-semibold uppercase tracking-[1.5px] text-gold">{p.category}</div>
+        <h1 className="m-0 font-heading text-[34px] font-semibold leading-tight text-charcoal md:text-[42px]">{p.title}</h1>
+        <div className="mt-3 flex gap-3 text-[13px] text-[#999]"><span>{fmt(p.published_at)}</span><span>·</span><span>{p.read_minutes} min read</span>{p.author && <><span>·</span><span>{p.author}</span></>}</div>
       </header>
 
       {p.featured_image && (
@@ -77,13 +77,13 @@ export default async function BlogPostPage({ params, searchParams }: { params: {
 
         {p.faqs.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-3 font-heading text-[22px] font-semibold text-charcoal">FAQs</h2>
+            <h2 className="mb-4 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">FAQs</h2>
             {p.faqs.map((f) => (
               <details key={f.q} className="group border-b border-black/[0.07]">
-                <summary className="flex cursor-pointer list-none items-center justify-between py-3.5 font-heading text-[15px] font-semibold text-charcoal">
-                  {f.q}<span className="ml-3 text-base text-[#ccc] group-open:rotate-45">+</span>
+                <summary className="flex cursor-pointer list-none items-center justify-between py-4 font-heading text-[19px] font-semibold text-charcoal">
+                  {f.q}<span className="ml-3 text-xl text-[#ccc] group-open:rotate-45">+</span>
                 </summary>
-                <p className="pb-3.5 text-sm leading-relaxed text-[#777]">{f.a}</p>
+                <p className="pb-4 text-[17px] leading-relaxed text-[#6a6a6a]">{f.a}</p>
               </details>
             ))}
           </div>
@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params, searchParams }: { params: {
       {/* More articles */}
       {more.length > 0 && (
         <section className="bg-cream px-5 py-8 md:px-10">
-          <h2 className="mb-4 font-heading text-[22px] font-semibold text-charcoal">More Articles</h2>
+          <h2 className="mb-4 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">More Articles</h2>
           <div className="grid gap-5 md:grid-cols-3">
             {more.map((op) => (
               <Link key={op.id} href={`/blog/${op.slug}/`} className="group flex gap-3.5 md:flex-col md:gap-0">

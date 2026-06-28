@@ -33,7 +33,7 @@ export default function ContactPage() {
       {/* Hero */}
       <div className="bg-navy px-6 py-12 text-center md:px-10 md:py-14">
         <div className="mb-3 text-xs uppercase tracking-[3px] text-gold">We&apos;re Here to Help</div>
-        <h1 className="m-0 font-heading text-[36px] font-semibold leading-tight text-white md:text-[44px]">Get in Touch</h1>
+        <h1 className="m-0 font-heading text-[34px] font-semibold leading-tight text-white md:text-[42px]">Get in Touch</h1>
         <p className="mx-auto mt-3.5 max-w-lg text-[18px] leading-relaxed text-white/70">
           Have a question about our furniture? Need help with an order? We&apos;d love to hear from you.
         </p>
@@ -77,14 +77,14 @@ export default function ContactPage() {
 
       {/* Form */}
       <section className="mx-auto max-w-5xl px-5 py-12 md:px-10">
-        <h2 className="mb-1.5 font-heading text-[30px] font-semibold text-charcoal md:text-[38px]">Send Us a Message</h2>
+        <h2 className="mb-1.5 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">Send Us a Message</h2>
         <p className="mb-6 text-[16px] leading-relaxed text-[#777]">Fill in the form below and we&apos;ll get back to you at comfyclub.pk@gmail.com</p>
         <ContactForm />
       </section>
 
       {/* Workshop + map */}
       <section className="mx-auto max-w-5xl px-5 pb-12 md:px-10">
-        <h2 className="mb-1.5 font-heading text-[30px] font-semibold text-charcoal md:text-[38px]">Visit Our Workshop</h2>
+        <h2 className="mb-1.5 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">Visit Our Workshop</h2>
         <p className="mb-5 text-[16px] leading-relaxed text-[#777]">Come see and feel our furniture in person</p>
         <div className="mb-4 rounded-xl bg-cream p-6">
           <div className="mb-4 flex items-start gap-3">
@@ -114,7 +114,7 @@ export default function ContactPage() {
 
       {/* FAQ */}
       <section className="mx-auto max-w-5xl px-5 pb-14 md:px-10">
-        <h2 className="mb-5 font-heading text-[30px] font-semibold text-charcoal md:text-[38px]">Common Questions</h2>
+        <h2 className="mb-5 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">Common Questions</h2>
         {FAQS.map((faq) => (
           <details key={faq.q} className="group border-b border-black/[0.07]">
             <summary className="flex cursor-pointer list-none items-center justify-between py-4 font-heading text-[19px] font-semibold text-charcoal">

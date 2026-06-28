@@ -41,8 +41,8 @@ body {
    Styles raw HTML coming from the editor / WordPress import. */
 .rich-text {
   color: rgba(44, 44, 44, 0.92);
-  font-size: 16px;
-  line-height: 1.75;
+  font-size: 17px;
+  line-height: 1.8;
 }
 .rich-text > *:first-child {
   margin-top: 0;
