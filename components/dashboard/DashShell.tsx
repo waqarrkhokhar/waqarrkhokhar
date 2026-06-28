@@ -67,6 +67,7 @@ const NAV: Item[] = [
       { label: "Redirect Manager", href: "/dashboard/seo/redirects", cap: "seo", ready: true },
       { label: "Sitemap Manager", href: "/dashboard/seo/sitemap", cap: "seo", ready: true },
       { label: "Robots Manager", href: "/dashboard/seo/robots", cap: "seo", ready: true },
+      { label: "Site Verification", href: "/dashboard/seo/verification", cap: "seo", ready: true },
       { label: "Internal Linking", href: "/dashboard/seo/internal-links", cap: "seo", ready: true },
     ],
   },

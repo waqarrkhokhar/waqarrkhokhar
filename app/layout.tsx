@@ -24,15 +24,13 @@ const siteUrl =
 // Console verification are pulled from settings so they're editable from the
 // dashboard. A self-referencing canonical is applied to every page.
 export async function generateMetadata(): Promise<Metadata> {
-  let verification: string | undefined;
   let favicon: string | undefined;
   let base = siteUrl;
+  const verification: Metadata["verification"] = {};
+  const other: Record<string, string> = {};
   try {
     const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["search_console_verification", "site_url", "branding"]);
-    if (typeof s.search_console_verification === "string" && s.search_console_verification) {
-      verification = s.search_console_verification;
-    }
+    const s = await getSettings(["search_console_verification", "site_url", "branding", "site_verifications"]);
     if (typeof s.site_url === "string" && /^https?:\/\//.test(s.site_url)) {
       base = s.site_url.replace(/\/$/, "");
     }
@@ -40,6 +38,18 @@ export async function generateMetadata(): Promise<Metadata> {
     if (typeof branding.favicon === "string" && branding.favicon) {
       favicon = branding.favicon;
     }
+    // Site verification / ownership tags (each editable from Dashboard → SEO → Verification).
+    const v = (s.site_verifications ?? {}) as Record<string, string>;
+    const legacyGoogle = typeof s.search_console_verification === "string" ? s.search_console_verification : "";
+    const google = v.google || legacyGoogle;
+    if (google) verification.google = google;
+    if (v.yandex) verification.yandex = v.yandex;
+    if (v.bing) other["msvalidate.01"] = v.bing;
+    if (v.pinterest) other["p:domain_verify"] = v.pinterest;
+    if (v.facebook) other["facebook-domain-verification"] = v.facebook;
+    if (v.ahrefs) other["ahrefs-site-verification"] = v.ahrefs;
+    if (v.norton) other["norton-safeweb-site-verification"] = v.norton;
+    if (Object.keys(other).length) verification.other = other;
   } catch {
     // settings unavailable — fall back to env site URL
   }
@@ -55,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: { type: "website", siteName: "ComfyClub", url: base },
     twitter: { card: "summary_large_image" },
     ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
-    ...(verification ? { verification: { google: verification } } : {}),
+    ...(Object.keys(verification).length ? { verification } : {}),
   };
 }
 
@@ -96,18 +106,37 @@ async function getCustomSchemas(): Promise<string[]> {
   }
 }
 
+/** Microsoft Clarity project id (analytics + heatmaps), from settings. */
+async function getClarityId(): Promise<string | undefined> {
+  try {
+    const { getSettings } = await import("@/lib/settings");
+    const s = await getSettings(["site_verifications"]);
+    const v = (s.site_verifications ?? {}) as Record<string, string>;
+    return v.clarity && /^[a-z0-9]+$/i.test(v.clarity) ? v.clarity : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [{ ga4Id, gtmId }, schemas] = await Promise.all([getAnalyticsIds(), getCustomSchemas()]);
+  const [{ ga4Id, gtmId }, schemas, clarityId] = await Promise.all([getAnalyticsIds(), getCustomSchemas(), getClarityId()]);
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <head>
         {schemas.map((s, i) => (
           <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: s }} />
         ))}
+        {clarityId && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${clarityId}");`,
+            }}
+          />
+        )}
       </head>
       <body className="font-body">{children}</body>
       <GoogleAnalytics ga4Id={ga4Id} gtmId={gtmId} />
