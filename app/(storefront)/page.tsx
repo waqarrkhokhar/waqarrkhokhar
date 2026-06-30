@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { getHomepageData } from "@/lib/storefront/data";
+import { getSetting } from "@/lib/settings";
 import HeroSlider, { type Slide } from "@/components/storefront/home/HeroSlider";
 import CategorySlider from "@/components/storefront/home/CategorySlider";
 import {
@@ -12,6 +14,23 @@ import {
 } from "@/components/storefront/home/Sections";
 
 export const dynamic = "force-dynamic";
+
+/** Homepage meta title/description — editable from Dashboard → SEO → Homepage SEO. */
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const seo = (await getSetting("home_seo")) as { meta_title?: string; meta_description?: string } | null;
+    const title = seo?.meta_title?.trim();
+    const description = seo?.meta_description?.trim();
+    if (!title && !description) return {};
+    return {
+      ...(title ? { title: { absolute: title } } : {}),
+      ...(description ? { description } : {}),
+      openGraph: { ...(title ? { title } : {}), ...(description ? { description } : {}) },
+    };
+  } catch {
+    return {};
+  }
+}
 
 // Defaults reproduce the prototype; all editable from Dashboard → Homepage.
 const DEFAULT_TRUSTED = [

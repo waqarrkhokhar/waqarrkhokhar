@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashPageHeader, DashCard, DashBtn, DashBadge } from "@/components/dashboard/shared/Dash";
+import { DashPageHeader, DashCard, DashBtn, DashBadge, DashSection, DashInput } from "@/components/dashboard/shared/Dash";
 import { DashTable, type Column } from "@/components/dashboard/shared/DashTable";
 import { apiGet, apiSend } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
@@ -29,6 +29,20 @@ export default function SeoDashboard() {
   const [tab, setTab] = useState<Tab>("all");
   const [rows, setRows] = useState<Row[]>([]);
   const [counts, setCounts] = useState({ categories: 0, collections: 0, products: 0, blog: 0, pages: STATIC_PAGES.length });
+
+  // Homepage SEO (no entity to edit, so it lives here).
+  const [home, setHome] = useState({ meta_title: "", meta_description: "" });
+  const [homeSaving, setHomeSaving] = useState(false);
+  useEffect(() => {
+    apiGet<{ data: { meta_title: string; meta_description: string } }>("/api/seo/homepage").then((r) => r.ok && setHome(r.data.data));
+  }, []);
+  async function saveHome() {
+    setHomeSaving(true);
+    const res = await apiSend("/api/seo/homepage", "PATCH", home);
+    setHomeSaving(false);
+    if (!res.ok) return toast.error(res.error || "Could not save");
+    toast.success("Homepage SEO saved");
+  }
 
   useEffect(() => {
     (async () => {
@@ -108,6 +122,15 @@ export default function SeoDashboard() {
           </a>
         ))}
       </div>
+
+      {/* Homepage SEO — the homepage has no entity editor, so it's managed here. */}
+      <DashSection title="🏠 Homepage SEO" subtitle="The meta title & description for comfyclub.pk (the home page itself)"
+        actions={<DashBtn onClick={saveHome} disabled={homeSaving}>{homeSaving ? "Saving…" : "Save Homepage SEO"}</DashBtn>}>
+        <DashInput label="Meta Title" value={home.meta_title} onChange={(v) => setHome((s) => ({ ...s, meta_title: v }))}
+          placeholder="ComfyClub — Handcrafted Furniture in Lahore" helper={`${home.meta_title.length}/60 — shown as the blue link in Google. Leave blank to use the default.`} />
+        <DashInput label="Meta Description" textarea rows={3} value={home.meta_description} onChange={(v) => setHome((s) => ({ ...s, meta_description: v }))}
+          placeholder="ComfyClub crafts made-to-order sofas, sofa chairs and furniture at our Lahore workshop…" helper={`${home.meta_description.length}/160 — the grey text under the link in Google. Leave blank to use the default.`} />
+      </DashSection>
 
       <div className="mb-5 flex gap-0 overflow-x-auto border-b border-line dark:border-white/10">
         {tabs.map((t) => (
