@@ -8,7 +8,7 @@ UPDATE categories SET content_html = '<h2>Sofa Chair Collection by ComfyClub</h2
 <p>Our sofa chair designs cover the full range of styles available in Pakistan today, from mid-century spindle arms and button-tufted velvet to Scandinavian boucle and natural jute rope. Each chair is a single sofa built from scratch for the person who orders it. No stock sitting in a warehouse. No repeat production. Your specifications, your chair, made fresh in Lahore.</p>
 <h2>Why Buy a ComfyClub Sofa Chair</h2>
 <h3>What Makes Us Different</h3>
-<ul><li>Made to order only, no stock furniture</li><li>You select your fabric and colour</li><li>Built by hand at our Lahore workshop</li><li>2-year solid wood frame warranty</li><li>5-year foam cushioning warranty</li><li>Delivered across Pakistan</li></ul>
+<ul><li>Made to order only, no stock furniture</li><li>You select your fabric and colour</li><li>Built by hand at our Lahore workshop</li><li>2.5-year solid wood frame warranty</li><li>5-year foam cushioning warranty</li><li>Delivered across Pakistan</li></ul>
 <h3>What Goes Into Every Chair</h3>
 <ul><li>Solid hardwood internal frame</li><li>High-density foam throughout</li><li>Premium fabric: velvet, boucle, linen, corduroy</li><li>60% advance to confirm your order</li><li>40% balance before dispatch</li><li>WhatsApp support throughout production</li></ul>
 <h2>Shop by Room</h2>
@@ -83,7 +83,7 @@ UPDATE categories SET content_html = '<h2>Two Seater Sofa Collection by ComfyClu
 <p>Our 2 seater sofa designs span contemporary, traditional, mid-century, and minimalist styles. Each is a double seater sofa built on a solid hardwood frame with high-density foam cushioning and premium upholstery in your choice of velvet, boucle, linen, or fabric. No showroom stock. No repeated production. Your specifications, built fresh in Lahore, delivered to your door in 20 to 25 working days.</p>
 <h2>Why Buy a ComfyClub Two Seater Sofa</h2>
 <h3>What Makes Us Different</h3>
-<ul><li>Made to order only, no stock furniture</li><li>You select fabric, colour, and finish</li><li>Built by hand at our Lahore workshop</li><li>2-year solid wood frame warranty</li><li>5-year foam cushioning warranty</li><li>Delivered across Pakistan</li></ul>
+<ul><li>Made to order only, no stock furniture</li><li>You select fabric, colour, and finish</li><li>Built by hand at our Lahore workshop</li><li>2.5-year solid wood frame warranty</li><li>5-year foam cushioning warranty</li><li>Delivered across Pakistan</li></ul>
 <h3>What Goes Into Every Sofa</h3>
 <ul><li>Solid hardwood internal frame</li><li>High-density foam throughout seat and back</li><li>Premium fabric: velvet, boucle, linen, fabric</li><li>60% advance to confirm your order</li><li>40% balance before dispatch</li><li>WhatsApp support throughout production</li></ul>
 <h2>Shop by Room</h2>
