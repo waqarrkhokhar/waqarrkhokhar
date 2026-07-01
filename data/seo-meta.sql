@@ -1,10 +1,5 @@
--- Homepage meta (home_seo setting; read by the storefront homepage)
-INSERT INTO settings (key, value)
-VALUES ('home_seo', jsonb_build_object(
-  'meta_title', 'Custom Sofas & Furniture in Lahore — Buy Online | ComfyClub',
-  'meta_description', 'Shop handcrafted custom sofas, sofa sets, sofa chairs & furniture in Pakistan. Pick your fabric, colour & size — solid wood, premium foam, nationwide delivery.'
-))
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+-- NOTE: the homepage meta is set separately in Dashboard - SEO - Homepage SEO.
+-- This file only covers the parent categories and collections.
 
 -- ── Parent categories ───────────────────────────────────────────────────────
 UPDATE parent_categories SET
@@ -96,10 +91,7 @@ UPDATE categories SET
 WHERE slug = '/furniture/dining-table-sets/';
 
 -- ── Verify ──────────────────────────────────────────────────────────────────
-SELECT 'home' AS scope, (value->>'meta_title') AS meta_title, length(value->>'meta_description') AS desc_len
-FROM settings WHERE key = 'home_seo'
-UNION ALL
-SELECT 'parent: ' || slug, meta_title, length(meta_description) FROM parent_categories WHERE meta_title IS NOT NULL AND slug IN ('/sofas/','/seater-sofas/','/furniture/')
+SELECT 'parent: ' || slug AS scope, meta_title, length(meta_description) AS desc_len FROM parent_categories WHERE meta_title IS NOT NULL AND slug IN ('/sofas/','/seater-sofas/','/furniture/')
 UNION ALL
 SELECT 'collection: ' || slug, meta_title, length(meta_description) FROM categories WHERE slug LIKE '/sofas/%' OR slug LIKE '/seater-sofas/%' OR slug LIKE '/furniture/%'
 ORDER BY scope;
