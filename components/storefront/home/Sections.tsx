@@ -162,14 +162,14 @@ export function HowItWorks({ steps }: { steps: { step: string; title: string; de
 
 export function NeedHelpCTA() {
   return (
-    <section className="bg-navy px-6 py-10 text-center">
-      <div className="mb-1.5 font-heading text-[22px] font-semibold text-white">Need Help Choosing?</div>
-      <p className="mb-5 text-[13.5px] text-white/50">Our furniture experts are a message away</p>
+    <section className="bg-cream px-6 py-14 text-center md:py-16">
+      <div className="mb-2 font-heading text-[26px] font-semibold text-navy md:text-[30px]">Need Help Choosing?</div>
+      <p className="mb-6 text-[15px] text-charcoal/60">Our furniture experts are a message away</p>
       <a
         href={waLink("Hi, I'd like help choosing furniture.")}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2.5 rounded bg-whatsapp px-8 py-3.5 text-[13px] font-semibold tracking-wide text-white shadow-[0_4px_12px_rgba(37,211,102,0.3)]"
+        className="inline-flex items-center gap-2.5 rounded-md bg-whatsapp px-8 py-3.5 text-[14px] font-semibold tracking-wide text-white shadow-[0_6px_18px_rgba(37,211,102,0.32)] transition hover:brightness-105"
       >
         <WhatsAppIcon size={18} />
         Chat on WhatsApp
