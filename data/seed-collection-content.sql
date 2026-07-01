@@ -1,4 +1,4 @@
--- ComfyClub — collection page content (below products) for the two main collections.
+-- ComfyClub - collection page content (below products) for the two main collections.
 -- Safe to re-run. Adds the column if missing.
 BEGIN;
 ALTER TABLE categories ADD COLUMN IF NOT EXISTS content_html TEXT;
