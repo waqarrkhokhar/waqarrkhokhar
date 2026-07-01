@@ -14,16 +14,16 @@ export function SectionHeading({
   viewAll?: string;
 }) {
   return (
-    <div className="mb-4 px-5">
+    <div className="mb-5 px-5">
       <div className="flex items-baseline justify-between">
-        <h2 className="m-0 font-heading text-[22px] font-semibold text-charcoal">{title}</h2>
+        <h2 className="m-0 font-heading text-[26px] font-semibold text-charcoal md:text-[30px]">{title}</h2>
         {viewAll && (
-          <Link href={viewAll} className="whitespace-nowrap text-[13px] font-semibold tracking-wide text-gold">
+          <Link href={viewAll} className="whitespace-nowrap text-[14px] font-semibold tracking-wide text-gold hover:underline">
             View All →
           </Link>
         )}
       </div>
-      {subtitle && <p className="mt-1 text-sm leading-snug text-[#999]">{subtitle}</p>}
+      {subtitle && <p className="mt-1.5 text-[15px] leading-snug text-[#777]">{subtitle}</p>}
     </div>
   );
 }
@@ -121,17 +121,17 @@ function WhyIcon({ type }: { type?: string }) {
 export function WhyComfyClub({ items }: { items: { icon?: string; title: string; desc: string }[] }) {
   if (items.length === 0) return null;
   return (
-    <section className="px-5 py-10">
-      <h2 className="mb-5 font-heading text-[22px] font-semibold text-charcoal">Why ComfyClub</h2>
-      <div className="flex flex-col gap-[22px] md:flex-row md:flex-wrap">
+    <section className="px-5 py-14 md:py-16">
+      <h2 className="mb-7 font-heading text-[26px] font-semibold text-charcoal md:text-[30px]">Why ComfyClub</h2>
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {items.map((it) => (
-          <div key={it.title} className="flex flex-1 items-start gap-4 md:min-w-[220px]">
-            <div className="flex flex-shrink-0 items-center justify-center rounded-full bg-navy" style={{ width: 52, height: 52 }}>
+          <div key={it.title} className="flex items-start gap-4">
+            <div className="flex flex-shrink-0 items-center justify-center rounded-full bg-navy" style={{ width: 56, height: 56 }}>
               <WhyIcon type={it.icon} />
             </div>
             <div className="pt-0.5">
-              <div className="font-heading text-[17px] font-semibold leading-tight text-charcoal">{it.title}</div>
-              <div className="mt-1 text-sm leading-relaxed text-[#777]">{it.desc}</div>
+              <div className="font-heading text-[20px] font-semibold leading-tight text-charcoal">{it.title}</div>
+              <div className="mt-1.5 text-[15px] leading-relaxed text-[#5a5a5a]">{it.desc}</div>
             </div>
           </div>
         ))}
@@ -143,15 +143,15 @@ export function WhyComfyClub({ items }: { items: { icon?: string; title: string;
 export function HowItWorks({ steps }: { steps: { step: string; title: string; desc: string }[] }) {
   if (steps.length === 0) return null;
   return (
-    <section className="bg-cream px-5 py-12">
+    <section className="bg-cream px-5 py-14 md:py-16">
       <SectionHeading title="How It Works" subtitle="From selection to delivery. A seamless experience" />
-      <div className="mt-2 flex flex-col gap-6 md:flex-row md:flex-wrap">
+      <div className="mt-2 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {steps.map((s) => (
-          <div key={s.step} className="flex flex-1 items-start gap-4 md:min-w-[220px]">
-            <span className="font-heading text-[28px] font-bold leading-none text-gold/40" style={{ minWidth: 40 }}>{s.step}</span>
+          <div key={s.step} className="flex items-start gap-4">
+            <span className="font-heading text-[38px] font-bold leading-none text-gold/70" style={{ minWidth: 46 }}>{s.step}</span>
             <div>
-              <div className="font-heading text-[17px] font-semibold text-charcoal">{s.title}</div>
-              <div className="mt-[3px] text-sm leading-relaxed text-[#888]">{s.desc}</div>
+              <div className="font-heading text-[20px] font-semibold text-charcoal">{s.title}</div>
+              <div className="mt-1.5 text-[15px] leading-relaxed text-[#5a5a5a]">{s.desc}</div>
             </div>
           </div>
         ))}
