@@ -160,7 +160,7 @@ export default function DashShell({
         href={l.href}
         onClick={() => setOpen(false)}
         className={`block border-l-2 py-[7px] pl-[18px] pr-4 text-[13.5px] transition ${
-          active ? "border-gold bg-navyHover font-medium text-white" : "border-transparent text-white/45 hover:text-white/80"
+          active ? "border-gold bg-navyHover font-medium text-white" : "border-transparent text-white/65 hover:text-white/90"
         }`}
       >
         {l.label}
@@ -198,7 +198,7 @@ export default function DashShell({
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-2.5 border-l-[3px] px-[18px] py-[9px] text-[14.5px] transition ${
-                  active ? "border-gold bg-navyHover font-medium text-white" : "border-transparent text-white/55 hover:bg-navyLight hover:text-white"
+                  active ? "border-gold bg-navyHover font-medium text-white" : "border-transparent text-white/75 hover:bg-navyLight hover:text-white"
                 }`}
               >
                 <SideIcon d={item.icon} />
@@ -216,7 +216,7 @@ export default function DashShell({
               <button
                 onClick={() => toggleGroup(item.label)}
                 className={`flex w-full items-center gap-2.5 border-l-[3px] border-transparent px-[18px] py-[9px] text-[14.5px] transition ${
-                  hasActive ? "text-white" : "text-white/55 hover:text-white"
+                  hasActive ? "text-white" : "text-white/75 hover:text-white"
                 }`}
               >
                 <SideIcon d={item.icon} />
@@ -232,11 +232,11 @@ export default function DashShell({
       </nav>
 
       {/* User */}
-      <div className="flex items-center gap-2.5 border-t border-navyLight px-[18px] py-3.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold text-xs font-semibold text-white">{initial}</div>
+      <div className="flex items-center gap-3 border-t border-navyLight px-[18px] py-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gold to-[#b8972f] text-[15px] font-bold text-white shadow-[0_2px_10px_rgba(201,168,76,0.35)]">{initial}</div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13.5px] font-medium text-white">{user.name}</p>
-          <p className="truncate text-[11px] capitalize text-white/40">{user.role}</p>
+          <p className="truncate text-[16px] font-semibold capitalize leading-tight text-white">{user.name}</p>
+          <p className="truncate text-[12px] capitalize text-white/60">{user.role}</p>
         </div>
         <SignOutButton />
       </div>
@@ -251,7 +251,7 @@ export default function DashShell({
         {open && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setOpen(false)} />}
 
         <div className="lg:pl-[250px]">
-          <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-line bg-white px-6 dark:border-white/10 dark:bg-[#191f2e]">
+          <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-line bg-white/75 px-6 shadow-glass backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:border-white/10 dark:bg-[#191f2e]/75 dark:supports-[backdrop-filter]:bg-[#191f2e]/60">
             <div className="flex items-center gap-3">
               <button className="rounded-lg p-2 text-ink hover:bg-black/5 dark:text-cream dark:hover:bg-white/10 lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
@@ -277,7 +277,7 @@ export default function DashShell({
               </a>
             </div>
           </header>
-          <main className="p-6">{children}</main>
+          <main key={pathname} className="dash-enter p-6">{children}</main>
         </div>
       </div>
     </ToastProvider>

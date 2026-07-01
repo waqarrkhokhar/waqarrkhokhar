@@ -23,14 +23,16 @@ const config: Config = {
         whatsapp: "#25D366",
         sale: "#e74c3c",
         // Dashboard admin palette (from the design prototype)
-        panel: "#f5f6fa", // light canvas
-        line: "#e8e8ee", // card borders
-        ink: "#3a3f51", // primary text (design "text")
-        muted: "#8b8fa7", // secondary text (design "textLight")
+        panel: "#f4f6fb", // light canvas
+        line: "#e6e8f0", // card borders
+        ink: "#2b3040", // primary text (design "text") — darker for contrast
+        muted: "#666c85", // secondary text (design "textLight") — darker, more readable
       },
       boxShadow: {
-        card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-        pop: "0 12px 40px rgba(0,0,0,0.12)",
+        card: "0 1px 3px rgba(15,29,53,0.06), 0 1px 2px rgba(15,29,53,0.04)",
+        cardHover: "0 8px 24px rgba(15,29,53,0.10)",
+        pop: "0 16px 48px rgba(15,29,53,0.16)",
+        glass: "0 4px 24px rgba(15,29,53,0.08)",
       },
       fontFamily: {
         heading: ["var(--font-cormorant)", "Cormorant Garamond", "serif"],

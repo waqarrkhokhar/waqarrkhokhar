@@ -55,8 +55,8 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
   return (
     <div>
       <DashPageHeader
-        title="Dashboard"
-        subtitle={`Welcome back, ${firstName} - here's your ComfyClub snapshot.`}
+        title={`Welcome back, ${firstName}`}
+        subtitle="Here's your ComfyClub snapshot for today."
         actions={
           <>
             <DashBtn variant="secondary" href="/dashboard/analytics">Analytics</DashBtn>
@@ -122,8 +122,8 @@ export default function OverviewDashboard({ firstName }: { firstName: string }) 
                 { label: "Archived", value: health?.archived, color: "text-gold" },
               ].map((s) => (
                 <div key={s.label} className="rounded-lg bg-panel px-3.5 py-3 text-center dark:bg-white/5">
-                  <div className={`font-heading text-[22px] font-bold ${s.color}`}>{s.value ?? "-"}</div>
-                  <div className="mt-0.5 text-[11px] text-muted">{s.label}</div>
+                  <div className={`font-body text-[22px] font-bold tabular-nums ${s.color}`}>{s.value ?? "-"}</div>
+                  <div className="mt-0.5 text-[11.5px] text-muted">{s.label}</div>
                 </div>
               ))}
             </div>

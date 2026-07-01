@@ -8,7 +8,7 @@
 import Link from "next/link";
 
 const cardBase =
-  "rounded-[10px] border border-line bg-white dark:border-white/10 dark:bg-[#191f2e]";
+  "rounded-2xl border border-line bg-white shadow-card transition-shadow dark:border-white/10 dark:bg-[#191f2e]";
 
 /* ── Button ──────────────────────────────────────────────────────────────── */
 type BtnVariant = "primary" | "secondary" | "danger" | "ghost" | "navy";
@@ -106,8 +106,8 @@ export function DashCard({
   const inner = (
     <>
       <div>
-        <div className="text-[12px] text-muted">{label}</div>
-        <div className="mt-1.5 font-heading text-[28px] font-bold leading-none text-charcoal dark:text-cream">{value}</div>
+        <div className="text-[12.5px] font-medium text-muted">{label}</div>
+        <div className="mt-2 font-body text-[27px] font-bold leading-none tracking-tight tabular-nums text-charcoal dark:text-cream">{value}</div>
         {change != null && (
           <div className={`mt-1 flex items-center gap-1 text-[11px] ${change > 0 ? "text-green-600" : "text-red-500"}`}>
             {change > 0 ? "↑" : "↓"} {Math.abs(change)}% vs last month
@@ -117,7 +117,7 @@ export function DashCard({
       {icon && <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[10px] text-lg ${tint}`}>{icon}</div>}
     </>
   );
-  const cls = `${cardBase} flex items-start justify-between p-5 transition ${href || onClick ? "cursor-pointer hover:-translate-y-px hover:shadow-card" : ""}`;
+  const cls = `${cardBase} flex items-start justify-between p-5 ${href || onClick ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-cardHover" : ""}`;
   if (href) return <Link href={href} className={cls}>{inner}</Link>;
   return <div onClick={onClick} className={cls}>{inner}</div>;
 }
@@ -184,8 +184,8 @@ export function DashPageHeader({
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="m-0 font-heading text-[26px] font-semibold text-charcoal dark:text-cream">{title}</h1>
-          {subtitle && <p className="mt-1 text-[13px] text-muted">{subtitle}</p>}
+          <h1 className="m-0 font-heading text-[30px] font-semibold leading-tight text-charcoal dark:text-cream md:text-[34px]">{title}</h1>
+          {subtitle && <p className="mt-1 text-[13.5px] text-muted">{subtitle}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
