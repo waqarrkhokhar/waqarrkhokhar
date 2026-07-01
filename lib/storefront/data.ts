@@ -429,6 +429,18 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
 
   if (!parent) return null;
 
+  // Long-form content_html is optional on parents; fetch it separately and
+  // fail open so pages keep working before the column is added.
+  let parentContentHtml: string | null = null;
+  {
+    const { data: extra, error } = await supabase
+      .from("parent_categories")
+      .select("content_html")
+      .eq("id", parent.id)
+      .maybeSingle();
+    if (!error && extra) parentContentHtml = cleanHtml((extra as { content_html?: string | null }).content_html) || null;
+  }
+
   const { data: childRows } = await supabase
     .from("categories")
     .select("id, name, slug, banner_image, sort_order")
@@ -474,7 +486,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
     slug: parent.slug,
     description: parent.description ? stripTagsPlain(parent.description) : null,
     intro_content: null,
-    content_html: null,
+    content_html: parentContentHtml,
     banner_image: parent.banner_image,
     meta_title: parent.meta_title,
     meta_description: parent.meta_description,

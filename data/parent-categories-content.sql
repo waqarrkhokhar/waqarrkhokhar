@@ -1,0 +1,37 @@
+ALTER TABLE parent_categories ADD COLUMN IF NOT EXISTS content_html TEXT;
+
+UPDATE parent_categories
+SET content_html = '<h2>Sofas</h2>
+<p>Not every sofa is chosen for seating capacity. This collection is for buyers who already know they want something specific in terms of form: a chair-sized single sofa, a piece that folds into a guest bed, a low traditional diwan, a compact settee, an ottoman, or an L shape that fits a corner. These are the formats that sit under Sofas at ComfyClub, each its own collection, each made to order at our Lahore workshop.</p>
+<h2>What Separates These Formats</h2>
+<p>Sofa chairs are single-seater upholstered pieces. They work as accent seating in a drawing room, a reading chair in a bedroom, or additional seating in a lounge. Sofa come beds have a fold-out mechanism and serve as proper seating by day and a sleeping surface at night. Diwan sofas, also listed as deewan sofas, follow a lower and longer silhouette than standard upholstered sofas, suited to formal sitting rooms and majlis arrangements. Settee sofas are more compact, often backless or low-backed, and work well in smaller rooms or as secondary pieces alongside larger furniture. Ottoman sofas and benches function as flexible additions that pair with any format above, whether used as extra seating, a footrest, or concealed storage. L shape sofas anchor corner spaces in open floor plans where a straight sofa would leave the room feeling unbalanced.</p>
+<p>Each format behaves differently in a room and suits different living habits. The right starting point is understanding which format fits the space, not which fabric or colour comes first.</p>
+<h2>How Build Quality Works Across This Range</h2>
+<p>Every format in this collection is built on a solid wood frame with a 2.5-year warranty. The foam is high-density and carries a 5-year warranty. This applies whether you are ordering a single sofa chair or an L shape. The frame and foam are what determine whether the piece still holds its shape and structure after years of daily use, which is why these standards do not change based on the format or price point.</p>
+<p>Fabric, colour, and dimensions are confirmed at the time of order. Nothing in this collection is pre-built or held in stock.</p>
+<h2>Making the Right Choice for Your Room</h2>
+<p>The format question usually comes down to how the room is used and what role the piece needs to play in it. Formal drawing rooms in Pakistani homes typically call for structured pieces: a sofa chair alongside a larger sofa, or a diwan arranged against the wall. Bedrooms benefit from a compact sofa chair or settee that adds seating without competing with the bed for floor space. Lounges and TV rooms are where sofa come beds make the most sense, especially in households that regularly host overnight guests. L shapes are almost always the right answer when a corner placement is available and the room is large enough to carry the footprint.</p>
+<p>If the format question is still open, the simplest way to settle it is to send us your room dimensions and describe how the space is used. We can recommend the format that will actually work before you commit to an order.</p>
+<h2>Ordering From This Collection</h2>
+<p>Confirming your design, fabric, and colour happens directly over WhatsApp. Production begins once 60 percent of the price is paid in advance, with the remaining 40 percent due before delivery. Standard sofas and sofa chairs take 20 to 25 working days from our Lahore workshop. Sofa come beds take 25 to 30 working days due to the mechanism work involved. Delivery covers all of Pakistan.</p>'
+WHERE slug = '/sofas/' OR name ILIKE 'Sofas';
+
+UPDATE parent_categories
+SET content_html = '<h2>Seater Sofas</h2>
+<p>This collection is for buyers who know they need seating for a specific number of people but have not yet decided on a design. From a compact 2 seater to a full 6 seater, every size here is made to order at our Lahore workshop. The right place to start is scale, before fabric, colour, or style become relevant decisions.</p>
+<h2>Choosing the Right Size</h2>
+<p>For bedrooms, studies, and smaller sitting areas, the 2 seater is usually the right call. It seats two people comfortably without demanding the floor space that a larger sofa would. Most Pakistani living rooms are anchored around a 3 seater. It holds three adults without crowding, works against most wall lengths, and pairs naturally with chairs or a 2 seater when more total seating is needed. Between a standard 3 seater and a full 5 seater set, the 4 seater suits households that want one continuous piece rather than two separate sofas, and rooms where an L shape would be too large but a 3 seater would feel short. Hosting regularly is what pushes most buyers toward a 5 seater. The drawing room needs to hold extended family at short notice, and the sofa has to hold that weight both physically and in how the room reads. At the 6 seater level, the room itself is driving the decision. Larger drawing rooms with high ceilings and long walls need a piece with enough visual weight to match the space.</p>
+<p>Each size has its own dedicated collection page with full design options, dimensions, and fabric choices. This page is for settling on scale before moving into that detail.</p>
+<h2>Building Toward 7, 8, or More Seats</h2>
+<p>Pakistani buyers often search for 7 seater or 8 seater sofa sets, but these are almost never sold as single pieces. Most households build that total by combining a 5 seater with a 2 seater, running a 3+1+1 layout with armchairs, or placing two sofas facing each other. This approach is more practical than one oversized piece because it survives room changes, moves through narrower doorways, and gives more flexibility in how the room is arranged over time. When the target is a 7 or 8 seater setup, the right conversation is about which combination of sizes achieves it rather than searching for a single sofa that size.</p>
+<h2>What Does Not Change Across Sizes</h2>
+<p>Frame and foam quality stays the same regardless of seater count. Every size uses a solid wood frame backed by a 2.5-year warranty and high-density foam cushioning backed by 5 years. What changes between sizes is proportion and engineering, not the underlying standard. A wider frame needs to be built differently to distribute weight evenly across a longer span, which is accounted for in how each size is constructed.</p>
+<h2>Measuring Before Ordering</h2>
+<p>Seater count alone does not determine whether a sofa fits a room. Two sofas described as 5 seaters can differ by 40 or 50 centimetres in width depending on arm style, depth, and design. Measuring the room before choosing a specific design matters more than most buyers expect, particularly beyond 3 seaters. Getting the scale wrong on a 5 or 6 seater is costly in every sense. Each product page in this collection lists full dimensions. If measuring feels uncertain, send us the room dimensions over WhatsApp and we can confirm which sizes actually fit before you order.</p>
+<p>Ordering works the same way across every size. Confirm your design and fabric directly with us, pay 60 percent in advance to start production, with the remaining 40 percent due before delivery. Most sizes take 20 to 25 working days to craft and deliver from our Lahore workshop.</p>'
+WHERE slug = '/seater-sofas/' OR name ILIKE 'Seater Sofas';
+
+SELECT name, slug, length(content_html) AS content_chars
+FROM parent_categories
+WHERE slug IN ('/sofas/', '/seater-sofas/')
+ORDER BY slug;
