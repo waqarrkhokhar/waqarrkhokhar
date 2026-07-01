@@ -24,19 +24,14 @@ const siteUrl =
 // Console verification are pulled from settings so they're editable from the
 // dashboard. A self-referencing canonical is applied to every page.
 export async function generateMetadata(): Promise<Metadata> {
-  let favicon: string | undefined;
   let base = siteUrl;
   const verification: Metadata["verification"] = {};
   const other: Record<string, string> = {};
   try {
     const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["search_console_verification", "site_url", "branding", "site_verifications"]);
+    const s = await getSettings(["search_console_verification", "site_url", "site_verifications"]);
     if (typeof s.site_url === "string" && /^https?:\/\//.test(s.site_url)) {
       base = s.site_url.replace(/\/$/, "");
-    }
-    const branding = (s.branding ?? {}) as { favicon?: string };
-    if (typeof branding.favicon === "string" && branding.favicon) {
-      favicon = branding.favicon;
     }
     // Site verification / ownership tags (each editable from Dashboard → SEO → Verification).
     const v = (s.site_verifications ?? {}) as Record<string, string>;
@@ -64,7 +59,8 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { canonical: "./" },
     openGraph: { type: "website", siteName: "ComfyClub", url: base },
     twitter: { card: "summary_large_image" },
-    ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
+    // Favicon is rendered as an explicit <link> in the root <head> so it
+    // applies to every page (metadata icons can be dropped by child routes).
     ...(Object.keys(verification).length ? { verification } : {}),
   };
 }
@@ -106,6 +102,18 @@ async function getCustomSchemas(): Promise<string[]> {
   }
 }
 
+/** Favicon URL from branding settings (rendered on every page's <head>). */
+async function getFavicon(): Promise<string | undefined> {
+  try {
+    const { getSettings } = await import("@/lib/settings");
+    const s = await getSettings(["branding"]);
+    const branding = (s.branding ?? {}) as { favicon?: string };
+    return typeof branding.favicon === "string" && branding.favicon ? branding.favicon : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Microsoft Clarity project id (analytics + heatmaps), from settings. */
 async function getClarityId(): Promise<string | undefined> {
   try {
@@ -123,10 +131,18 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [{ ga4Id, gtmId }, schemas, clarityId] = await Promise.all([getAnalyticsIds(), getCustomSchemas(), getClarityId()]);
+  const [{ ga4Id, gtmId }, schemas, clarityId, favicon] = await Promise.all([getAnalyticsIds(), getCustomSchemas(), getClarityId(), getFavicon()]);
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <head>
+        {favicon && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-head-element */}
+            <link rel="icon" href={favicon} />
+            <link rel="shortcut icon" href={favicon} />
+            <link rel="apple-touch-icon" href={favicon} />
+          </>
+        )}
         {schemas.map((s, i) => (
           <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: s }} />
         ))}
