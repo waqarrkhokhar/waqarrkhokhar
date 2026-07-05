@@ -13,11 +13,23 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/**
+ * Normalise a URL to its final, non-redirecting form. The site serves every
+ * page WITHOUT a trailing slash (Next.js 308-redirects "/path/" -> "/path"),
+ * so sitemap entries must drop the trailing slash — otherwise they list URLs
+ * that redirect. The bare site root (e.g. https://comfyclub.pk) is left as-is.
+ */
+function normLoc(loc: string): string {
+  const stripped = loc.replace(/\/+$/, "");
+  // Keep at least the origin (protocol + host) — never return an empty path base.
+  return /^https?:\/\/[^/]+$/.test(stripped) || stripped.length >= "https://a.b".length ? stripped : loc;
+}
+
 /** Build a <urlset> document. */
 export function urlset(entries: UrlEntry[]): string {
   const items = entries
     .map((e) => {
-      const parts = [`    <loc>${esc(e.loc)}</loc>`];
+      const parts = [`    <loc>${esc(normLoc(e.loc))}</loc>`];
       if (e.lastmod) parts.push(`    <lastmod>${new Date(e.lastmod).toISOString()}</lastmod>`);
       if (e.changefreq) parts.push(`    <changefreq>${e.changefreq}</changefreq>`);
       if (e.priority != null) parts.push(`    <priority>${e.priority}</priority>`);
