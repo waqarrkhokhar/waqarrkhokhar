@@ -34,7 +34,8 @@ export default function CollectionGrid({ products }: { products: StoreProduct[] 
     return list;
   }, [sort, filtered]);
 
-  const visible = sorted.slice(0, count);
+  // All products are rendered into the HTML (so every product link is
+  // crawlable / not an orphan); "Load More" just reveals more via CSS.
   const remaining = Math.max(0, sorted.length - count);
 
   return (
@@ -66,10 +67,14 @@ export default function CollectionGrid({ products }: { products: StoreProduct[] 
         <span className="text-[11px] text-[#bbb]">{filtered.length} item{filtered.length !== 1 ? "s" : ""}</span>
       </div>
 
-      {/* Grid */}
-      {visible.length > 0 ? (
+      {/* Grid — all cards rendered; those beyond `count` are hidden until Load More */}
+      {sorted.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 px-5 py-5 md:grid-cols-4 md:gap-6 md:px-10">
-          {visible.map((p) => <ProductCard key={p.id} product={p} />)}
+          {sorted.map((p, i) => (
+            <div key={p.id} className={i < count ? "contents" : "hidden"}>
+              <ProductCard product={p} />
+            </div>
+          ))}
         </div>
       ) : (
         <div className="px-5 py-12 text-center">

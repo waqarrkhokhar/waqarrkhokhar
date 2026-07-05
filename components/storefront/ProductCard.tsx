@@ -30,7 +30,7 @@ function seededRating(key: string): number {
 
 export default function ProductCard({ product }: { product: StoreProduct }) {
   const onSale = !!(product.sale_price && product.price && product.sale_price < product.price);
-  const href = `/product/${product.slug}/`;
+  const href = `/product/${product.slug}`;
 
   // Rating badge shows on every card (matches the design): the real review
   // average when available, otherwise a seeded value like the prototype.
