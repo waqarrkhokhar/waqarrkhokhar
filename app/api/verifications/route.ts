@@ -53,8 +53,12 @@ export async function PATCH(request: Request) {
 
   try {
     await setSetting("site_verifications", v as never);
-    // Keep the legacy Google key in sync so existing reads stay correct.
-    await setSetting("search_console_verification", (v.google ?? "") as never);
+    // Keep the legacy Google key in sync — but NEVER wipe an existing
+    // verification when the Google box is left blank. Saving this form with an
+    // empty Google field must not accidentally de-verify the site in Search
+    // Console. To intentionally remove it, clear it and it stays in
+    // site_verifications; the legacy key is only ever updated to a real value.
+    if (v.google) await setSetting("search_console_verification", v.google as never);
   } catch (e) {
     return apiError(500, "INTERNAL_ERROR", e instanceof Error ? e.message : "error");
   }

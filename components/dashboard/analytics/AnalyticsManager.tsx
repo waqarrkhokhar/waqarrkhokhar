@@ -15,16 +15,18 @@ type Gsc = { totals: { clicks: number; impressions: number; ctr: number; positio
 type Live = { configured: boolean; ga4: Ga4 | null; gsc: Gsc | null; ga4_error?: string | null; gsc_error?: string | null };
 const num = (n: number) => n.toLocaleString();
 
-type IntKey = "ga4" | "gsc" | "gtm";
+// Google Search Console *ownership verification* is managed in ONE place only:
+// Dashboard → SEO → Site Verification. It is deliberately NOT duplicated here,
+// so a blank box on this screen can never overwrite (wipe) the live tag.
+type IntKey = "ga4" | "gtm";
 const DEFS: Record<IntKey, { name: string; icon: string; field: string; placeholder: string; desc: string; settingKey: string; manage: string; activeLabel: string }> = {
   ga4: { name: "Google Analytics 4", icon: "📈", field: "Measurement ID", placeholder: "G-XXXXXXXXXX", desc: "Live traffic & event tracking", settingKey: "ga4_id", manage: "https://analytics.google.com", activeLabel: "Tracking active on the live site" },
   gtm: { name: "Google Tag Manager", icon: "🏷️", field: "Container ID", placeholder: "GTM-XXXXXXX", desc: "Tag management without code", settingKey: "gtm_id", manage: "https://tagmanager.google.com", activeLabel: "Container loaded on the live site" },
-  gsc: { name: "Google Search Console", icon: "🔍", field: "Verification code", placeholder: "google-site-verification value", desc: "Verify ownership for ranking reports", settingKey: "search_console_verification", manage: "https://search.google.com/search-console", activeLabel: "Verification tag is live in <head>" },
 };
 
 export default function AnalyticsManager() {
   const toast = useToast();
-  const [values, setValues] = useState<Record<IntKey, string>>({ ga4: "", gsc: "", gtm: "" });
+  const [values, setValues] = useState<Record<IntKey, string>>({ ga4: "", gtm: "" });
   const [canEdit, setCanEdit] = useState(true);
   const [search, setSearch] = useState<SearchStats | null>(null);
   const [leads, setLeads] = useState<LeadStats | null>(null);
@@ -42,7 +44,6 @@ export default function AnalyticsManager() {
       if (!r.ok) { setCanEdit(false); return; }
       setValues({
         ga4: String(r.data.data.ga4_id ?? ""),
-        gsc: String(r.data.data.search_console_verification ?? ""),
         gtm: String(r.data.data.gtm_id ?? ""),
       });
       setPropId(String(r.data.data.ga4_property_id ?? ""));
@@ -278,9 +279,7 @@ export default function AnalyticsManager() {
             <div className="flex items-center gap-3 rounded-lg bg-panel p-3.5 dark:bg-white/5">
               <div className="text-2xl">{DEFS[connect].icon}</div>
               <p className="text-xs leading-relaxed text-muted">
-                {connect === "gsc"
-                  ? "In Search Console choose the HTML-tag verification method and paste the content value of the google-site-verification meta tag here."
-                  : `Paste your ${DEFS[connect].field}. Once saved, it activates on the live site automatically.`}
+                {`Paste your ${DEFS[connect].field}. Once saved, it activates on the live site automatically.`}
               </p>
             </div>
             <Field label={DEFS[connect].field}>
