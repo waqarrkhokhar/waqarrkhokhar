@@ -4,6 +4,7 @@ import { requireCapability, apiError } from "@/lib/auth/guard";
 import { ok, action } from "@/lib/api/respond";
 import { setSetting } from "@/lib/settings";
 import { logActivity } from "@/lib/activity";
+import { cleanToken, type VerifKey } from "@/lib/seo/verification";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ const schema = z.object({
     yandex: z.string().optional().default(""),
     ahrefs: z.string().optional().default(""),
     norton: z.string().optional().default(""),
+    facebook_pixel: z.string().optional().default(""),
   }),
 });
 
@@ -45,11 +47,14 @@ export async function PATCH(request: Request) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return apiError(400, "VALIDATION_ERROR", "Invalid verification values");
 
-  // Trim everything; clarity must be an alphanumeric project id if set.
-  const v = Object.fromEntries(Object.entries(parsed.data.verifications).map(([k, val]) => [k, (val ?? "").trim()]));
-  if (v.clarity && !/^[a-z0-9]+$/i.test(v.clarity)) {
-    return apiError(400, "VALIDATION_ERROR", "Clarity Project ID should be letters/numbers only (e.g. abcd1234ef)");
-  }
+  // Sanitise every value: pull the bare token out of whatever was pasted (full
+  // <meta> tag, name=value line, quoted/padded value). This is what stops the
+  // recurring "your meta tag is incorrect" failures — the stored + rendered
+  // value is always the clean token, whatever the owner pastes.
+  const raw = parsed.data.verifications;
+  const v = Object.fromEntries(
+    (Object.keys(raw) as VerifKey[]).map((k) => [k, cleanToken(k, raw[k] ?? "")]),
+  ) as Record<VerifKey, string>;
 
   try {
     await setSetting("site_verifications", v as never);

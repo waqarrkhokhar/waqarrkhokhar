@@ -34,16 +34,20 @@ export async function generateMetadata(): Promise<Metadata> {
       base = s.site_url.replace(/\/$/, "");
     }
     // Site verification / ownership tags (each editable from Dashboard → SEO → Verification).
+    // Every value is passed through cleanToken so even a value that was stored
+    // "dirty" (e.g. a whole <meta> tag pasted in the past) renders as the
+    // correct bare token — no re-save needed.
+    const { cleanToken } = await import("@/lib/seo/verification");
     const v = (s.site_verifications ?? {}) as Record<string, string>;
     const legacyGoogle = typeof s.search_console_verification === "string" ? s.search_console_verification : "";
-    const google = v.google || legacyGoogle;
+    const google = cleanToken("google", v.google || legacyGoogle);
     if (google) verification.google = google;
-    if (v.yandex) verification.yandex = v.yandex;
-    if (v.bing) other["msvalidate.01"] = v.bing;
-    if (v.pinterest) other["p:domain_verify"] = v.pinterest;
-    if (v.facebook) other["facebook-domain-verification"] = v.facebook;
-    if (v.ahrefs) other["ahrefs-site-verification"] = v.ahrefs;
-    if (v.norton) other["norton-safeweb-site-verification"] = v.norton;
+    if (v.yandex) verification.yandex = cleanToken("yandex", v.yandex);
+    if (v.bing) other["msvalidate.01"] = cleanToken("bing", v.bing);
+    if (v.pinterest) other["p:domain_verify"] = cleanToken("pinterest", v.pinterest);
+    if (v.facebook) other["facebook-domain-verification"] = cleanToken("facebook", v.facebook);
+    if (v.ahrefs) other["ahrefs-site-verification"] = cleanToken("ahrefs", v.ahrefs);
+    if (v.norton) other["norton-safeweb-site-verification"] = cleanToken("norton", v.norton);
     if (Object.keys(other).length) verification.other = other;
   } catch {
     // settings unavailable — fall back to env site URL
@@ -114,15 +118,22 @@ async function getFavicon(): Promise<string | undefined> {
   }
 }
 
-/** Microsoft Clarity project id (analytics + heatmaps), from settings. */
-async function getClarityId(): Promise<string | undefined> {
+/**
+ * Site-wide tracking scripts stored in `site_verifications`:
+ *   • Microsoft Clarity project id (heatmaps + session recordings)
+ *   • Meta / Facebook Pixel id (numeric)
+ * Both are managed from Dashboard → SEO → Site Verification.
+ */
+async function getSiteScripts(): Promise<{ clarityId?: string; fbPixelId?: string }> {
   try {
     const { getSettings } = await import("@/lib/settings");
     const s = await getSettings(["site_verifications"]);
     const v = (s.site_verifications ?? {}) as Record<string, string>;
-    return v.clarity && /^[a-z0-9]+$/i.test(v.clarity) ? v.clarity : undefined;
+    const clarityId = v.clarity && /^[a-z0-9]+$/i.test(v.clarity) ? v.clarity : undefined;
+    const fbPixelId = v.facebook_pixel && /^[0-9]+$/.test(v.facebook_pixel) ? v.facebook_pixel : undefined;
+    return { clarityId, fbPixelId };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -131,7 +142,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [{ ga4Id, gtmId }, schemas, clarityId, favicon] = await Promise.all([getAnalyticsIds(), getCustomSchemas(), getClarityId(), getFavicon()]);
+  const [{ ga4Id, gtmId }, schemas, { clarityId, fbPixelId }, favicon] = await Promise.all([getAnalyticsIds(), getCustomSchemas(), getSiteScripts(), getFavicon()]);
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <head>
@@ -153,8 +164,21 @@ export default async function RootLayout({
             }}
           />
         )}
+        {fbPixelId && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${fbPixelId}');fbq('track','PageView');`,
+            }}
+          />
+        )}
       </head>
-      <body className="font-body">{children}</body>
+      <body className="font-body">
+        {fbPixelId && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <noscript><img height="1" width="1" style={{ display: "none" }} alt="" src={`https://www.facebook.com/tr?id=${fbPixelId}&ev=PageView&noscript=1`} /></noscript>
+        )}
+        {children}
+      </body>
       <GoogleAnalytics ga4Id={ga4Id} gtmId={gtmId} />
     </html>
   );
