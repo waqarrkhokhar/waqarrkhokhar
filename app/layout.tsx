@@ -28,8 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const verification: Metadata["verification"] = {};
   const other: Record<string, string> = {};
   try {
-    const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["search_console_verification", "site_url", "site_verifications"]);
+    const { getPublicSettings } = await import("@/lib/settings");
+    const s = await getPublicSettings(["search_console_verification", "site_url", "site_verifications"]);
     if (typeof s.site_url === "string" && /^https?:\/\//.test(s.site_url)) {
       base = s.site_url.replace(/\/$/, "");
     }
@@ -72,8 +72,8 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Read GA4/GTM IDs from settings (safe — returns empty if unavailable). */
 async function getAnalyticsIds(): Promise<{ ga4Id?: string; gtmId?: string }> {
   try {
-    const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["ga4_id", "gtm_id"]);
+    const { getPublicSettings } = await import("@/lib/settings");
+    const s = await getPublicSettings(["ga4_id", "gtm_id"]);
     return {
       ga4Id: typeof s.ga4_id === "string" && s.ga4_id ? s.ga4_id : undefined,
       gtmId: typeof s.gtm_id === "string" && s.gtm_id ? s.gtm_id : undefined,
@@ -88,8 +88,8 @@ type CustomSchema = { id: string; name: string; type: string; json: string; enab
 /** Site-wide custom JSON-LD blocks, managed from Dashboard → SEO → Schema. */
 async function getCustomSchemas(): Promise<string[]> {
   try {
-    const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["custom_schemas"]);
+    const { getPublicSettings } = await import("@/lib/settings");
+    const s = await getPublicSettings(["custom_schemas"]);
     const list = Array.isArray(s.custom_schemas) ? (s.custom_schemas as CustomSchema[]) : [];
     return list
       .filter((x) => x.enabled && x.json)
@@ -109,8 +109,8 @@ async function getCustomSchemas(): Promise<string[]> {
 /** Favicon URL from branding settings (rendered on every page's <head>). */
 async function getFavicon(): Promise<string | undefined> {
   try {
-    const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["branding"]);
+    const { getPublicSettings } = await import("@/lib/settings");
+    const s = await getPublicSettings(["branding"]);
     const branding = (s.branding ?? {}) as { favicon?: string };
     return typeof branding.favicon === "string" && branding.favicon ? branding.favicon : undefined;
   } catch {
@@ -126,8 +126,8 @@ async function getFavicon(): Promise<string | undefined> {
  */
 async function getSiteScripts(): Promise<{ clarityId?: string; fbPixelId?: string }> {
   try {
-    const { getSettings } = await import("@/lib/settings");
-    const s = await getSettings(["site_verifications"]);
+    const { getPublicSettings } = await import("@/lib/settings");
+    const s = await getPublicSettings(["site_verifications"]);
     const v = (s.site_verifications ?? {}) as Record<string, string>;
     const clarityId = v.clarity && /^[a-z0-9]+$/i.test(v.clarity) ? v.clarity : undefined;
     const fbPixelId = v.facebook_pixel && /^[0-9]+$/.test(v.facebook_pixel) ? v.facebook_pixel : undefined;

@@ -4,7 +4,7 @@ import Header from "@/components/storefront/Header";
 import Footer from "@/components/storefront/Footer";
 import FloatingButtons from "@/components/storefront/FloatingButtons";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function StorefrontLayout({
   children,

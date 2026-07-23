@@ -1,13 +1,23 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProductDetail } from "@/lib/storefront/data";
+import { createPublicClient } from "@/lib/supabase/public";
 import { robotsMeta } from "@/lib/seo/robots";
-import { isPreviewRequest } from "@/lib/storefront/preview";
-import ProductView from "@/components/storefront/product/ProductView";
-import { ProductRow } from "@/components/storefront/home/Sections";
-import PreviewBanner from "@/components/storefront/PreviewBanner";
+import ProductPageContent from "@/components/storefront/product/ProductPageContent";
 
-export const dynamic = "force-dynamic";
+// Cache the published page (ISR). On-demand revalidation refreshes it instantly
+// when a product is edited; unknown/new slugs render on demand then cache.
+export const revalidate = 300;
+
+/** Pre-render every published product at build so they're served instantly. */
+export async function generateStaticParams() {
+  try {
+    const db = createPublicClient();
+    const { data } = await db.from("products").select("slug").eq("status", "published").is("deleted_at", null);
+    return (data ?? []).map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const p = await getProductDetail(params.slug);
@@ -29,43 +39,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ProductPage({ params, searchParams }: { params: { slug: string }; searchParams: { preview?: string } }) {
-  const preview = await isPreviewRequest(searchParams);
-  const p = await getProductDetail(params.slug, preview);
-  if (!p) notFound();
-
-  const onSale = !!(p.sale_price && p.price && p.sale_price < p.price);
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: p.name,
-    image: p.images.map((i) => i.url),
-    description: p.short_description ? p.short_description.replace(/<[^>]+>/g, "").trim() : undefined,
-    sku: p.sku || undefined,
-    brand: { "@type": "Brand", name: "ComfyClub" },
-    ...(p.price != null && {
-      offers: {
-        "@type": "Offer",
-        priceCurrency: "PKR",
-        price: onSale ? p.sale_price : p.price,
-        availability: "https://schema.org/InStock",
-      },
-    }),
-    ...(p.review_count > 0 &&
-      p.rating != null && {
-        aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating.toFixed(1), reviewCount: p.review_count },
-      }),
-  };
-
-  return (
-    <div>
-      {preview && <PreviewBanner editHref={`/dashboard/products`} />}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ProductView product={p} />
-
-      {p.related.length > 0 && (
-        <ProductRow title="You May Also Like" products={p.related} viewAll={p.category?.slug} />
-      )}
-    </div>
-  );
+export default function ProductPage({ params }: { params: { slug: string } }) {
+  return <ProductPageContent slug={params.slug} preview={false} />;
 }

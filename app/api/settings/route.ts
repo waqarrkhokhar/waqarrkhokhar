@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { ok, action } from "@/lib/api/respond";
@@ -32,6 +33,9 @@ export async function PATCH(request: Request) {
 
   try {
     await setSetting(parsed.data.key, parsed.data.value as never);
+    // Settings drive the header/footer/nav (root layout) + homepage, so refresh
+    // the whole cached storefront immediately — edits appear without the wait.
+    try { revalidatePath("/", "layout"); } catch { /* no-op if unsupported */ }
   } catch (e) {
     return apiError(500, "INTERNAL_ERROR", e instanceof Error ? e.message : "error");
   }

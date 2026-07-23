@@ -23,6 +23,9 @@ export async function middleware(request: NextRequest) {
       const url = new URL(hit.target, request.url);
       return NextResponse.redirect(url, hit.type === 302 ? 302 : 301);
     }
+    // Public visitors have no dashboard session to refresh — skip the auth
+    // round-trip entirely so cached pages are served with minimal latency.
+    return NextResponse.next();
   }
 
   const { response, user } = await updateSession(request);

@@ -158,7 +158,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
   });
 
   const previewSlug = slug || slugify(form.name || "new-product");
-  const productUrl = `https://comfyclub.pk/product/${previewSlug}/`;
+  const productUrl = `https://comfyclub.pk/product/${previewSlug}`;
   const selectedCol = catalog?.collections.find((c) => c.id === form.category_id) ?? null;
   const discount = form.price && form.sale_price ? Math.round((1 - Number(form.sale_price) / Number(form.price)) * 100) : 0;
 
@@ -183,7 +183,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
         breadcrumbs={[{ label: "Catalog" }, { label: "Products", href: "/dashboard/products" }, { label: mode === "create" ? "New Product" : form.name.slice(0, 25) }]}
         actions={
           <>
-            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/product/${previewSlug}/?preview=1`, "_blank")}>👁 Preview</DashBtn>}
+            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/preview/product/${previewSlug}`, "_blank")}>👁 Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="secondary" icon="📋" onClick={duplicate}>Duplicate</DashBtn>}
             {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmArchive(true)}>Delete</DashBtn>}
             <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save"}</DashBtn>
@@ -197,7 +197,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
         <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
           <span className="text-xs font-medium text-green-600">Live URL:</span>
-          <a href={`/product/${previewSlug}/`} target="_blank" rel="noopener noreferrer" className="flex-1 break-all text-xs text-ink underline dark:text-cream">{productUrl}</a>
+          <a href={`/product/${previewSlug}`} target="_blank" rel="noopener noreferrer" className="flex-1 break-all text-xs text-ink underline dark:text-cream">{productUrl}</a>
           <button onClick={() => navigator.clipboard?.writeText(productUrl).then(() => toast.success("URL copied"))} className="text-[11px] font-semibold text-gold">Copy</button>
         </div>
       )}
@@ -212,7 +212,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               <DashInput label="Product Name" value={form.name} onChange={(v) => set("name", v)} required />
               <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
                 <DashInput label="SKU" value={form.sku} onChange={(v) => set("sku", v)} />
-                <DashInput label="Slug" value={previewSlug} disabled helper={`URL: /product/${previewSlug}/`} />
+                <DashInput label="Slug" value={previewSlug} disabled helper={`URL: /product/${previewSlug}`} />
               </div>
               <DashSelect label="Status" value={form.status} onChange={(v) => set("status", v)}>
                 <option value="draft">Draft</option>
@@ -394,7 +394,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
           <DashSection title="Product URL">
             <div className="rounded-md bg-panel p-2.5 text-[11px] leading-relaxed dark:bg-white/5">
               <div className="mb-1 text-[10px] text-muted">Live URL</div>
-              <a href={`/product/${previewSlug}/`} target="_blank" rel="noopener noreferrer" className="break-all text-gold underline">{productUrl}</a>
+              <a href={`/product/${previewSlug}`} target="_blank" rel="noopener noreferrer" className="break-all text-gold underline">{productUrl}</a>
             </div>
           </DashSection>
 
@@ -418,7 +418,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               </div>
             </div>
             {mode === "edit" && (
-              <DashBtn variant="secondary" full onClick={() => window.open(`/product/${previewSlug}/?preview=1`, "_blank")}>👁 Preview on Storefront</DashBtn>
+              <DashBtn variant="secondary" full onClick={() => window.open(`/preview/product/${previewSlug}`, "_blank")}>👁 Preview on Storefront</DashBtn>
             )}
           </DashSection>
         </div>

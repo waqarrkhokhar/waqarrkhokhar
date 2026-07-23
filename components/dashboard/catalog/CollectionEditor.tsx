@@ -124,7 +124,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
         breadcrumbs={[{ label: "Catalog" }, { label: "Collections", href: "/dashboard/collections" }, { label: mode === "create" ? "New" : f.name }]}
         actions={
           <>
-            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`${slug}${slug.includes("?") ? "&" : "?"}preview=1`, "_blank")}>👁 Preview</DashBtn>}
+            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/preview/c/${slug.replace(/^\/+|\/+$/g, "")}`, "_blank")}>👁 Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmDelete(true)}>Delete</DashBtn>}
             <DashBtn variant="secondary" onClick={() => save()}>{saving ? "Saving…" : "Save"}</DashBtn>
             <DashBtn onClick={() => save("published")}>Save &amp; Publish</DashBtn>

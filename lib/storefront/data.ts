@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Json } from "@/lib/types/database";
 import { cleanHtml, parseProductBody, stripTagsPlain, type Dimensions } from "@/lib/storefront/html";
 
@@ -31,7 +32,7 @@ export type StoreCategory = {
 
 /** Navigation tree + business info + social links (for header/footer). */
 export async function getChrome() {
-  const supabase = createClient();
+  const supabase = createPublicClient();
   const [{ data: parents }, { data: collections }, { data: settings }] =
     await Promise.all([
       supabase
@@ -106,7 +107,7 @@ function toStoreProduct(p: RawProduct, rating?: { avg: number; count: number }):
 
 /** Everything the homepage needs. */
 export async function getHomepageData() {
-  const supabase = createClient();
+  const supabase = createPublicClient();
 
   const [{ data: configRow }, { data: products }, { data: categories }] =
     await Promise.all([
@@ -268,7 +269,9 @@ export type ProductDetail = {
 
 /** Full product detail for /product/[slug]/. Returns null if not found. */
 export async function getProductDetail(slug: string, preview = false): Promise<ProductDetail | null> {
-  const supabase = createClient();
+  // Preview reads drafts via the cookie-aware session client (dynamic); normal
+  // visitors read published data cookielessly so the page stays cacheable.
+  const supabase = preview ? createClient() : createPublicClient();
   let q = supabase
     .from("products")
     .select(
@@ -384,7 +387,7 @@ export type CategoryPage = {
 /** Resolve a storefront path to a parent or collection listing. null if unknown. */
 export async function getCategoryPage(path: string, preview = false): Promise<CategoryPage | null> {
   const slug = path.startsWith("/") ? path : `/${path}`;
-  const supabase = createClient();
+  const supabase = preview ? createClient() : createPublicClient();
 
   // Try a child collection first (most specific).
   let colQ = supabase

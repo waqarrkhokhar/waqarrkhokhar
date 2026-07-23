@@ -4,7 +4,7 @@ import ContactForm from "@/components/storefront/ContactForm";
 import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
 import { waLink } from "@/lib/whatsapp";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Contact Us | ComfyClub",

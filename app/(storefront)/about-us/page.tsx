@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { waLink } from "@/lib/whatsapp";
 import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
 import Reveal from "@/components/storefront/Reveal";
 import CountUp from "@/components/storefront/CountUp";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "About Us | ComfyClub — Furniture Worth Keeping",
@@ -51,7 +51,7 @@ const VALUES = [
 ];
 
 async function heroImage(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase.from("product_images").select("url").limit(1).maybeSingle();
   return data?.url ?? null;
 }

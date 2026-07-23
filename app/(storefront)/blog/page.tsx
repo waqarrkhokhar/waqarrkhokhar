@@ -5,7 +5,7 @@ import BlogListView from "@/components/storefront/blog/BlogListView";
 import { waLink } from "@/lib/whatsapp";
 import WhatsAppIcon from "@/components/storefront/WhatsAppIcon";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Journal | ComfyClub Blog",

@@ -108,7 +108,7 @@ export default function ParentManager() {
           breadcrumbs={[{ label: "Catalog" }, { label: "Categories" }, { label: isNew ? "New" : form.name }]}
           actions={
             <>
-              {!isNew && form.slug && <DashBtn variant="secondary" onClick={() => window.open(`${form.slug}?preview=1`, "_blank")}>👁 Preview</DashBtn>}
+              {!isNew && form.slug && <DashBtn variant="secondary" onClick={() => window.open(`/preview/c/${form.slug.replace(/^\/+|\/+$/g, "")}`, "_blank")}>👁 Preview</DashBtn>}
               <DashBtn variant="secondary" onClick={() => setEditing(null)}>Cancel</DashBtn>
               <DashBtn onClick={save}>{saving ? "Saving…" : "Save"}</DashBtn>
             </>

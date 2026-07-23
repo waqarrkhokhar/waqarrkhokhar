@@ -155,7 +155,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
         breadcrumbs={[{ label: "Blog", href: "/dashboard/blog" }, { label: mode === "create" ? "New" : "Edit" }]}
         actions={
           <>
-            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/blog/${previewSlug}/?preview=1`, "_blank")}>Preview</DashBtn>}
+            {mode === "edit" && <DashBtn variant="secondary" onClick={() => window.open(`/preview/blog/${previewSlug}`, "_blank")}>Preview</DashBtn>}
             {mode === "edit" && <DashBtn variant="danger" onClick={() => setConfirmDelete(true)}>Delete</DashBtn>}
             {/* Save always keeps the post's current status (edit a live post without unpublishing it). */}
             <DashBtn onClick={() => save()} disabled={saving}>{saving ? "Saving…" : f.status === "published" ? "Save Changes" : "Save"}</DashBtn>

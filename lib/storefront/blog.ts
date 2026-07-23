@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export type BlogCard = {
   id: string;
@@ -27,7 +28,7 @@ const readTime = (content: string | null) =>
 
 /** Published posts for the /blog listing. */
 export async function getBlogList(): Promise<BlogCard[]> {
-  const supabase = createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("blog_posts")
     .select("id, title, slug, excerpt, category, featured_image, content, published_at")
@@ -43,7 +44,7 @@ export async function getBlogList(): Promise<BlogCard[]> {
 
 /** A single published post for /blog/[slug]. */
 export async function getBlogPost(slug: string, preview = false): Promise<BlogPostFull | null> {
-  const supabase = createClient();
+  const supabase = preview ? createClient() : createPublicClient();
   let q = supabase
     .from("blog_posts")
     .select("*")
