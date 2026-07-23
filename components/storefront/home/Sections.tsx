@@ -66,7 +66,7 @@ export function TrustedBy({ clients }: { clients: { name: string; href?: string 
         <div className="cc-marquee flex w-max items-center gap-x-12 whitespace-nowrap">
           {loop.map((c, i) =>
             c.href ? (
-              <a key={`${c.name}-${i}`} href={c.href} target="_blank" rel="nofollow noopener noreferrer" aria-hidden={i >= clients.length} className="font-heading text-[17px] font-semibold text-navy/80 transition hover:text-navy">
+              <a key={`${c.name}-${i}`} href={c.href} target="_blank" rel="nofollow noopener noreferrer" aria-hidden={i >= clients.length} tabIndex={i >= clients.length ? -1 : undefined} className="font-heading text-[17px] font-semibold text-navy/80 transition hover:text-navy">
                 {c.name}
               </a>
             ) : (

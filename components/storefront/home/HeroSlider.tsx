@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { waLink } from "@/lib/whatsapp";
+import { cleanHref } from "@/lib/seo/href";
 import WhatsAppIcon from "../WhatsAppIcon";
 
 export type Slide = {
@@ -42,6 +43,11 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
             src={s.image}
             alt=""
             referrerPolicy="no-referrer"
+            // First slide is the LCP element — load it eagerly at high priority;
+            // defer the rest so they don't compete for bandwidth on first paint.
+            loading={i === 0 ? "eager" : "lazy"}
+            fetchPriority={i === 0 ? "high" : "low"}
+            decoding="async"
             className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
             style={{ opacity: i === active ? 1 : 0 }}
           />
@@ -69,7 +75,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
         <p className="mt-2.5 text-sm leading-relaxed text-white/65">{slide.desc}</p>
         <div className="mt-5 flex gap-2.5">
           <Link
-            href={slide.link}
+            href={cleanHref(slide.link)}
             className="bg-gold px-6 py-3 text-[13px] font-semibold tracking-wide text-white"
           >
             {slide.cta}

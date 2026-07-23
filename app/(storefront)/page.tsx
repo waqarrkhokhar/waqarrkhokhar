@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import ReactDOM from "react-dom";
 import { getHomepageData } from "@/lib/storefront/data";
+import { cleanHref } from "@/lib/seo/href";
 import { getPublicSettings } from "@/lib/settings";
 import HeroSlider, { type Slide } from "@/components/storefront/home/HeroSlider";
 import CategorySlider from "@/components/storefront/home/CategorySlider";
@@ -82,7 +84,13 @@ export default async function HomePage() {
     ? (config.how_steps as { step: string; title: string; desc: string }[])
     : DEFAULT_HOW;
 
-  const firstCat = categories[0]?.slug ?? "/";
+  const firstCat = cleanHref(categories[0]?.slug ?? "/");
+
+  // Preload the first hero image — it's the LCP element, so start fetching it
+  // during HTML parse instead of after the slider script mounts.
+  if (slides[0]?.image) {
+    ReactDOM.preload(slides[0].image, { as: "image", fetchPriority: "high" });
+  }
 
   // Each builder-managed section keyed for ordering/visibility.
   const sectionNodes: Record<string, React.ReactNode> = {

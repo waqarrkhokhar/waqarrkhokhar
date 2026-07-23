@@ -81,16 +81,16 @@ export default function Footer({
         {/* Links grid */}
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           <div>
-            <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Sofas</h4>
+            <h2 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Sofas</h2>
             <ul className="space-y-2.5">{SOFAS_MENU.map(menuItem)}</ul>
           </div>
           <div>
-            <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Seater Sofas</h4>
+            <h2 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Seater Sofas</h2>
             <ul className="space-y-2.5">{SEATER_MENU.map(menuItem)}</ul>
           </div>
 
           <div>
-            <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Quick Links</h4>
+            <h2 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Quick Links</h2>
             <ul className="space-y-2.5">
               {QUICK_LINKS.map(([label, href]) => (
                 <li key={href}><Link href={cleanHref(href)} className="text-sm text-white/50 hover:text-white">{label}</Link></li>
@@ -99,7 +99,7 @@ export default function Footer({
           </div>
 
           <div>
-            <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Contact</h4>
+            <h2 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Contact</h2>
             <ul className="space-y-2.5 text-sm text-white/50">
               <li>
                 <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex items-center gap-2 hover:text-white">
