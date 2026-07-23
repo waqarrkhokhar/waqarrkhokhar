@@ -21,6 +21,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     title,
     description,
     robots: robotsMeta(p.robots),
+    // Explicit self-referencing canonical (no trailing slash — matches the
+    // served URL) so Google never treats /product/x and /product/x/ as
+    // duplicates and drops one from the index.
+    alternates: { canonical: `/product/${params.slug}` },
     openGraph: { title, description, images: image ? [image] : undefined, type: "website" },
   };
 }

@@ -24,6 +24,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     title,
     description,
     robots: noindex ? { index: false, follow: true } : undefined,
+    // Explicit self-referencing canonical (no trailing slash — matches the served URL).
+    alternates: { canonical: `/blog/${params.slug}` },
     openGraph: { title: p.og_title || title, description: p.og_description || description, images: p.featured_image ? [p.featured_image] : undefined, type: "article" },
   };
 }

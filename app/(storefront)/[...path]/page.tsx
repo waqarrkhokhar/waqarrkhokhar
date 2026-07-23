@@ -20,7 +20,10 @@ export async function generateMetadata({ params }: { params: { path: string[] } 
   const title = page.meta_title || `${page.name} | ComfyClub`;
   const description = page.meta_description || page.description || `Browse ${page.name} — handcrafted, made to order in Lahore by ComfyClub.`;
   const image = page.banner_image || undefined;
-  return { title, description, robots: robotsMeta(page.robots), openGraph: { title, description, images: image ? [image] : undefined } };
+  // Explicit self-referencing canonical (no trailing slash — matches the served
+  // URL) so parent/child category pages aren't deduplicated by Google.
+  const canonical = "/" + params.path.map((s) => decodeURIComponent(s)).join("/");
+  return { title, description, robots: robotsMeta(page.robots), alternates: { canonical }, openGraph: { title, description, images: image ? [image] : undefined } };
 }
 
 export default async function CategoryPage({ params, searchParams }: { params: { path: string[] }; searchParams: { preview?: string } }) {
