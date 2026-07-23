@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import type { StoreCategory } from "@/lib/storefront/data";
+import { cleanHref } from "@/lib/seo/href";
 
 export default function CategorySlider({ categories }: { categories: StoreCategory[] }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -16,7 +17,7 @@ export default function CategorySlider({ categories }: { categories: StoreCatego
         {categories.map((c) => (
           <Link
             key={c.id}
-            href={c.slug}
+            href={cleanHref(c.slug)}
             className="relative h-60 w-[200px] flex-shrink-0 overflow-hidden bg-cream"
             style={{ scrollSnapAlign: "start" }}
           >

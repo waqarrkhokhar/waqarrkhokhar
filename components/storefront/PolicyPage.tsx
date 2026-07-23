@@ -53,7 +53,7 @@ export default function PolicyPage({
           </p>
           <div className="flex flex-wrap gap-3">
             <a href={waLink("Hi, I have a question about your policies.")} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md bg-whatsapp px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-110"><WhatsAppIcon size={16} /> WhatsApp Us</a>
-            <Link href="/contact-us/" className="rounded-md border border-navy px-6 py-3 text-[15px] font-semibold text-navy transition hover:bg-navy hover:text-white">Contact Page</Link>
+            <Link href="/contact-us" className="rounded-md border border-navy px-6 py-3 text-[15px] font-semibold text-navy transition hover:bg-navy hover:text-white">Contact Page</Link>
           </div>
         </div>
       </article>

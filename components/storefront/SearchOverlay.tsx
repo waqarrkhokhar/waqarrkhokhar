@@ -59,7 +59,7 @@ export default function SearchOverlay({ onClose }: { onClose: () => void }) {
             return (
               <Link
                 key={r.id}
-                href={`/product/${r.slug}/`}
+                href={`/product/${r.slug}`}
                 onClick={onClose}
                 className="flex items-center gap-3 rounded-lg p-2 hover:bg-cream"
               >

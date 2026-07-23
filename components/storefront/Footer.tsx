@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { NavParent } from "@/lib/storefront/data";
+import { cleanHref } from "@/lib/seo/href";
 
 const QUICK_LINKS = [
   ["About Us", "/about-us/"],
@@ -53,7 +54,7 @@ export default function Footer({
   const existing = new Set(nav.flatMap((p) => p.children.map((c) => c.slug)));
   const menuItem = ([label, slug]: string[]) =>
     existing.has(slug) ? (
-      <li key={slug}><Link href={slug} className="text-sm text-white/50 hover:text-white">{label}</Link></li>
+      <li key={slug}><Link href={cleanHref(slug)} className="text-sm text-white/50 hover:text-white">{label}</Link></li>
     ) : (
       <li key={slug}><span className="text-sm text-white/40">{label}</span></li>
     );
@@ -92,7 +93,7 @@ export default function Footer({
             <h4 className="mb-3 text-[12.5px] uppercase tracking-wider text-gold">Quick Links</h4>
             <ul className="space-y-2.5">
               {QUICK_LINKS.map(([label, href]) => (
-                <li key={href}><Link href={href} className="text-sm text-white/50 hover:text-white">{label}</Link></li>
+                <li key={href}><Link href={cleanHref(href)} className="text-sm text-white/50 hover:text-white">{label}</Link></li>
               ))}
             </ul>
           </div>

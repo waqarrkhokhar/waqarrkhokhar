@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategoryPage } from "@/lib/storefront/data";
 import { robotsMeta } from "@/lib/seo/robots";
+import { cleanHref } from "@/lib/seo/href";
 import { isPreviewRequest } from "@/lib/storefront/preview";
 import CollectionGrid from "@/components/storefront/CollectionGrid";
 import CollapsibleContent from "@/components/storefront/CollapsibleContent";
@@ -55,7 +56,7 @@ export default async function CategoryPage({ params, searchParams }: { params: {
                 {i === page.breadcrumb.length - 1 ? (
                   <span className="text-white/85">{b.name}</span>
                 ) : (
-                  <Link href={b.slug} className="hover:text-gold">{b.name}</Link>
+                  <Link href={cleanHref(b.slug)} className="hover:text-gold">{b.name}</Link>
                 )}
               </span>
             ))}
@@ -72,7 +73,7 @@ export default async function CategoryPage({ params, searchParams }: { params: {
         <section className="px-5 py-8 md:px-10">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
             {page.children.map((c) => (
-              <Link key={c.id} href={c.slug} className="group relative aspect-[4/5] overflow-hidden bg-cream">
+              <Link key={c.id} href={cleanHref(c.slug)} className="group relative aspect-[4/5] overflow-hidden bg-cream">
                 {c.image && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={c.image} alt={c.name} referrerPolicy="no-referrer" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />

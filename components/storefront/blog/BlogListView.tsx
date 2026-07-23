@@ -33,7 +33,7 @@ export default function BlogListView({ posts }: { posts: BlogCard[] }) {
       {filtered.length > 0 && (
         <div className="mx-auto grid max-w-[1260px] gap-x-6 gap-y-8 px-5 py-6 sm:grid-cols-2 md:px-10 lg:grid-cols-3">
           {filtered.map((post) => (
-            <Link key={post.id} href={`/blog/${post.slug}/`} className="group flex flex-col">
+            <Link key={post.id} href={`/blog/${post.slug}`} className="group flex flex-col">
               <div className="aspect-[16/10] w-full overflow-hidden bg-cream">
                 {post.featured_image && (
                   // eslint-disable-next-line @next/next/no-img-element

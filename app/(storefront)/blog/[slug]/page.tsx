@@ -56,7 +56,7 @@ export default async function BlogPostPage({ params, searchParams }: { params: {
       <nav className="mx-auto max-w-2xl px-5 pb-2 pt-4 text-[13px] text-charcoal/50 md:px-10" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-gold">Home</Link>
         <span className="mx-1.5">›</span>
-        <Link href="/blog/" className="hover:text-gold">Blog</Link>
+        <Link href="/blog" className="hover:text-gold">Blog</Link>
         <span className="mx-1.5">›</span>
         <span className="text-charcoal/70">{p.title.length > 32 ? p.title.slice(0, 32) + "…" : p.title}</span>
       </nav>
@@ -109,7 +109,7 @@ export default async function BlogPostPage({ params, searchParams }: { params: {
           <h2 className="mb-4 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">More Articles</h2>
           <div className="grid gap-5 md:grid-cols-3">
             {more.map((op) => (
-              <Link key={op.id} href={`/blog/${op.slug}/`} className="group flex gap-3.5 md:flex-col md:gap-0">
+              <Link key={op.id} href={`/blog/${op.slug}`} className="group flex gap-3.5 md:flex-col md:gap-0">
                 <div className="h-[90px] w-[90px] flex-shrink-0 overflow-hidden bg-white md:h-auto md:w-full md:aspect-[16/10]">
                   {op.featured_image && (
                     // eslint-disable-next-line @next/next/no-img-element

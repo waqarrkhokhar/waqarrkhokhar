@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import type { ProductDetail } from "@/lib/storefront/data";
 import { waLink, productUrl, formatPrice } from "@/lib/whatsapp";
+import { cleanHref } from "@/lib/seo/href";
 import { whatsappOrder } from "@/components/storefront/ProductCard";
 
 /* ── Stars ───────────────────────────────────────────────────────────────── */
@@ -237,7 +238,7 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
         {p.category && (
           <>
             <span className="mx-1.5">›</span>
-            <a href={p.category.slug} className="hover:text-gold">{p.category.name}</a>
+            <a href={cleanHref(p.category.slug)} className="hover:text-gold">{p.category.name}</a>
           </>
         )}
         <span className="mx-1.5">›</span>

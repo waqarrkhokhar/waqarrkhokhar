@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { NavParent } from "@/lib/storefront/data";
 import SearchOverlay from "./SearchOverlay";
+import { cleanHref } from "@/lib/seo/href";
 
 export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: string; brand?: string }) {
   const [drawer, setDrawer] = useState(false);
@@ -44,7 +45,7 @@ export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: 
                 onMouseLeave={() => setOpenParent(null)}
               >
                 <Link
-                  href={p.slug}
+                  href={cleanHref(p.slug)}
                   className="border-b-2 border-transparent py-5 text-[13.5px] font-medium uppercase tracking-wider text-charcoal transition hover:border-gold"
                 >
                   {p.name}
@@ -54,7 +55,7 @@ export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: 
                     {p.children.map((c) => (
                       <Link
                         key={c.id}
-                        href={c.slug}
+                        href={cleanHref(c.slug)}
                         className="block px-4 py-2 text-sm text-charcoal hover:bg-cream hover:text-gold"
                       >
                         {c.name}
@@ -64,7 +65,7 @@ export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: 
                 )}
               </div>
             ))}
-            <Link href="/contact-us/" className="text-[13.5px] font-medium uppercase tracking-wider text-charcoal hover:text-gold">
+            <Link href="/contact-us" className="text-[13.5px] font-medium uppercase tracking-wider text-charcoal hover:text-gold">
               Contact Us
             </Link>
           </nav>
@@ -93,19 +94,19 @@ export default function Header({ nav, logo, brand }: { nav: NavParent[]; logo?: 
             <nav className="space-y-1">
               {nav.map((p) => (
                 <div key={p.id}>
-                  <Link href={p.slug} onClick={() => setDrawer(false)} className="block py-2 text-sm font-semibold uppercase tracking-wide text-charcoal">
+                  <Link href={cleanHref(p.slug)} onClick={() => setDrawer(false)} className="block py-2 text-sm font-semibold uppercase tracking-wide text-charcoal">
                     {p.name}
                   </Link>
                   <div className="ml-3 border-l border-black/5 pl-3">
                     {p.children.map((c) => (
-                      <Link key={c.id} href={c.slug} onClick={() => setDrawer(false)} className="block py-1.5 text-sm text-charcoal/70 hover:text-gold">
+                      <Link key={c.id} href={cleanHref(c.slug)} onClick={() => setDrawer(false)} className="block py-1.5 text-sm text-charcoal/70 hover:text-gold">
                         {c.name}
                       </Link>
                     ))}
                   </div>
                 </div>
               ))}
-              <Link href="/contact-us/" onClick={() => setDrawer(false)} className="block py-2 text-sm font-semibold uppercase tracking-wide text-charcoal">
+              <Link href="/contact-us" onClick={() => setDrawer(false)} className="block py-2 text-sm font-semibold uppercase tracking-wide text-charcoal">
                 Contact Us
               </Link>
             </nav>
