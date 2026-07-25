@@ -30,6 +30,8 @@ export default function ProductImages({
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
 
   async function addFromLibrary(urls: string[]) {
     setBusy(true);
@@ -76,9 +78,26 @@ export default function ProductImages({
   }
 
   async function setPrimary(id: string) {
-    const res = await apiSend(base, "PATCH", { image_id: id, is_primary: true });
+    // Making an image primary moves it to the front, so "primary" always means
+    // the first image — matching what the storefront shows as the main photo.
+    const nextIds = [id, ...sorted.filter((i) => i.id !== id).map((i) => i.id)];
+    const res = await apiSend(base, "PATCH", { reorder: nextIds });
     if (!res.ok) return toast.error(res.error);
     toast.success("Primary image set");
+    onChange();
+  }
+
+  async function reorderTo(targetId: string) {
+    if (!dragId || dragId === targetId) { setDragId(null); setOverId(null); return; }
+    const ids = sorted.map((i) => i.id);
+    const from = ids.indexOf(dragId);
+    const to = ids.indexOf(targetId);
+    setDragId(null);
+    setOverId(null);
+    if (from < 0 || to < 0) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    const res = await apiSend(base, "PATCH", { reorder: ids });
+    if (!res.ok) return toast.error(res.error);
     onChange();
   }
 
@@ -148,41 +167,59 @@ export default function ProductImages({
           No images yet. Add one by URL or upload a file.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {sorted.map((img, i) => (
-            <div
-              key={img.id}
-              className="overflow-hidden rounded-xl border border-line dark:border-white/10"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt={img.alt_text ?? ""} className="h-32 w-full object-cover" />
-              <div className="space-y-2 p-2">
-                {img.is_primary ? (
-                  <Badge tone="success">Primary</Badge>
-                ) : (
-                  <button
-                    onClick={() => setPrimary(img.id)}
-                    className="text-xs text-gold hover:underline"
-                  >
-                    Set as primary
-                  </button>
-                )}
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex gap-1">
-                    <button onClick={() => move(i, -1)} aria-label="Move left">←</button>
-                    <button onClick={() => move(i, 1)} aria-label="Move right">→</button>
+        <>
+          <p className="text-xs text-muted">
+            🖱️ Drag images to reorder them. The <strong>first</strong> image is the main photo shown on the store; the rest follow in this order.
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {sorted.map((img, i) => (
+              <div
+                key={img.id}
+                draggable
+                onDragStart={() => setDragId(img.id)}
+                onDragOver={(e) => { e.preventDefault(); if (overId !== img.id) setOverId(img.id); }}
+                onDrop={() => reorderTo(img.id)}
+                onDragEnd={() => { setDragId(null); setOverId(null); }}
+                title="Drag to reorder"
+                className={`cursor-move overflow-hidden rounded-xl border transition ${
+                  dragId === img.id ? "border-gold opacity-40"
+                  : overId === img.id ? "border-gold ring-2 ring-gold/40"
+                  : "border-line dark:border-white/10"
+                }`}
+              >
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.url} alt={img.alt_text ?? ""} className="pointer-events-none h-32 w-full object-cover" />
+                  <span className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-navy/80 text-[11px] font-semibold text-white">{i + 1}</span>
+                </div>
+                <div className="space-y-2 p-2">
+                  {i === 0 ? (
+                    <Badge tone="success">Main photo</Badge>
+                  ) : (
+                    <button
+                      onClick={() => setPrimary(img.id)}
+                      className="text-xs text-gold hover:underline"
+                    >
+                      Make main photo
+                    </button>
+                  )}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex gap-2 text-charcoal/60 dark:text-cream/60">
+                      <button onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move earlier" className="disabled:opacity-30">←</button>
+                      <button onClick={() => move(i, 1)} disabled={i === sorted.length - 1} aria-label="Move later" className="disabled:opacity-30">→</button>
+                    </div>
+                    <button
+                      onClick={() => remove(img.id)}
+                      className="text-red-500 hover:underline"
+                    >
+                      Delete
+                    </button>
                   </div>
-                  <button
-                    onClick={() => remove(img.id)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Delete
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

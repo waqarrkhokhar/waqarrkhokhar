@@ -290,7 +290,9 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
 
   const imgs = (row.product_images ?? []) as { url: string; alt_text: string | null; is_primary: boolean; sort_order: number }[];
   const images: ProductImage[] = [...imgs]
-    .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order)
+    // Follow the exact order set by dragging in the dashboard Media section
+    // (the first image — sort_order 0 — is also the primary/main photo).
+    .sort((a, b) => a.sort_order - b.sort_order)
     .map((i) => ({ url: i.url, alt: i.alt_text }));
 
   const [{ data: ratingRow }, { data: reviewRows }] = await Promise.all([

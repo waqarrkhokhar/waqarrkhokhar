@@ -2,8 +2,19 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { ok, created } from "@/lib/api/respond";
+import { revalidateProduct } from "@/lib/products/revalidate";
 
 type Params = { params: { id: string } };
+
+/** Refresh the cached storefront pages for this product (best-effort). */
+async function revalidate(supabase: ReturnType<typeof createClient>, productId: string) {
+  try {
+    const { data } = await supabase.from("products").select("slug, category:categories(slug)").eq("id", productId).maybeSingle();
+    if (data?.slug) revalidateProduct(data.slug, (data as { category?: { slug?: string } }).category?.slug ?? null);
+  } catch {
+    // ignore — ISR still refreshes within its revalidate window
+  }
+}
 
 const addSchema = z.object({
   url: z.string().url(),
@@ -64,15 +75,18 @@ export async function PATCH(request: Request, { params }: Params) {
   const supabase = createClient();
 
   if ("reorder" in parsed.data) {
+    // Persist the new order; the first image (idx 0) is also the primary/main
+    // image, so the drag order matches the storefront gallery exactly.
     await Promise.all(
       parsed.data.reorder.map((imageId, idx) =>
         supabase
           .from("product_images")
-          .update({ sort_order: idx })
+          .update({ sort_order: idx, is_primary: idx === 0 })
           .eq("id", imageId)
           .eq("product_id", params.id),
       ),
     );
+    await revalidate(supabase, params.id);
     return ok({ reordered: parsed.data.reorder.length });
   }
 
