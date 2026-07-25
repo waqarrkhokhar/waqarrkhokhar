@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getProductDetail } from "@/lib/storefront/data";
 import { createPublicClient } from "@/lib/supabase/public";
 import { robotsMeta } from "@/lib/seo/robots";
+import { buildOg, ogDefaultImage } from "@/lib/seo/og";
 import ProductPageContent from "@/components/storefront/product/ProductPageContent";
 
 // Cache the published page (ISR). On-demand revalidation refreshes it instantly
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const description =
     p.meta_description ||
     (p.short_description ? p.short_description.replace(/<[^>]+>/g, "").slice(0, 160) : `${p.name} — handcrafted, made to order in Lahore by ComfyClub.`);
-  const image = p.og_image || p.images[0]?.url;
+  const image = p.og_image || p.images[0]?.url || (await ogDefaultImage());
   return {
     title,
     description,
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     // served URL) so Google never treats /product/x and /product/x/ as
     // duplicates and drops one from the index.
     alternates: { canonical: `/product/${params.slug}` },
-    openGraph: { title, description, images: image ? [image] : undefined, type: "website" },
+    openGraph: buildOg({ path: `/product/${params.slug}`, title, description, image, type: "website" }),
   };
 }
 

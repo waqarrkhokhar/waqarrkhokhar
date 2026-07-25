@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ReactDOM from "react-dom";
 import { getHomepageData } from "@/lib/storefront/data";
 import { cleanHref } from "@/lib/seo/href";
+import { buildOg, ogDefaultImage } from "@/lib/seo/og";
 import { getPublicSettings } from "@/lib/settings";
 import HeroSlider, { type Slide } from "@/components/storefront/home/HeroSlider";
 import CategorySlider from "@/components/storefront/home/CategorySlider";
@@ -23,11 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
     const seo = (await getPublicSettings(["home_seo"])).home_seo as { meta_title?: string; meta_description?: string } | null;
     const title = seo?.meta_title?.trim();
     const description = seo?.meta_description?.trim();
-    if (!title && !description) return {};
+    const image = await ogDefaultImage();
     return {
       ...(title ? { title: { absolute: title } } : {}),
       ...(description ? { description } : {}),
-      openGraph: { ...(title ? { title } : {}), ...(description ? { description } : {}) },
+      openGraph: buildOg({ path: "/", title, description, image, type: "website" }),
     };
   } catch {
     return {};

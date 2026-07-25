@@ -25,14 +25,19 @@ const siteUrl =
 // dashboard. A self-referencing canonical is applied to every page.
 export async function generateMetadata(): Promise<Metadata> {
   let base = siteUrl;
+  let ogImage: string | undefined;
   const verification: Metadata["verification"] = {};
   const other: Record<string, string> = {};
   try {
     const { getPublicSettings } = await import("@/lib/settings");
-    const s = await getPublicSettings(["search_console_verification", "site_url", "site_verifications"]);
+    const s = await getPublicSettings(["search_console_verification", "site_url", "site_verifications", "branding"]);
     if (typeof s.site_url === "string" && /^https?:\/\//.test(s.site_url)) {
       base = s.site_url.replace(/\/$/, "");
     }
+    // Site-wide default OG image so og:image is never missing on pages that
+    // inherit these defaults (policies, contact, blog list, etc.).
+    const b = (s.branding ?? {}) as Record<string, string>;
+    ogImage = b.og_image || b.header_logo || b.footer_logo || b.favicon || undefined;
     // Site verification / ownership tags (each editable from Dashboard → SEO → Verification).
     // Every value is passed through cleanToken so even a value that was stored
     // "dirty" (e.g. a whole <meta> tag pasted in the past) renders as the
@@ -61,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       "ComfyClub crafts made-to-order sofas, sofa chairs, and furniture at our Lahore workshop. Choose your fabric, colour, and finish.",
     alternates: { canonical: "./" },
-    openGraph: { type: "website", siteName: "ComfyClub", url: base },
+    openGraph: { type: "website", siteName: "ComfyClub", url: base, ...(ogImage ? { images: [ogImage] } : {}) },
     twitter: { card: "summary_large_image" },
     // Favicon is rendered as an explicit <link> in the root <head> so it
     // applies to every page (metadata icons can be dropped by child routes).
