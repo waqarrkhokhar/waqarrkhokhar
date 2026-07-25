@@ -71,7 +71,7 @@ export default async function AboutPage() {
       <section className="relative min-h-[520px] overflow-hidden bg-navy">
         {bg && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={bg} alt="" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full scale-105 object-cover opacity-20" />
+          <img src={bg} alt="ComfyClub handcrafted furniture" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full scale-105 object-cover opacity-20" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent" />
         <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: "linear-gradient(90deg,#C9A84C,transparent 60%)" }} />

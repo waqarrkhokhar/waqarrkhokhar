@@ -159,7 +159,7 @@ function ReviewForm({ product }: { product: { id: string; name: string } }) {
         {image ? (
           <div className="flex items-center gap-3 rounded-md bg-cream p-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image} alt="" referrerPolicy="no-referrer" className="h-12 w-12 rounded object-cover" />
+            <img src={image} alt="Selected review photo" referrerPolicy="no-referrer" className="h-12 w-12 rounded object-cover" />
             <span className="flex-1 text-xs text-charcoal">Photo added</span>
             <button onClick={() => setImage(null)} className="text-[11px] text-sale">Remove</button>
           </div>
@@ -279,7 +279,7 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
               {images.slice(0, 5).map((img, i) => (
                 <button key={i} onClick={() => setActiveImg(i)} className={`h-14 w-14 flex-shrink-0 overflow-hidden rounded bg-cream ${i === activeImg ? "border-2 border-navy" : "border border-[#e5e5e5]"}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img.url} alt="" referrerPolicy="no-referrer" className="h-full w-full object-contain" />
+                  <img src={img.url} alt={img.alt ?? `${p.name} — photo ${i + 1}`} referrerPolicy="no-referrer" className="h-full w-full object-contain" />
                 </button>
               ))}
             </div>
@@ -446,7 +446,7 @@ export default function ProductView({ product: p }: { product: ProductDetail }) 
                 <p className="mt-2 text-[14.5px] leading-relaxed text-charcoal/80">{r.text}</p>
                 {r.image_url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.image_url} alt="" referrerPolicy="no-referrer" className="mt-2.5 h-20 w-20 rounded object-cover" />
+                  <img src={r.image_url} alt={`Customer photo from ${r.name}'s review`} referrerPolicy="no-referrer" className="mt-2.5 h-20 w-20 rounded object-cover" />
                 )}
                 {r.admin_reply && (
                   <div className="mt-2.5 rounded bg-cream px-3 py-2 text-[13px] text-charcoal/70">

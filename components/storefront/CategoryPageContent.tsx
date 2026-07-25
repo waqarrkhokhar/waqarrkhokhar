@@ -27,7 +27,7 @@ export default async function CategoryPageContent({ path, preview = false }: { p
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={page.banner_image}
-            alt=""
+            alt={`${page.name} — ComfyClub`}
             referrerPolicy="no-referrer"
             className="absolute inset-0 h-full w-full object-cover"
             style={{ opacity: 0.4 }}

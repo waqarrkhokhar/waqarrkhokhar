@@ -65,7 +65,7 @@ export default function SearchOverlay({ onClose }: { onClose: () => void }) {
               >
                 {r.primary_image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.primary_image} alt="" className="h-12 w-12 rounded object-cover" />
+                  <img src={r.primary_image} alt={r.name} className="h-12 w-12 rounded object-cover" />
                 ) : (
                   <div className="h-12 w-12 rounded bg-cream" />
                 )}

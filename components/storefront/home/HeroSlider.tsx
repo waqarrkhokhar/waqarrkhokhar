@@ -41,7 +41,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
           <img
             key={i}
             src={s.image}
-            alt=""
+            alt={s.title ? s.title.replace(/\n/g, " ") : "ComfyClub handcrafted furniture"}
             referrerPolicy="no-referrer"
             // First slide is the LCP element — load it eagerly at high priority;
             // defer the rest so they don't compete for bandwidth on first paint.
