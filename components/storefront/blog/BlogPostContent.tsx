@@ -62,7 +62,7 @@ export default async function BlogPostContent({ slug, preview = false }: { slug:
 
         {p.faqs.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-4 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">FAQs</h2>
+            <h2 className="mb-4 font-body text-[28px] font-semibold text-charcoal md:text-[32px]">FAQs</h2>
             {p.faqs.map((f) => (
               <details key={f.q} className="group border-b border-black/[0.07]">
                 <summary className="flex cursor-pointer list-none items-center justify-between py-4 font-heading text-[19px] font-semibold text-charcoal">
@@ -89,7 +89,7 @@ export default async function BlogPostContent({ slug, preview = false }: { slug:
       {/* More articles */}
       {more.length > 0 && (
         <section className="bg-cream px-5 py-8 md:px-10">
-          <h2 className="mb-4 font-heading text-[28px] font-semibold text-charcoal md:text-[32px]">More Articles</h2>
+          <h2 className="mb-4 font-body text-[28px] font-semibold text-charcoal md:text-[32px]">More Articles</h2>
           <div className="grid gap-5 md:grid-cols-3">
             {more.map((op) => (
               <Link key={op.id} href={`/blog/${op.slug}`} className="group flex gap-3.5 md:flex-col md:gap-0">

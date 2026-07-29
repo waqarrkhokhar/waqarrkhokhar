@@ -16,7 +16,7 @@ export function SectionHeading({
   return (
     <div className="mb-5 px-5">
       <div className="flex items-baseline justify-between">
-        <h2 className="m-0 font-heading text-[26px] font-semibold text-charcoal md:text-[30px]">{title}</h2>
+        <h2 className="m-0 font-body text-[26px] font-semibold text-charcoal md:text-[30px]">{title}</h2>
         {viewAll && (
           <Link href={viewAll} className="whitespace-nowrap text-[14px] font-semibold tracking-wide text-gold hover:underline">
             View All →
@@ -86,7 +86,7 @@ export function LimitedOffers({ products }: { products: StoreProduct[] }) {
     <section className="bg-navy py-9">
       <div className="mb-4 px-5">
         <div className="mb-1 text-[11px] uppercase tracking-[3px] text-gold">Don&apos;t Miss Out</div>
-        <h2 className="m-0 font-heading text-[22px] font-semibold text-white">Limited-Time Offers</h2>
+        <h2 className="m-0 font-body text-[22px] font-semibold text-white">Limited-Time Offers</h2>
         <p className="mt-1 text-[13.5px] text-white/45">Up to {maxDisc}% off. While stocks last</p>
       </div>
       <div className="grid grid-cols-2 gap-4 px-5 md:grid-cols-4 md:gap-6 md:px-10">
@@ -122,7 +122,7 @@ export function WhyComfyClub({ items }: { items: { icon?: string; title: string;
   if (items.length === 0) return null;
   return (
     <section className="px-5 py-14 md:py-16">
-      <h2 className="mb-7 font-heading text-[26px] font-semibold text-charcoal md:text-[30px]">Why ComfyClub</h2>
+      <h2 className="mb-7 font-body text-[26px] font-semibold text-charcoal md:text-[30px]">Why ComfyClub</h2>
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {items.map((it) => (
           <div key={it.title} className="flex items-start gap-4">
@@ -163,7 +163,7 @@ export function HowItWorks({ steps }: { steps: { step: string; title: string; de
 export function NeedHelpCTA() {
   return (
     <section className="bg-cream px-6 py-14 text-center md:py-16">
-      <div className="mb-2 font-heading text-[26px] font-semibold text-navy md:text-[30px]">Need Help Choosing?</div>
+      <div className="mb-2 font-body text-[26px] font-semibold text-navy md:text-[30px]">Need Help Choosing?</div>
       <p className="mb-6 text-[15px] text-charcoal/60">Our furniture experts are a message away</p>
       <a
         href={waLink("Hi, I'd like help choosing furniture.")}
