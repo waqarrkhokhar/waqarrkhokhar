@@ -35,7 +35,7 @@ const config: Config = {
         glass: "0 4px 24px rgba(15,29,53,0.08)",
       },
       fontFamily: {
-        heading: ["var(--font-cormorant)", "Cormorant Garamond", "serif"],
+        heading: ["var(--font-jost)", "Jost", "sans-serif"],
         body: ["var(--font-jost)", "Jost", "sans-serif"],
       },
     },

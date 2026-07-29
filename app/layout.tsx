@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Jost } from "next/font/google";
+import { Jost } from "next/font/google";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
-
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-cormorant",
-  display: "swap",
-});
 
 const jost = Jost({
   subsets: ["latin"],
@@ -149,7 +142,7 @@ export default async function RootLayout({
 }) {
   const [{ ga4Id, gtmId }, schemas, { clarityId, fbPixelId }, favicon] = await Promise.all([getAnalyticsIds(), getCustomSchemas(), getSiteScripts(), getFavicon()]);
   return (
-    <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
+    <html lang="en" className={`${jost.variable}`}>
       <head>
         {favicon && (
           <>

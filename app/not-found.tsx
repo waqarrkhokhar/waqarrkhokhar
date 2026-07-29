@@ -43,7 +43,7 @@ const CSS = `
     position:absolute;
     top:50%;left:50%;
     transform:translate(-50%,-50%);
-    font-family:var(--font-cormorant),'Cormorant Garamond',serif;
+    font-family:var(--font-jost),'Jost',sans-serif;
     font-weight:600;
     font-size:clamp(190px,44vw,420px);
     line-height:0.82;
@@ -83,7 +83,7 @@ const CSS = `
     animation:rise 0.9s 0.05s both;
   }
   .headline{
-    font-family:var(--font-cormorant),'Cormorant Garamond',serif;
+    font-family:var(--font-jost),'Jost',sans-serif;
     font-weight:600;
     font-size:clamp(28px,5.2vw,46px);
     color:var(--cream);
@@ -210,7 +210,7 @@ const CSS = `
     pointer-events:none;
   }
   .brand .word{
-    font-family:var(--font-cormorant),'Cormorant Garamond',serif;
+    font-family:var(--font-jost),'Jost',sans-serif;
     font-weight:600;
     font-size:22px;
     letter-spacing:4px;
