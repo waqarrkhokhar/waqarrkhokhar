@@ -377,6 +377,7 @@ export type CategoryPage = {
   intro_content: string | null;
   content_html: string | null;
   banner_image: string | null;
+  banner_image_mobile: string | null;
   meta_title: string | null;
   meta_description: string | null;
   robots: string | null;
@@ -385,6 +386,20 @@ export type CategoryPage = {
   /** For a parent: its child collections (with counts) to show as cards. */
   children: StoreCategory[];
 };
+
+/**
+ * Read the optional mobile hero image separately, failing open — so the
+ * storefront keeps working even before the `banner_image_mobile` column is
+ * added to the database (safe to deploy before running the migration).
+ */
+async function bannerMobile(supabase: any, table: "categories" | "parent_categories", id: string): Promise<string | null> {
+  try {
+    const { data } = await supabase.from(table).select("banner_image_mobile").eq("id", id).maybeSingle();
+    return data?.banner_image_mobile ?? null;
+  } catch {
+    return null;
+  }
+}
 
 /** Resolve a storefront path to a parent or collection listing. null if unknown. */
 export async function getCategoryPage(path: string, preview = false): Promise<CategoryPage | null> {
@@ -414,6 +429,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
       intro_content: cleanHtml(c.intro_content) || null,
       content_html: cleanHtml(c.content_html) || null,
       banner_image: c.banner_image,
+      banner_image_mobile: await bannerMobile(supabase, "categories", c.id),
       meta_title: c.meta_title,
       meta_description: c.meta_description,
       robots: c.robots ?? null,
@@ -493,6 +509,7 @@ export async function getCategoryPage(path: string, preview = false): Promise<Ca
     intro_content: null,
     content_html: parentContentHtml,
     banner_image: parent.banner_image,
+    banner_image_mobile: await bannerMobile(supabase, "parent_categories", parent.id),
     meta_title: parent.meta_title,
     meta_description: parent.meta_description,
     robots: parent.robots ?? null,

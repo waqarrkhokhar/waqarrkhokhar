@@ -23,13 +23,25 @@ export default async function CategoryPageContent({ path, preview = false }: { p
       {preview && <PreviewBanner editHref="/dashboard/collections" />}
       {/* Banner / header */}
       <div className="relative overflow-hidden bg-navy px-5 py-12 text-center md:px-10 md:py-16">
-        {page.banner_image && (
+        {/* Mobile hero image (falls back to the desktop one if not set) */}
+        {(page.banner_image_mobile || page.banner_image) && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={page.banner_image}
+            src={page.banner_image_mobile || page.banner_image || undefined}
             alt={`${page.name} — ComfyClub`}
             referrerPolicy="no-referrer"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover md:hidden"
+            style={{ opacity: 0.4 }}
+          />
+        )}
+        {/* Desktop hero image (falls back to the mobile one if not set) */}
+        {(page.banner_image || page.banner_image_mobile) && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={page.banner_image || page.banner_image_mobile || undefined}
+            alt={`${page.name} — ComfyClub`}
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 hidden h-full w-full object-cover md:block"
             style={{ opacity: 0.4 }}
           />
         )}

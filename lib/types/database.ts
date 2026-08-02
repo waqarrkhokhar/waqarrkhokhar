@@ -57,6 +57,7 @@ export interface Database {
         slug: string;
         description: string | null;
         banner_image: string | null;
+        banner_image_mobile: string | null;
         seo_content: Json;
         meta_title: string | null;
         meta_description: string | null;
@@ -75,6 +76,7 @@ export interface Database {
         slug: string;
         description: string | null;
         banner_image: string | null;
+        banner_image_mobile: string | null;
         intro_content: string | null;
         content_html: string | null;
         seo_content: Json;

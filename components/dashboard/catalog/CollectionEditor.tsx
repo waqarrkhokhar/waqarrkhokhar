@@ -33,7 +33,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
 
   const [f, setF] = useState({
     name: "", parent_id: "", status: "draft", sort_order: "0", is_featured: false,
-    banner_image: "", intro_content: "", content_html: "",
+    banner_image: "", banner_image_mobile: "", intro_content: "", content_html: "",
     meta_title: "", meta_description: "", focus_keyword: "", canonical_url: "",
     og_image: "", robots: "index, follow", schema_enabled: true,
   });
@@ -51,7 +51,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     setSeo({ ...EMPTY_SEO, ...((c.seo_content ?? {}) as Partial<SeoContent>) });
     setF({
       name: String(c.name ?? ""), parent_id: String(c.parent_id ?? ""), status: String(c.status ?? "draft"),
-      sort_order: String(c.sort_order ?? 0), is_featured: !!c.is_featured, banner_image: String(c.banner_image ?? ""),
+      sort_order: String(c.sort_order ?? 0), is_featured: !!c.is_featured, banner_image: String(c.banner_image ?? ""), banner_image_mobile: String(c.banner_image_mobile ?? ""),
       intro_content: String(c.intro_content ?? ""), content_html: String(c.content_html ?? ""), meta_title: String(c.meta_title ?? ""),
       meta_description: String(c.meta_description ?? ""), focus_keyword: String(c.focus_keyword ?? ""),
       canonical_url: String(c.canonical_url ?? ""), og_image: String(c.og_image ?? ""),
@@ -68,7 +68,7 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
     const str = (s: string) => (s.trim() ? s.trim() : null);
     return {
       name: f.name.trim(), status: f.status, sort_order: parseInt(f.sort_order, 10) || 0, is_featured: f.is_featured,
-      banner_image: str(f.banner_image), intro_content: str(f.intro_content), content_html: str(f.content_html), seo_content: seo,
+      banner_image: str(f.banner_image), banner_image_mobile: str(f.banner_image_mobile), intro_content: str(f.intro_content), content_html: str(f.content_html), seo_content: seo,
       meta_title: str(f.meta_title), meta_description: str(f.meta_description), focus_keyword: str(f.focus_keyword),
       canonical_url: str(f.canonical_url), og_image: str(f.og_image), robots: str(f.robots), schema_enabled: f.schema_enabled,
     };
@@ -158,11 +158,18 @@ export default function CollectionEditor({ mode, collectionId }: { mode: Mode; c
 
       {tab === "media" && (
         <DashSection title="Hero Banner" subtitle="Shown at the top of the collection page">
-          <ImageField label="Banner Image" value={f.banner_image} onChange={(v) => set("banner_image", v)} helper="Choose from your library or upload a new image." />
+          <ImageField label="Banner Image (Desktop)" value={f.banner_image} onChange={(v) => set("banner_image", v)} helper="Wide image shown on computers/tablets (recommended 1920×700)." />
           {f.banner_image && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={f.banner_image} alt="" referrerPolicy="no-referrer" className="mt-1 h-40 w-full rounded-lg object-cover" />
           )}
+          <div className="mt-4">
+            <ImageField label="Banner Image (Mobile)" value={f.banner_image_mobile} onChange={(v) => set("banner_image_mobile", v)} helper="Taller image shown on phones (recommended 800×520). Optional — falls back to the desktop image." />
+            {f.banner_image_mobile && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={f.banner_image_mobile} alt="" referrerPolicy="no-referrer" className="mt-1 h-40 w-full rounded-lg object-cover" />
+            )}
+          </div>
         </DashSection>
       )}
 

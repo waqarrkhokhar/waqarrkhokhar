@@ -18,6 +18,7 @@ type Parent = {
   meta_description: string | null;
   focus_keyword: string | null;
   banner_image: string | null;
+  banner_image_mobile: string | null;
   description: string | null;
   robots: string | null;
   children_count: number;
@@ -26,13 +27,13 @@ type Parent = {
 
 type FormState = {
   name: string; slug: string; status: string; sort_order: string;
-  banner_image: string; description: string;
+  banner_image: string; banner_image_mobile: string; description: string;
   meta_title: string; meta_description: string; focus_keyword: string; robots: string;
 };
 
 const EMPTY: FormState = {
   name: "", slug: "", status: "published", sort_order: "0",
-  banner_image: "", description: "", meta_title: "", meta_description: "", focus_keyword: "", robots: "index, follow",
+  banner_image: "", banner_image_mobile: "", description: "", meta_title: "", meta_description: "", focus_keyword: "", robots: "index, follow",
 };
 
 export default function ParentManager() {
@@ -63,7 +64,7 @@ export default function ParentManager() {
   function openEdit(p: Parent) {
     setForm({
       name: p.name, slug: p.slug, status: p.status, sort_order: String(p.sort_order),
-      banner_image: p.banner_image ?? "", description: p.description ?? "",
+      banner_image: p.banner_image ?? "", banner_image_mobile: p.banner_image_mobile ?? "", description: p.description ?? "",
       meta_title: p.meta_title ?? "", meta_description: p.meta_description ?? "", focus_keyword: p.focus_keyword ?? "",
       robots: p.robots ?? "index, follow",
     });
@@ -75,7 +76,7 @@ export default function ParentManager() {
     setSaving(true);
     const payload = {
       name: form.name.trim(), status: form.status, sort_order: parseInt(form.sort_order, 10) || 0,
-      banner_image: form.banner_image.trim() || null, description: form.description.trim() || null,
+      banner_image: form.banner_image.trim() || null, banner_image_mobile: form.banner_image_mobile.trim() || null, description: form.description.trim() || null,
       meta_title: form.meta_title.trim() || null, meta_description: form.meta_description.trim() || null,
       focus_keyword: form.focus_keyword.trim() || null, robots: form.robots,
     };
@@ -127,7 +128,8 @@ export default function ParentManager() {
             </DashSelect>
             <DashInput label="Sort Order" type="number" value={form.sort_order} onChange={(v) => setForm((f) => ({ ...f, sort_order: v }))} />
           </div>
-          <ImageField label="Banner Image" value={form.banner_image} onChange={(v) => setForm((f) => ({ ...f, banner_image: v }))} helper="Choose from your library or upload. Shown on the category page." />
+          <ImageField label="Banner Image (Desktop)" value={form.banner_image} onChange={(v) => setForm((f) => ({ ...f, banner_image: v }))} helper="Wide image for computers/tablets (recommended 1920×700)." />
+          <ImageField label="Banner Image (Mobile)" value={form.banner_image_mobile} onChange={(v) => setForm((f) => ({ ...f, banner_image_mobile: v }))} helper="Taller image for phones (recommended 800×520). Optional — falls back to desktop." />
           <DashInput label="Description" textarea rows={3} value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} />
         </DashSection>
         <DashSection title="SEO">

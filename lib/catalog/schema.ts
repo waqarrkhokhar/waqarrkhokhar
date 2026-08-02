@@ -3,6 +3,7 @@ import { z } from "zod";
 const seoFields = {
   description: z.string().nullish(),
   banner_image: z.string().nullish(),
+  banner_image_mobile: z.string().nullish(),
   meta_title: z.string().max(60).nullish(),
   meta_description: z.string().max(160).nullish(),
   focus_keyword: z.string().nullish(),
