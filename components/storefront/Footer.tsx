@@ -60,7 +60,7 @@ export default function Footer({
     );
   const phone = business.phone || business.whatsapp || "+92 339 410 0052";
   const email = business.email || "comfyclub.pk@gmail.com";
-  const address = business.address || "Jan Muhammad Road, Nawab Town, Lahore";
+  const address = business.address || "Al Jannat Street, Nasirabad Road, Behind Shell Fuel Station, Al Hamra Town, Lahore";
 
   return (
     <footer className="bg-navy px-5 pb-6 pt-12 text-white sm:px-10 sm:pt-14">

@@ -100,7 +100,7 @@ export default function SettingsManager() {
           <DashInput label="WhatsApp Number" value={biz.whatsapp} onChange={sb("whatsapp")} placeholder="+923394100052" disabled={!canEdit} />
           <DashInput label="Phone" value={biz.phone} onChange={sb("phone")} placeholder="+923394100052" disabled={!canEdit} />
           <DashInput label="Email" value={biz.email} onChange={sb("email")} placeholder="comfyclub.pk@gmail.com" disabled={!canEdit} />
-          <DashInput label="Address" value={biz.address} onChange={sb("address")} placeholder="Jan Muhammad Road, Nawab Town, Lahore" disabled={!canEdit} />
+          <DashInput label="Address" value={biz.address} onChange={sb("address")} placeholder="Al Jannat Street, Nasirabad Road, Al Hamra Town, Lahore" disabled={!canEdit} />
         </div>
       </DashSection>
 

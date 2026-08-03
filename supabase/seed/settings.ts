@@ -9,7 +9,7 @@ const SETTINGS: Record<string, unknown> = {
     name: "ComfyClub",
     phone: "03394100052",
     email: "comfyclub.pk@gmail.com",
-    address: "Jan Muhammad Road, Nawab Town, Lahore",
+    address: "Al Jannat Street, Nasirabad Road, Behind Shell Fuel Station, Al Hamra Town, Lahore",
     coordinates: "31.4503,74.2466",
     hours: "8:00 AM – 9:00 PM",
   },

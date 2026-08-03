@@ -11,7 +11,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "About Us | ComfyClub — Furniture Worth Keeping",
   description:
-    "From a workshop on Jan Muhammad Road, Lahore to furnishing Pakistan's most recognized names. Handcrafted, made-to-order furniture built on craft and trust.",
+    "From a workshop in Al Hamra Town, Lahore to furnishing Pakistan's most recognized names. Handcrafted, made-to-order furniture built on craft and trust.",
 };
 
 const CLIENTS = [
@@ -86,7 +86,7 @@ export default async function AboutPage() {
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-white/70">
-              From a workshop on Jan Muhammad Road to furnishing Pakistan&apos;s most recognized names. This is our story.
+              From a workshop in Al Hamra Town, Lahore to furnishing Pakistan&apos;s most recognized names. This is our story.
             </p>
           </Reveal>
           <Reveal delay={240} className="mt-10 flex flex-wrap">
@@ -106,7 +106,7 @@ export default async function AboutPage() {
         <Reveal delay={60}><h2 className="mb-7 font-heading text-[28px] font-semibold leading-tight text-charcoal md:text-[32px]">Built on Craft, Driven by Trust</h2></Reveal>
         <Reveal delay={120} className="space-y-6 border-l-2 border-gold/40 pl-6 text-[17px] leading-[1.85] text-[#4a4a4a] md:text-[18px]">
           <p>ComfyClub started with one conviction: Pakistani homes deserve better furniture. Not mass-produced, not imported, but handcrafted with real materials by people who take pride in their work.</p>
-          <p>Our workshop sits on Jan Muhammad Road in Nawab Town, Lahore, where seasoned artisans shape solid hardwood into frames, layer high-density foam by hand, and upholster each piece in premium velvet, linen, or boucle. Every sofa, every chair, every bed is made to order. Nothing leaves our workshop until it&apos;s right.</p>
+          <p>Our workshop sits on Al Jannat Street, Nasirabad Road in Al Hamra Town, Lahore, where seasoned artisans shape solid hardwood into frames, layer high-density foam by hand, and upholster each piece in premium velvet, linen, or boucle. Every sofa, every chair, every bed is made to order. Nothing leaves our workshop until it&apos;s right.</p>
           <p>Over the years, that standard of craft has earned us the trust of families across Pakistan and some of the country&apos;s most recognized names — from Bahria Town and Gul Ahmed to Lake City and NewsOne. We don&apos;t advertise much. Our work speaks. Our customers return.</p>
         </Reveal>
       </section>

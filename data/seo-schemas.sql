@@ -34,13 +34,13 @@ VALUES ('custom_schemas', jsonb_build_array(
       'currenciesAccepted','PKR',
       'address',jsonb_build_object(
         '@type','PostalAddress',
-        'streetAddress','Jan Muhammad Road, Nawab Town',
+        'streetAddress','Al Jannat Street, Nasirabad Road, Behind Shell Fuel Station, Al Hamra Town',
         'addressLocality','Lahore',
         'addressRegion','Punjab',
         'postalCode','54000',
         'addressCountry','PK'
       ),
-      'geo',jsonb_build_object('@type','GeoCoordinates','latitude',31.4503,'longitude',74.2466),
+      'geo',jsonb_build_object('@type','GeoCoordinates','latitude',31.45294157968887,'longitude',74.2547213022145),
       'areaServed','PK',
       'openingHoursSpecification',jsonb_build_array(jsonb_build_object(
         '@type','OpeningHoursSpecification',

@@ -1322,7 +1322,7 @@ JOIN products p ON p.slug = v.slug
 WHERE NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.product_id = p.id);
 
 INSERT INTO settings (key, value) VALUES
-  ('business_info','{"name": "ComfyClub", "phone": "03394100052", "email": "comfyclub.pk@gmail.com", "address": "Jan Muhammad Road, Nawab Town, Lahore", "coordinates": "31.4503,74.2466", "hours": "8:00 AM \u2013 9:00 PM"}'::jsonb),
+  ('business_info','{"name": "ComfyClub", "phone": "03394100052", "email": "comfyclub.pk@gmail.com", "address": "Al Jannat Street, Nasirabad Road, Behind Shell Fuel Station, Al Hamra Town, Lahore", "coordinates": "31.45294157968887,74.2547213022145", "hours": "8:00 AM \u2013 9:00 PM"}'::jsonb),
   ('social_links','{"facebook": "https://www.facebook.com/comfyclublahore/", "instagram": "https://www.instagram.com/comfyclub.pk/", "tiktok": "https://www.tiktok.com/@comfyclub.pk", "linkedin": "https://www.linkedin.com/company/comfyclub/", "youtube": "https://www.youtube.com/@comfyclublahore"}'::jsonb),
   ('whatsapp_templates','{"order": "Hi, I''d like to order {product_name} ({sku}). Please share availability and delivery details.", "quote": "Hi, I''d like a price quote for {product_name}.", "consultation": "Hi, I''d like a consultation about {product_name}.", "general": "Hi, I''d like to know more about your furniture collection."}'::jsonb),
   ('ga4_id','""'::jsonb),

@@ -9,13 +9,13 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Contact Us | ComfyClub",
   description:
-    "Get in touch with ComfyClub — WhatsApp, call, or email us, or visit our workshop on Jan Muhammad Road, Nawab Town, Lahore. We reply within minutes.",
+    "Get in touch with ComfyClub — WhatsApp, call, or email us, or visit our workshop at Al Jannat Street, Nasirabad Road, Al Hamra Town, Lahore. We reply within minutes.",
 };
 
 const FAQS = [
   { q: "How do I place an order?", a: "Simply WhatsApp us at 0339 4100052 with the product you like. We'll confirm availability, customization options, and delivery details." },
   { q: "Do you deliver outside Lahore?", a: "Yes! We ship across all major cities in Pakistan — Karachi, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, and more." },
-  { q: "Can I visit your workshop?", a: "Yes! Visit us at Jan Muhammad Road, Nawab Town, Lahore. We're open Mon–Sat, 8 AM – 9 PM. Walk-ins welcome." },
+  { q: "Can I visit your workshop?", a: "Yes! Visit us at Al Jannat Street, Nasirabad Road, Behind Shell Fuel Station, Al Hamra Town, Lahore. We're open Mon–Sat, 8 AM – 9 PM. Walk-ins welcome." },
   { q: "What payment methods do you accept?", a: "We accept bank transfer, JazzCash, EasyPaisa, and cash on delivery (select cities)." },
   { q: "How long does delivery take?", a: "Most orders are handcrafted and delivered within 2–3 weeks. We'll share tracking details via WhatsApp." },
   { q: "Do you offer custom orders?", a: "Absolutely! WhatsApp us your requirements. Custom sizes, fabrics, and colours are available on most products." },
@@ -91,23 +91,23 @@ export default function ContactPage() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" className="mt-0.5 flex-shrink-0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
             <div>
               <div className="font-heading text-[19px] font-semibold text-charcoal">ComfyClub Workshop</div>
-              <div className="mt-1 text-[17px] leading-relaxed text-[#5a5a5a]">Jan Muhammad Road, Nawab Town,<br />Lahore, Pakistan</div>
+              <div className="mt-1 text-[17px] leading-relaxed text-[#5a5a5a]">Al Jannat Street, Nasirabad Road,<br />Behind Shell Fuel Station, Al Hamra Town,<br />Lahore, Pakistan</div>
             </div>
           </div>
           <div className="mb-4 flex items-center gap-3">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="2" className="flex-shrink-0"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
             <div className="text-[17px] text-[#5a5a5a]">Mon – Sat: 8:00 AM – 9:00 PM</div>
           </div>
-          <a href="https://www.google.com/maps/place/31%C2%B027'01.2%22N+74%C2%B014'47.7%22E" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md bg-navy px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-110">
+          <a href="https://www.google.com/maps?q=31.45294157968887,74.2547213022145" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md bg-navy px-6 py-3 text-[15px] font-semibold text-white transition hover:brightness-110">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
             Get Directions
           </a>
         </div>
         <div className="h-[300px] overflow-hidden rounded-xl border border-[#D8D2C8]">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3402.2!2d74.2466!3d31.4503!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzHCsDI3JzAxLjIiTiA3NMKwMTQnNDcuNyJF!5e0!3m2!1sen!2spk!4v1"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d578.9559459628028!2d74.2547213022145!3d31.45294157968887!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3919012a1ea7e761%3A0xc27a9605157eb131!2sComfy%20Club!5e1!3m2!1sen!2s!4v1785748746148!5m2!1sen!2s"
             width="100%" height="300" style={{ border: 0 }} allowFullScreen loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade" title="ComfyClub Workshop Location"
+            referrerPolicy="strict-origin-when-cross-origin" title="ComfyClub Workshop Location"
           />
         </div>
       </section>
