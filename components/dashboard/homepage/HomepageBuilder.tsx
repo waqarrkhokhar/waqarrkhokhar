@@ -30,12 +30,12 @@ type Config = {
 const ALL_SECTIONS: { key: string; label: string }[] = [
   { key: "hero", label: "Hero Slider" },
   { key: "trusted_by", label: "Trusted By" },
-  { key: "stories", label: "Making-Of Stories" },
   { key: "categories", label: "Shop by Category" },
   { key: "trending", label: "Trending Now" },
   { key: "why", label: "Why ComfyClub" },
   { key: "offers", label: "Limited-Time Offers" },
   { key: "cta", label: "Need Help CTA" },
+  { key: "stories", label: "Making-Of Stories" },
   { key: "how_it_works", label: "How It Works" },
 ];
 

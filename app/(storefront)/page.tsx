@@ -117,13 +117,17 @@ export default async function HomePage() {
 
   // Default = the original prototype order. Only changes if you reorder/hide
   // sections in Dashboard → Homepage (which saves section_order).
-  const DEFAULT_ORDER = ["hero", "trusted_by", "stories", "categories", "trending", "why", "offers", "cta", "how_it_works"];
+  const DEFAULT_ORDER = ["hero", "trusted_by", "categories", "trending", "why", "offers", "cta", "stories", "how_it_works"];
   const rawOrder = Array.isArray(config.section_order) ? (config.section_order as string[]) : [];
   const order = rawOrder.filter((k) => k in sectionNodes);
   const finalOrder = [...(order.length ? order : DEFAULT_ORDER)];
-  // Show newer sections (e.g. stories) even if the saved order predates them.
+  // Show newer sections (e.g. stories) even if the saved order predates them —
+  // place the stories strip just before "How It Works" (after "Why ComfyClub").
   if (sectionNodes.stories && !finalOrder.includes("stories")) {
-    finalOrder.splice(Math.min(2, finalOrder.length), 0, "stories");
+    const howIdx = finalOrder.indexOf("how_it_works");
+    const whyIdx = finalOrder.indexOf("why");
+    const at = howIdx >= 0 ? howIdx : whyIdx >= 0 ? whyIdx + 1 : finalOrder.length;
+    finalOrder.splice(at, 0, "stories");
   }
 
   // The secondary featured collection rows sit right after the offers section
