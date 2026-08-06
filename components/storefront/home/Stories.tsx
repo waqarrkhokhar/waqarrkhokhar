@@ -20,8 +20,8 @@ const thumbFor = (s: Item) => s.thumbnail || `https://i.ytimg.com/vi/${s.id}/hqd
 
 export default function Stories({
   stories,
-  title = "The Making Of",
-  subtitle = "Watch how each ComfyClub piece is crafted — from frame to finish.",
+  title = "From Frame to Finish",
+  subtitle = "Follow each piece through the workshop, from the first cut to the last stitch.",
 }: {
   stories: Story[];
   title?: string;
@@ -42,7 +42,7 @@ export default function Stories({
     <section className="bg-cream py-12 md:py-14">
       <div className="mx-auto max-w-[1400px] px-5 md:px-10">
         <div className="mb-6 text-center">
-          <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[2.5px] text-gold">Handcrafted in Lahore</div>
+          <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[2.5px] text-gold">Inside Our Lahore Workshop</div>
           <h2 className="m-0 font-body text-[26px] font-semibold text-navy md:text-[32px]">{title}</h2>
           {subtitle && <p className="mx-auto mt-2 max-w-xl text-[14px] leading-relaxed text-[#6a6a6a]">{subtitle}</p>}
         </div>
