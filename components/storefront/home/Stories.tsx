@@ -48,11 +48,12 @@ export default function Stories({
         </div>
 
         <div className="relative">
-          {/* Carousel */}
+          {/* Carousel — centered when the cards fit, scrollable when they don't */}
           <div
             ref={scroller}
-            className="no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto scroll-smooth pb-1 md:gap-4"
+            className="no-scrollbar snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1"
           >
+            <div className="mx-auto flex w-max gap-3.5 md:gap-4">
             {items.map((s, i) => (
               <button
                 key={i}
@@ -79,6 +80,7 @@ export default function Stories({
                 </span>
               </button>
             ))}
+            </div>
           </div>
 
           {/* Desktop arrows */}
