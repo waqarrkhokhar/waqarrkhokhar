@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Story = { title: string; url: string; thumbnail?: string };
 type Item = Story & { id: string };
@@ -29,29 +29,80 @@ export default function Stories({
 }) {
   const items = stories.map((s) => ({ ...s, id: ytId(s.url) })).filter((s): s is Item => !!s.id);
   const [open, setOpen] = useState<number | null>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+
+  const scrollBy = (dir: -1 | 1) => {
+    const el = scroller.current;
+    if (el) el.scrollBy({ left: dir * Math.round(el.clientWidth * 0.85), behavior: "smooth" });
+  };
+
   if (items.length === 0) return null;
 
   return (
-    <section className="py-8">
+    <section className="bg-cream py-12 md:py-14">
       <div className="mx-auto max-w-[1400px] px-5 md:px-10">
-        <div className="mb-4 text-center">
-          <h2 className="m-0 font-body text-[26px] font-semibold text-charcoal md:text-[30px]">{title}</h2>
-          {subtitle && <p className="mt-1 text-[14px] text-[#777]">{subtitle}</p>}
+        <div className="mb-6 text-center">
+          <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[2.5px] text-gold">Handcrafted in Lahore</div>
+          <h2 className="m-0 font-body text-[26px] font-semibold text-navy md:text-[32px]">{title}</h2>
+          {subtitle && <p className="mx-auto mt-2 max-w-xl text-[14px] leading-relaxed text-[#6a6a6a]">{subtitle}</p>}
         </div>
-        <div className="no-scrollbar flex justify-start gap-4 overflow-x-auto pb-2 sm:justify-center">
-          {items.map((s, i) => (
-            <button key={i} onClick={() => setOpen(i)} className="flex w-[86px] flex-shrink-0 flex-col items-center gap-1.5">
-              <span className="rounded-full p-[3px] transition group-hover:scale-105" style={{ background: "linear-gradient(45deg,#C9A84C,#0F1D35)" }}>
-                <span className="block rounded-full bg-white p-[2px]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={thumbFor(s)} alt={s.title} referrerPolicy="no-referrer" className="h-[68px] w-[68px] rounded-full object-cover" />
+
+        <div className="relative">
+          {/* Carousel */}
+          <div
+            ref={scroller}
+            className="no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto scroll-smooth pb-1 md:gap-4"
+          >
+            {items.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => setOpen(i)}
+                aria-label={`Play: ${s.title}`}
+                className="group relative aspect-[9/16] w-[46vw] max-w-[210px] flex-shrink-0 snap-start overflow-hidden rounded-2xl bg-navy shadow-card transition hover:shadow-cardHover sm:w-[200px]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbFor(s)}
+                  alt={s.title}
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/10 to-navy/25" />
+                {/* Play button */}
+                <span className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur transition group-hover:scale-110">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#0F1D35" className="ml-0.5"><path d="M8 5v14l11-7z" /></svg>
                 </span>
-              </span>
-              <span className="line-clamp-2 text-center text-[12px] font-medium leading-tight text-charcoal">{s.title}</span>
-            </button>
-          ))}
+                <span className="absolute inset-x-0 bottom-0 p-3 text-left">
+                  <span className="line-clamp-2 text-[14px] font-semibold leading-tight text-white">{s.title}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop arrows */}
+          {items.length > 2 && (
+            <>
+              <button
+                onClick={() => scrollBy(-1)}
+                aria-label="Scroll left"
+                className="absolute -left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-2xl text-navy shadow-card transition hover:bg-cream md:flex"
+              >
+                ‹
+              </button>
+              <button
+                onClick={() => scrollBy(1)}
+                aria-label="Scroll right"
+                className="absolute -right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-2xl text-navy shadow-card transition hover:bg-cream md:flex"
+              >
+                ›
+              </button>
+            </>
+          )}
         </div>
       </div>
+
       {open !== null && <StoryViewer items={items} start={open} onClose={() => setOpen(null)} />}
     </section>
   );
@@ -63,13 +114,11 @@ function StoryViewer({ items, start, onClose }: { items: Item[]; start: number; 
   const prev = useCallback(() => setIdx((i) => Math.max(0, i - 1)), []);
   const cur = items[idx];
 
-  // Lock background scroll while open.
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // Keyboard: Esc closes, arrows navigate.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -97,7 +146,6 @@ function StoryViewer({ items, start, onClose }: { items: Item[]; start: number; 
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/90" onClick={onClose}>
-      {/* progress segments */}
       <div className="absolute inset-x-0 top-0 z-20 mx-auto flex max-w-[460px] gap-1 p-3">
         {items.map((_, i) => (
           <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/25">
@@ -107,7 +155,6 @@ function StoryViewer({ items, start, onClose }: { items: Item[]; start: number; 
       </div>
       <button onClick={onClose} aria-label="Close" className="absolute right-3 top-7 z-30 text-2xl leading-none text-white/90">✕</button>
 
-      {/* vertical player */}
       <div className="relative aspect-[9/16] max-h-[86vh] w-auto max-w-[95vw] overflow-hidden rounded-xl bg-black" style={{ height: "86vh" }} onClick={(e) => e.stopPropagation()}>
         <iframe
           key={cur.id}
@@ -122,7 +169,6 @@ function StoryViewer({ items, start, onClose }: { items: Item[]; start: number; 
         </div>
       </div>
 
-      {/* nav arrows (in the black margin, so they never block the video) */}
       <button
         onClick={(e) => { e.stopPropagation(); prev(); }}
         disabled={idx === 0}
