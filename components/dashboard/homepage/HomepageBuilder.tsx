@@ -12,6 +12,7 @@ type Slide = { image: string; subtitle: string; title: string; desc: string; cta
 type Client = { name: string; href: string; type: string };
 type WhyItem = { icon: string; title: string; desc: string };
 type HowStep = { step: string; title: string; desc: string };
+type Story = { title: string; url: string; thumbnail: string };
 
 type Config = {
   section_order: string[];
@@ -23,11 +24,13 @@ type Config = {
   pinned_offers: string[];
   why_items: WhyItem[];
   how_steps: HowStep[];
+  stories: Story[];
 };
 
 const ALL_SECTIONS: { key: string; label: string }[] = [
   { key: "hero", label: "Hero Slider" },
   { key: "trusted_by", label: "Trusted By" },
+  { key: "stories", label: "Making-Of Stories" },
   { key: "categories", label: "Shop by Category" },
   { key: "trending", label: "Trending Now" },
   { key: "why", label: "Why ComfyClub" },
@@ -46,6 +49,7 @@ const DEFAULT: Config = {
   pinned_offers: [],
   why_items: [],
   how_steps: [],
+  stories: [],
 };
 
 function move<T>(arr: T[], i: number, dir: -1 | 1): T[] {
@@ -231,6 +235,23 @@ export default function HomepageBuilder() {
             { key: "name", label: "Name" },
             { key: "href", label: "Link" },
             { key: "type", label: "Type (e.g. Real Estate)" },
+          ]}
+        />
+      </Section>
+
+      <Section title="Making-Of Stories (YouTube)">
+        <p className="mb-3 text-xs text-charcoal/60 dark:text-cream/60">
+          Add short YouTube videos of your process (frame, foam, upholstery…). They show as tappable story circles on the homepage. Paste the full YouTube link. The cover image auto-uses the video thumbnail unless you set your own.
+        </p>
+        <ListEditor
+          items={cfg.stories}
+          onChange={(v) => upd("stories", v)}
+          addLabel="Add story"
+          blank={{ title: "", url: "", thumbnail: "" }}
+          fields={[
+            { key: "title", label: "Title (e.g. The Frame)" },
+            { key: "url", label: "YouTube link" },
+            { key: "thumbnail", label: "Cover image (optional)", image: true },
           ]}
         />
       </Section>

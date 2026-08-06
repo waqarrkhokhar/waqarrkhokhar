@@ -6,6 +6,7 @@ import { buildOg, ogDefaultImage } from "@/lib/seo/og";
 import { getPublicSettings } from "@/lib/settings";
 import HeroSlider, { type Slide } from "@/components/storefront/home/HeroSlider";
 import CategorySlider from "@/components/storefront/home/CategorySlider";
+import Stories, { type Story } from "@/components/storefront/home/Stories";
 import {
   SectionHeading,
   ProductRow,
@@ -110,12 +111,20 @@ export default async function HomePage() {
     cta: <NeedHelpCTA />,
   };
 
+  // "Making of" story videos (YouTube), managed in Dashboard → Homepage.
+  const stories = (Array.isArray(config.stories) ? config.stories : []) as Story[];
+  if (stories.length) sectionNodes.stories = <Stories stories={stories} />;
+
   // Default = the original prototype order. Only changes if you reorder/hide
   // sections in Dashboard → Homepage (which saves section_order).
-  const DEFAULT_ORDER = ["hero", "trusted_by", "categories", "trending", "why", "offers", "cta", "how_it_works"];
+  const DEFAULT_ORDER = ["hero", "trusted_by", "stories", "categories", "trending", "why", "offers", "cta", "how_it_works"];
   const rawOrder = Array.isArray(config.section_order) ? (config.section_order as string[]) : [];
   const order = rawOrder.filter((k) => k in sectionNodes);
-  const finalOrder = order.length ? order : DEFAULT_ORDER;
+  const finalOrder = [...(order.length ? order : DEFAULT_ORDER)];
+  // Show newer sections (e.g. stories) even if the saved order predates them.
+  if (sectionNodes.stories && !finalOrder.includes("stories")) {
+    finalOrder.splice(Math.min(2, finalOrder.length), 0, "stories");
+  }
 
   // The secondary featured collection rows sit right after the offers section
   // (their original position) unless offers is hidden, in which case they append.
