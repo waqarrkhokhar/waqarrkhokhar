@@ -3,6 +3,7 @@ import { can } from "@/lib/auth/permissions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import UsersManager from "@/components/dashboard/settings/UsersManager";
 import SessionsManager from "@/components/dashboard/settings/SessionsManager";
+import TwoFactorCard from "@/components/dashboard/security/TwoFactorCard";
 
 export default async function Page() {
   const user = await getCurrentUser();
@@ -12,6 +13,9 @@ export default async function Page() {
   return (
     <>
       <UsersManager />
+      <div className="mt-6">
+        <TwoFactorCard isSuperAdmin={user.role === "Super Admin"} />
+      </div>
       <div className="mt-6">
         <SessionsManager />
       </div>
