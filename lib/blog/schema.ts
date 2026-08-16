@@ -13,6 +13,7 @@ const internalLink = z.object({ type: z.string(), name: z.string(), url: z.strin
 
 const base = z.object({
   title: z.string().min(5).max(200),
+  slug: z.string().max(200).nullish(),
   content: z.string().min(1).nullish(),
   excerpt: z.string().max(300).nullish(),
   featured_image: z.string().nullish(),

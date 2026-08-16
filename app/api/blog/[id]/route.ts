@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { ok, action } from "@/lib/api/respond";
 import { blogUpdateSchema } from "@/lib/blog/schema";
+import { slugify } from "@/lib/slug";
 import { logActivity } from "@/lib/activity";
 
 type Params = { params: { id: string } };
@@ -35,7 +37,7 @@ export async function PATCH(request: Request, { params }: Params) {
   const supabase = createClient();
   const { data: existing } = await supabase
     .from("blog_posts")
-    .select("status, published_at")
+    .select("status, published_at, slug")
     .eq("id", params.id)
     .single();
   if (!existing) return apiError(404, "NOT_FOUND", "Post not found");
@@ -43,6 +45,17 @@ export async function PATCH(request: Request, { params }: Params) {
   const patch: Record<string, unknown> = { ...parsed.data };
   if (parsed.data.faqs !== undefined) patch.faqs = parsed.data.faqs;
   if (parsed.data.internal_links !== undefined) patch.internal_links = parsed.data.internal_links;
+  // Editable URL slug — normalise, and remember the old one so we can add a
+  // 301 redirect if it changed (keeps old links / Google rankings alive).
+  let oldSlug: string | null = null;
+  let newSlug: string | null = null;
+  if (typeof parsed.data.slug === "string" && parsed.data.slug.trim()) {
+    newSlug = slugify(parsed.data.slug);
+    patch.slug = newSlug;
+    if (newSlug !== existing.slug) oldSlug = existing.slug as string;
+  } else {
+    delete patch.slug;
+  }
   if (parsed.data.status === "published" && existing.status !== "published") {
     patch.published_at = existing.published_at ?? new Date().toISOString();
   }
@@ -54,8 +67,19 @@ export async function PATCH(request: Request, { params }: Params) {
     .select("*")
     .single();
   if (error) {
-    if (error.code === "23505") return apiError(409, "CONFLICT", "Duplicate slug");
+    if (error.code === "23505") return apiError(409, "CONFLICT", "That URL is already used by another post");
     return apiError(500, "INTERNAL_ERROR", error.message);
+  }
+
+  // If the URL changed, add a 301 redirect from the old address to the new one.
+  if (oldSlug && newSlug && oldSlug !== newSlug) {
+    try {
+      const admin = createAdminClient();
+      await admin.from("redirects").upsert(
+        { source_url: `/blog/${oldSlug}`, target_url: `/blog/${newSlug}`, type: 301, is_active: true },
+        { onConflict: "source_url" },
+      );
+    } catch { /* redirect is best-effort */ }
   }
 
   await logActivity({

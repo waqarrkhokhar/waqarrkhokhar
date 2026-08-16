@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 import ImageField from "@/components/dashboard/shared/ImageField";
+import MediaPicker from "@/components/dashboard/shared/MediaPicker";
 import { computeSeoScore, countWords } from "@/lib/seo/score";
 import { slugify } from "@/lib/slug";
 import { BLOG_CATEGORIES } from "@/lib/blog/schema";
@@ -28,6 +29,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [slug, setSlug] = useState("");
+  const [imgPicker, setImgPicker] = useState(false);
 
   const [f, setF] = useState({
     title: "", content: "", excerpt: "", featured_image: "",
@@ -77,10 +79,20 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     });
   }
 
+  /** Insert text at the cursor in the content textarea. */
+  function insertAtCursor(text: string) {
+    const el = contentRef.current;
+    if (!el) { set("content", f.content + text); return; }
+    const start = el.selectionStart, end = el.selectionEnd;
+    const next = f.content.slice(0, start) + text + f.content.slice(end);
+    set("content", next);
+    requestAnimationFrame(() => { el.focus(); const pos = start + text.length; el.selectionStart = el.selectionEnd = pos; });
+  }
+
   function payload(overrideStatus?: string) {
     const str = (s: string) => (s.trim() ? s.trim() : null);
     return {
-      title: f.title.trim(), content: f.content.trim() || null, excerpt: str(f.excerpt),
+      title: f.title.trim(), slug: slug.trim() || undefined, content: f.content.trim() || null, excerpt: str(f.excerpt),
       featured_image: str(f.featured_image), category: f.category,
       tags: f.tags.trim() ? f.tags.split(",").map((t) => t.trim()).filter(Boolean) : null,
       author: str(f.author), status: overrideStatus ?? f.status,
@@ -144,7 +156,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     ["1. List", () => wrap("\n1. ", "", "item")],
     ["❝", () => wrap("\n> ", "", "quote")],
     ["Link", () => wrap("[", "](https://)", "text")],
-    ["Image", () => wrap("\n![alt](", ")", "https://")],
+    ["🖼 Image", () => setImgPicker(true)],
     ["-", () => wrap("\n\n---\n\n")],
   ];
 
@@ -183,7 +195,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
           {tab === "content" && (
             <DashSection title="Post Content">
               <DashInput label="Title" required value={f.title} onChange={(v) => { set("title", v); if (mode === "create") setSlug(slugify(v)); }} placeholder="Enter blog post title" />
-              <DashInput label="URL Slug" value={previewSlug} disabled helper={`/blog/${previewSlug}/`} />
+              <DashInput label="URL Slug" value={slug} onChange={(v) => setSlug(slugify(v))} helper={`Full URL: /blog/${previewSlug} · Changing this on a live post automatically adds a redirect from the old link.`} />
               <label className="mb-1.5 block text-xs font-medium text-ink dark:text-cream">Content</label>
               <div className="flex flex-wrap gap-0.5 rounded-t-md border border-b-0 border-line bg-panel px-2 py-1.5 dark:border-white/10 dark:bg-white/5">
                 {TOOLBAR.map(([label, fn, cls]) => (
@@ -294,6 +306,14 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
 
       <ConfirmDialog open={confirmDelete} onClose={() => setConfirmDelete(false)} onConfirm={remove}
         title="Move this post to trash?" message="It will be hidden from the blog. You can restore it any time from the Trash page." confirmLabel="Move to Trash" danger />
+
+      <MediaPicker
+        open={imgPicker}
+        onClose={() => setImgPicker(false)}
+        onSelect={(url) => { insertAtCursor(`\n\n![image](${url})\n\n`); setImgPicker(false); }}
+        folder="blog"
+        title="Insert Image into Post"
+      />
     </div>
   );
 }

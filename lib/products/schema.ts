@@ -4,6 +4,7 @@ const status = z.enum(["draft", "published", "archived", "scheduled"]);
 
 const base = z.object({
   name: z.string().min(3).max(200),
+  slug: z.string().max(200).nullish(),
   sku: z.string().max(100).nullish(),
   price: z.number().int().positive().nullish(),
   sale_price: z.number().int().positive().nullish(),

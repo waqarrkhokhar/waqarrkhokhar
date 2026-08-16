@@ -101,7 +101,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
     const str = (s: string) => (s.trim() ? s.trim() : null);
     const iso = (s: string) => (s ? new Date(s).toISOString() : null);
     return {
-      name: form.name.trim(), sku: str(form.sku), price: num(form.price), sale_price: num(form.sale_price),
+      name: form.name.trim(), slug: slug.trim() || undefined, sku: str(form.sku), price: num(form.price), sale_price: num(form.sale_price),
       sale_start: iso(form.sale_start), sale_end: iso(form.sale_end),
       short_description: str(form.short_description), long_description: str(form.long_description),
       features: str(form.features), category_id: form.category_id || null, status: form.status,
@@ -212,7 +212,7 @@ export default function ProductEditor({ mode, productId }: { mode: Mode; product
               <DashInput label="Product Name" value={form.name} onChange={(v) => set("name", v)} required />
               <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
                 <DashInput label="SKU" value={form.sku} onChange={(v) => set("sku", v)} />
-                <DashInput label="Slug" value={previewSlug} disabled helper={`URL: /product/${previewSlug}`} />
+                <DashInput label="Slug" value={slug} onChange={(v) => setSlug(slugify(v))} helper={`URL: /product/${previewSlug} · Changing this on a live product adds a redirect from the old link.`} />
               </div>
               <DashSelect label="Status" value={form.status} onChange={(v) => set("status", v)}>
                 <option value="draft">Draft</option>

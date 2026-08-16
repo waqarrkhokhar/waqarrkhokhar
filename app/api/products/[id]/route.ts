@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireCapability, apiError } from "@/lib/auth/guard";
 import { ok, action } from "@/lib/api/respond";
 import { productUpdateSchema } from "@/lib/products/schema";
 import { revalidateProduct } from "@/lib/products/revalidate";
+import { slugify } from "@/lib/slug";
 import { logActivity } from "@/lib/activity";
 
 type Params = { params: { id: string } };
@@ -53,6 +55,17 @@ export async function PATCH(request: Request, { params }: Params) {
     patch.published_at = existing.published_at ?? new Date().toISOString();
   }
 
+  // Editable URL slug — normalise and remember the old one for a 301 redirect.
+  let oldSlug: string | null = null;
+  let newSlug: string | null = null;
+  if (typeof updates.slug === "string" && updates.slug.trim()) {
+    newSlug = slugify(updates.slug);
+    patch.slug = newSlug;
+    if (newSlug !== existing.slug) oldSlug = existing.slug as string;
+  } else {
+    delete patch.slug;
+  }
+
   const { data, error } = await supabase
     .from("products")
     .update(patch)
@@ -61,8 +74,19 @@ export async function PATCH(request: Request, { params }: Params) {
     .single();
 
   if (error) {
-    if (error.code === "23505") return apiError(409, "CONFLICT", "Duplicate slug or SKU");
+    if (error.code === "23505") return apiError(409, "CONFLICT", "That URL or SKU is already used by another product");
     return apiError(500, "INTERNAL_ERROR", error.message);
+  }
+
+  // If the URL changed, add a 301 redirect from the old product address.
+  if (oldSlug && newSlug && oldSlug !== newSlug) {
+    try {
+      const admin = createAdminClient();
+      await admin.from("redirects").upsert(
+        { source_url: `/product/${oldSlug}`, target_url: `/product/${newSlug}`, type: 301, is_active: true },
+        { onConflict: "source_url" },
+      );
+    } catch { /* best-effort */ }
   }
 
   const collectionSlug =
