@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import {
   DashPageHeader, DashSection, DashTabs, DashInput, DashSelect, DashToggle, DashBtn,
 } from "@/components/dashboard/shared/Dash";
-import { ConfirmDialog } from "@/components/ui/Modal";
+import { ConfirmDialog, Modal } from "@/components/ui/Modal";
+import { Field, Input } from "@/components/ui/Field";
+import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { apiGet, apiSend } from "@/lib/api/client";
 import ImageField from "@/components/dashboard/shared/ImageField";
@@ -19,7 +21,7 @@ type Tab = "content" | "faq" | "links" | "seo";
 type Faq = { q: string; a: string };
 type ILink = { type: string; name: string; url: string };
 
-export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: string }) {
+export default function BlogEditor({ mode, postId, defaultAuthor }: { mode: Mode; postId?: string; defaultAuthor?: string }) {
   const router = useRouter();
   const toast = useToast();
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -30,10 +32,13 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [slug, setSlug] = useState("");
   const [imgPicker, setImgPicker] = useState(false);
+  // Link dialog (WordPress-style: URL + follow/nofollow + open in new tab).
+  const [link, setLink] = useState({ open: false, url: "", text: "", nofollow: false, newtab: false, start: 0, end: 0 });
 
   const [f, setF] = useState({
     title: "", content: "", excerpt: "", featured_image: "",
-    category: BLOG_CATEGORIES[0] as string, tags: "", author: "",
+    // Author defaults to the logged-in user (e.g. "Alishba") for new posts.
+    category: BLOG_CATEGORIES[0] as string, tags: "", author: mode === "create" ? (defaultAuthor ?? "") : "",
     status: "draft", scheduled_at: "", robots: "index, follow",
     meta_title: "", meta_description: "", focus_keyword: "", canonical_url: "",
   });
@@ -87,6 +92,23 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     const next = f.content.slice(0, start) + text + f.content.slice(end);
     set("content", next);
     requestAnimationFrame(() => { el.focus(); const pos = start + text.length; el.selectionStart = el.selectionEnd = pos; });
+  }
+
+  /** Open the link dialog, remembering the current selection as the anchor text. */
+  function openLink() {
+    const el = contentRef.current;
+    const start = el?.selectionStart ?? f.content.length;
+    const end = el?.selectionEnd ?? start;
+    setLink({ open: true, url: "", text: f.content.slice(start, end), nofollow: false, newtab: false, start, end });
+  }
+
+  function insertLink() {
+    if (!link.url.trim()) { setLink((l) => ({ ...l, open: false })); return; }
+    const tokens = [link.nofollow ? "nofollow" : "", link.newtab ? "newtab" : ""].filter(Boolean).join(" ");
+    const text = link.text.trim() || link.url.trim();
+    const md = `[${text}](${link.url.trim()})${tokens ? `{${tokens}}` : ""}`;
+    set("content", f.content.slice(0, link.start) + md + f.content.slice(link.end));
+    setLink((l) => ({ ...l, open: false, url: "", text: "" }));
   }
 
   function payload(overrideStatus?: string) {
@@ -155,7 +177,7 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
     ["• List", () => wrap("\n- ", "", "item")],
     ["1. List", () => wrap("\n1. ", "", "item")],
     ["❝", () => wrap("\n> ", "", "quote")],
-    ["Link", () => wrap("[", "](https://)", "text")],
+    ["🔗 Link", () => openLink()],
     ["🖼 Image", () => setImgPicker(true)],
     ["-", () => wrap("\n\n---\n\n")],
   ];
@@ -314,6 +336,30 @@ export default function BlogEditor({ mode, postId }: { mode: Mode; postId?: stri
         folder="blog"
         title="Insert Image into Post"
       />
+
+      <Modal
+        open={link.open}
+        onClose={() => setLink((l) => ({ ...l, open: false }))}
+        title="Insert Link"
+        footer={<><Button variant="ghost" onClick={() => setLink((l) => ({ ...l, open: false }))}>Cancel</Button><Button onClick={insertLink}>Insert Link</Button></>}
+      >
+        <div className="space-y-3">
+          <Field label="Link text (what readers see)">
+            <Input value={link.text} onChange={(e) => setLink((l) => ({ ...l, text: e.target.value }))} placeholder="e.g. our 3 seater sofas" />
+          </Field>
+          <Field label="URL — internal path or full link">
+            <Input value={link.url} onChange={(e) => setLink((l) => ({ ...l, url: e.target.value }))} placeholder="/seater-sofas/3-seater-sofas  or  https://example.com" />
+          </Field>
+          <label className="flex items-start gap-2 text-[13px] text-ink dark:text-cream">
+            <input type="checkbox" checked={link.nofollow} onChange={(e) => setLink((l) => ({ ...l, nofollow: e.target.checked }))} className="mt-0.5 accent-gold" />
+            <span>Add <strong>nofollow</strong> — tells Google not to pass ranking credit. Use for ads, sponsored, or untrusted links. Leave off for normal (follow) links.</span>
+          </label>
+          <label className="flex items-center gap-2 text-[13px] text-ink dark:text-cream">
+            <input type="checkbox" checked={link.newtab} onChange={(e) => setLink((l) => ({ ...l, newtab: e.target.checked }))} className="accent-gold" />
+            <span>Open in a new tab</span>
+          </label>
+        </div>
+      </Modal>
     </div>
   );
 }

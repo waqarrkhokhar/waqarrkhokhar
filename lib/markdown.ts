@@ -12,8 +12,19 @@ function inline(s: string): string {
   let t = escapeHtml(s);
   // images ![alt](url)
   t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1" referrerpolicy="no-referrer" />');
-  // links [text](url)
-  t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+  // links [text](url) with optional attributes {nofollow newtab}
+  t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)(?:\{([^}]*)\})?/g, (_m, text, url, attrs) => {
+    const a = String(attrs || "").toLowerCase();
+    const nofollow = /nofollow/.test(a);
+    const newtab = /newtab|blank/.test(a);
+    const external = /^https?:\/\//i.test(url) && !/comfyclub\.pk/i.test(url);
+    const rel: string[] = [];
+    if (nofollow) rel.push("nofollow");
+    if (newtab || external) rel.push("noopener");
+    const relAttr = rel.length ? ` rel="${rel.join(" ")}"` : "";
+    const targetAttr = newtab ? ' target="_blank"' : "";
+    return `<a href="${url}"${relAttr}${targetAttr}>${text}</a>`;
+  });
   // bold **text**
   t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   // italic _text_ or *text*

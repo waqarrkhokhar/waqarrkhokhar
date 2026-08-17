@@ -8,5 +8,5 @@ export default async function NewBlogPage() {
   if (!user || !can(user.role, "blog")) {
     return <EmptyState title="No access" description="You can't manage the blog." />;
   }
-  return <BlogEditor mode="create" />;
+  return <BlogEditor mode="create" defaultAuthor={user.name} />;
 }
