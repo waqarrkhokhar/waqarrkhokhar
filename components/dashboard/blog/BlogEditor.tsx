@@ -13,6 +13,7 @@ import { apiGet, apiSend } from "@/lib/api/client";
 import ImageField from "@/components/dashboard/shared/ImageField";
 import MediaPicker from "@/components/dashboard/shared/MediaPicker";
 import { computeSeoScore, countWords } from "@/lib/seo/score";
+import { htmlToMarkdown } from "@/lib/html-to-markdown";
 import { slugify } from "@/lib/slug";
 import { BLOG_CATEGORIES } from "@/lib/blog/schema";
 
@@ -25,6 +26,13 @@ export default function BlogEditor({ mode, postId, defaultAuthor }: { mode: Mode
   const router = useRouter();
   const toast = useToast();
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  // Remember the last text selection so the Link dialog gets the right anchor
+  // text even after the toolbar button steals focus from the textarea.
+  const selRef = useRef({ start: 0, end: 0 });
+  const saveSel = () => {
+    const el = contentRef.current;
+    if (el) selRef.current = { start: el.selectionStart, end: el.selectionEnd };
+  };
 
   const [tab, setTab] = useState<Tab>("content");
   const [loading, setLoading] = useState(mode === "edit");
@@ -94,12 +102,23 @@ export default function BlogEditor({ mode, postId, defaultAuthor }: { mode: Mode
     requestAnimationFrame(() => { el.focus(); const pos = start + text.length; el.selectionStart = el.selectionEnd = pos; });
   }
 
-  /** Open the link dialog, remembering the current selection as the anchor text. */
+  /** Open the link dialog, using the last saved selection as the anchor text. */
   function openLink() {
     const el = contentRef.current;
-    const start = el?.selectionStart ?? f.content.length;
-    const end = el?.selectionEnd ?? start;
+    if (el && el.selectionStart !== el.selectionEnd) saveSel();
+    const { start, end } = selRef.current;
     setLink({ open: true, url: "", text: f.content.slice(start, end), nofollow: false, newtab: false, start, end });
+  }
+
+  /** Paste from Word/Google Docs → keep headings, bold, links, lists as Markdown. */
+  function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const html = e.clipboardData.getData("text/html");
+    if (!html) return; // plain text — let the browser paste normally
+    const md = htmlToMarkdown(html);
+    if (!md) return;
+    e.preventDefault();
+    insertAtCursor(md);
+    toast.success("Pasted with formatting");
   }
 
   function insertLink() {
@@ -225,7 +244,8 @@ export default function BlogEditor({ mode, postId, defaultAuthor }: { mode: Mode
                 ))}
               </div>
               <textarea ref={contentRef} value={f.content} onChange={(e) => set("content", e.target.value)} rows={16}
-                placeholder="Write your blog post in Markdown…"
+                onSelect={saveSel} onKeyUp={saveSel} onMouseUp={saveSel} onBlur={saveSel} onPaste={onPaste}
+                placeholder="Write in Markdown — or paste straight from Word/Google Docs and formatting is kept…"
                 className="w-full rounded-b-md border border-line bg-white px-3.5 py-3 font-mono text-[13px] leading-relaxed text-ink outline-none focus:border-gold dark:border-white/10 dark:bg-white/5 dark:text-cream" />
               <div className="mt-1 text-[11px] text-muted">Markdown · {countWords(f.content)} words · ~{Math.max(1, Math.ceil(countWords(f.content) / 200))} min read</div>
             </DashSection>
