@@ -502,10 +502,12 @@ export default function PoshishWalaTool() {
   function saveEdit() {
     const id = selectedId;
     const name = val("ed-name");
+    const st = (val("ed-status") as JobStatus) || undefined;
     mutate((c) =>
-      c.map((j) =>
-        j.id === id
-          ? {
+      c.map((j) => {
+        if (j.id !== id) return j;
+        const status = st || jobStatus(j);
+        return {
               ...j,
               name: name || j.name,
               area: val("ed-area"),
@@ -513,13 +515,14 @@ export default function PoshishWalaTool() {
               work: val("ed-work"),
               brand: (val("ed-brand") as Brand) || j.brand,
               total: numval("ed-total"),
+              status,
+              done: status === "complete",
               // Only admin can change who a project is shared with.
               shared: isAdmin
                 ? !!(document.getElementById("ed-share") as HTMLInputElement | null)?.checked
                 : j.shared,
-            }
-          : j
-      )
+        };
+      })
     );
     setModal(null);
   }
@@ -598,6 +601,8 @@ export default function PoshishWalaTool() {
       work: j.work || "",
       phone: j.phone || "—",
       telHref: "tel:" + String(j.phone || "").replace(/\s/g, ""),
+      hasPhone: !!waNumber(j.phone),
+      waHref: waLink(j.phone),
       initials: initials(j.name),
       meta: [j.area, j.work].filter(Boolean).join(" · ") || "No details yet",
       status: st,
@@ -1653,10 +1658,14 @@ export default function PoshishWalaTool() {
                   <div style={{ fontSize: 13, color: "#8b9199", marginTop: 2 }}>
                     {current.meta}
                   </div>
-                  <div style={{ marginTop: 8 }}>
-                    <a href={current.telHref} style={{ fontSize: 13, fontWeight: 500 }}>
-                      📞 {current.phone}
-                    </a>
+                  <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                    <a href={current.telHref} style={callBtn}>📞 Call</a>
+                    {current.hasPhone && (
+                      <a href={current.waHref} target="_blank" rel="noreferrer" style={waBtn}>
+                        <WaIcon /> WhatsApp
+                      </a>
+                    )}
+                    <span style={{ fontSize: 13, color: "#8b9199" }}>{current.phone}</span>
                   </div>
                 </div>
                 <span style={current.statusStyle}>{current.statusText}</span>
@@ -2858,6 +2867,14 @@ export default function PoshishWalaTool() {
                     placeholder="Total amount (Rs)"
                     style={modalInput}
                   />
+                  <label style={dateLabel}>
+                    Project status
+                    <select id="ed-status" defaultValue={current.status} style={modalSelect}>
+                      <option value="pending">Pending</option>
+                      <option value="progress">In progress</option>
+                      <option value="complete">Completed</option>
+                    </select>
+                  </label>
                   {isAdmin && (
                     <label style={shareRow}>
                       <input
@@ -3158,6 +3175,57 @@ const sharedPill: React.CSSProperties = {
   color: "#8a6d1f",
   background: "#f7efd6",
 };
+
+/**
+ * Turn a stored phone number into the digits WhatsApp needs (country code, no
+ * "+", spaces or leading 0). Pakistani numbers: a leading 0 becomes 92, and a
+ * bare 10-digit mobile starting with 3 gets 92 prefixed.
+ */
+function waNumber(phone?: string): string {
+  const d = String(phone || "").replace(/\D/g, "");
+  if (!d) return "";
+  if (d.startsWith("92")) return d;
+  if (d.startsWith("0")) return "92" + d.slice(1);
+  if (d.length === 10 && d.startsWith("3")) return "92" + d;
+  return d;
+}
+function waLink(phone?: string): string {
+  const n = waNumber(phone);
+  return n ? "https://wa.me/" + n : "";
+}
+
+const callBtn: React.CSSProperties = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#1f7a6d",
+  background: "#eaf3f1",
+  border: "1px solid #cfe3de",
+  borderRadius: 9,
+  padding: "7px 12px",
+  textDecoration: "none",
+};
+const waBtn: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#fff",
+  background: "#25D366",
+  border: "none",
+  borderRadius: 9,
+  padding: "7px 12px",
+  textDecoration: "none",
+};
+
+/** WhatsApp glyph (inline SVG so it needs no external asset). */
+function WaIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+      <path d="M19.05 4.91A9.82 9.82 0 0 0 12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.02ZM12.04 20.2h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.25-8.24a8.2 8.2 0 0 1 8.24 8.25c0 4.54-3.7 8.24-8.25 8.24Zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.16.25-.64.8-.78.97-.15.16-.29.18-.54.06-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.42-.14 0-.3-.02-.46-.02s-.43.06-.65.31c-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.16 1.73 2.64 4.2 3.7.59.25 1.04.4 1.4.52.59.19 1.12.16 1.54.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29Z" />
+    </svg>
+  );
+}
 
 
 /**
