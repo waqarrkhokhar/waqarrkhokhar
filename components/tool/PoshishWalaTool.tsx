@@ -1712,8 +1712,8 @@ export default function PoshishWalaTool() {
                 Profit = total amount − all expenses
               </div>
 
-              {/* Partner split — shown on projects shared with Imran */}
-              {current.shared && (
+              {/* Partner split — only once the shared project is completed */}
+              {current.shared && current.status === "complete" && (
                 <div
                   style={{
                     background: "#f6f1fb",
@@ -2090,7 +2090,7 @@ export default function PoshishWalaTool() {
                             <div style={miniCap}>Profit</div>
                             <div style={{ ...v.profitStyle, fontSize: 13 }}>{v.profitText}</div>
                           </div>
-                          {v.shared && (
+                          {v.shared && v.status === "complete" && (
                             <div>
                               <div style={miniCap}>Imran 30%</div>
                               <div style={{ fontWeight: 600, fontSize: 13, color: "#7a4fa0" }}>
