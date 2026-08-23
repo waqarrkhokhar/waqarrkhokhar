@@ -1065,8 +1065,9 @@ export default function PoshishWalaTool() {
   function doLogin(e: React.FormEvent) {
     e.preventDefault();
     const u = loginU.trim().toLowerCase();
+    const p = loginP.trim();
     const match = USERS.find(
-      (x) => x.username.toLowerCase() === u && x.password === loginP
+      (x) => x.username.toLowerCase() === u && x.password === p
     );
     if (!match) {
       setLoginErr("Wrong username or password.");
@@ -1167,6 +1168,10 @@ export default function PoshishWalaTool() {
             value={loginP}
             onChange={(e) => setLoginP(e.target.value)}
             placeholder="Password"
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="current-password"
+            spellCheck={false}
             style={loginInput}
           />
           {loginErr && (
