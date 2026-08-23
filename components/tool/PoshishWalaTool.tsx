@@ -331,6 +331,9 @@ export default function PoshishWalaTool() {
   const [loginP, setLoginP] = useState("");
   const [loginErr, setLoginErr] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const [reportPeriod, setReportPeriod] = useState<
+    "week" | "month" | "quarter" | "year" | "all"
+  >("month");
   const role: "admin" | "member" =
     USERS.find((u) => u.username === authUser)?.role ?? "member";
   const isAdmin = role === "admin";
@@ -774,25 +777,28 @@ export default function PoshishWalaTool() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleClients]);
 
-  const reportRows = useMemo(() => {
-    const maxVal = Math.max(1, ...views.map((v) => Math.max(v.received, v.spent)));
-    return views.map((v) => ({
-      name: v.name,
-      summary: rs(v.received) + " in · " + rs(v.spent) + " out",
-      recvStyle: CSS({
-        height: "100%",
-        width: Math.round((v.received / maxVal) * 100) + "%",
-        background: "#1f7a6d",
-        borderRadius: 20,
-      }),
-      spentStyle: CSS({
-        height: "100%",
-        width: Math.round((v.spent / maxVal) * 100) + "%",
-        background: "#c9a94a",
-        borderRadius: 20,
-      }),
-    }));
-  }, [views]);
+  // Cash in / out within the selected reporting period, from dated entries.
+  const periodStats = useMemo(() => {
+    const start = periodStart(reportPeriod);
+    let received = 0,
+      spent = 0,
+      undated = false;
+    visibleClients.forEach((j) => {
+      (j.payments || []).forEach((p) => {
+        if (!p.date) {
+          undated = true;
+          if (!start) received += p.amount;
+        } else if (inPeriod(p.date, start)) received += p.amount;
+      });
+      (j.costs || []).forEach((c) => {
+        if (!c.date) {
+          undated = true;
+          if (!start) spent += c.amount;
+        } else if (inPeriod(c.date, start)) spent += c.amount;
+      });
+    });
+    return { received, spent, net: received - spent, undated };
+  }, [visibleClients, reportPeriod]);
 
   /* ------------------------- invoice (from client) ------------------------- */
 
@@ -1706,6 +1712,37 @@ export default function PoshishWalaTool() {
                 Profit = total amount − all expenses
               </div>
 
+              {/* Partner split — shown on projects shared with Imran */}
+              {current.shared && (
+                <div
+                  style={{
+                    background: "#f6f1fb",
+                    border: "1px solid #e6d9f2",
+                    borderRadius: 12,
+                    padding: "14px 18px",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))",
+                    gap: 14,
+                  }}
+                >
+                  <div style={{ gridColumn: "1 / -1", ...sectionCap, color: "#7a4fa0" }}>
+                    Partnership with Imran
+                  </div>
+                  <div>
+                    <div style={miniCap}>Imran&apos;s share (30%)</div>
+                    <div style={{ fontWeight: 600, fontSize: 17, color: "#7a4fa0" }}>
+                      {rs(Math.round(current.profit * IMRAN_SHARE))}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={miniCap}>Your share (70%)</div>
+                    <div style={{ fontWeight: 600, fontSize: 17 }}>
+                      {rs(current.profit - Math.round(current.profit * IMRAN_SHARE))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div style={{ ...cardBase, padding: "16px 18px" }}>
                 <div style={{ ...sectionCap, marginBottom: 10 }}>Project status</div>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -1907,6 +1944,41 @@ export default function PoshishWalaTool() {
           {screen === "reports" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               <div style={{ fontSize: 20, fontWeight: 600 }}>Reports &amp; analytics</div>
+
+              {/* period selector */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {(
+                  [
+                    ["week", "This week"],
+                    ["month", "This month"],
+                    ["quarter", "This quarter"],
+                    ["year", "This year"],
+                    ["all", "All time"],
+                  ] as ["week" | "month" | "quarter" | "year" | "all", string][]
+                ).map(([k, label]) => {
+                  const active = reportPeriod === k;
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => setReportPeriod(k)}
+                      style={{
+                        border: active ? "1px solid #1f7a6d" : "1px solid #e2e5e9",
+                        background: active ? "#eaf3f1" : "#fff",
+                        color: active ? "#1f7a6d" : "#5a6069",
+                        fontSize: 13,
+                        fontWeight: active ? 600 : 500,
+                        padding: "8px 14px",
+                        borderRadius: 9,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* cash flow for the selected period */}
               <div
                 style={{
                   display: "grid",
@@ -1915,79 +1987,124 @@ export default function PoshishWalaTool() {
                 }}
               >
                 <div style={{ ...cardBase, padding: "15px 17px" }}>
-                  <div style={labelCap}>Billed</div>
-                  <div style={{ fontSize: 22, fontWeight: 600 }}>{rs(totals.billed)}</div>
-                </div>
-                <div style={{ ...cardBase, padding: "15px 17px" }}>
                   <div style={labelCap}>Received</div>
                   <div style={{ fontSize: 22, fontWeight: 600, color: "#1f7a6d" }}>
-                    {rs(totals.received)}
+                    {rs(periodStats.received)}
                   </div>
                 </div>
                 <div style={{ ...cardBase, padding: "15px 17px" }}>
-                  <div style={labelCap}>Outstanding</div>
+                  <div style={labelCap}>Spent</div>
+                  <div style={{ fontSize: 22, fontWeight: 600 }}>{rs(periodStats.spent)}</div>
+                </div>
+                <div style={{ ...cardBase, padding: "15px 17px" }}>
+                  <div style={labelCap}>Net cash flow</div>
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 600,
+                      color: periodStats.net < 0 ? "#c15b4a" : "#1f7a6d",
+                    }}
+                  >
+                    {rs(periodStats.net)}
+                  </div>
+                </div>
+                <div style={{ ...cardBase, padding: "15px 17px" }}>
+                  <div style={labelCap}>Outstanding (all)</div>
                   <div style={{ fontSize: 22, fontWeight: 600, color: "#c15b4a" }}>
                     {rs(totals.outstanding)}
                   </div>
                 </div>
-                <div style={{ ...cardBase, padding: "15px 17px" }}>
-                  <div style={labelCap}>Cash in hand</div>
-                  <div
-                    style={{
-                      fontWeight: 600,
-                      color: totals.inHand < 0 ? "#c15b4a" : "#1f7a6d",
-                      fontSize: 22,
-                    }}
-                  >
-                    {rs(totals.inHand)}
-                  </div>
-                </div>
               </div>
-
-              <div style={cardBase}>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16 }}>
-                  Received vs spent, by client
+              {reportPeriod !== "all" && periodStats.undated && (
+                <div style={{ fontSize: 12, color: "#9aa0a8", marginTop: -8 }}>
+                  Some older entries have no date, so they aren’t counted in this period —
+                  they’re included under “All time”.
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-                  {reportRows.map((r, i) => (
-                    <div key={i}>
+              )}
+
+              {/* organised, per-project breakdown (lifetime totals) */}
+              <div style={cardBase}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Each project</div>
+                <div style={{ fontSize: 12, color: "#8b9199", marginBottom: 14 }}>
+                  Lifetime totals — tap a project to open it
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {views.map((v) => {
+                    const imran = Math.round(v.profit * IMRAN_SHARE);
+                    return (
                       <div
+                        key={v.id}
+                        onClick={v.onOpen}
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          fontSize: 13,
-                          marginBottom: 5,
+                          border: "1px solid #eceef1",
+                          borderRadius: 10,
+                          padding: "12px 14px",
+                          cursor: "pointer",
+                          background: "#fafbfc",
                         }}
                       >
-                        <span style={{ fontWeight: 500 }}>{r.name}</span>
-                        <span style={{ color: "#8b9199" }}>{r.summary}</span>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <div style={barTrack}>
-                          <div style={r.recvStyle} />
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            marginBottom: 10,
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ fontWeight: 600, fontSize: 14 }}>{v.name}</span>
+                            {isAdmin && v.shared && <span style={sharedPill}>With Imran</span>}
+                          </div>
+                          <span style={v.statusStyle}>{v.statusText}</span>
                         </div>
-                        <div style={barTrack}>
-                          <div style={r.spentStyle} />
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit,minmax(86px,1fr))",
+                            gap: 10,
+                          }}
+                        >
+                          <div>
+                            <div style={miniCap}>Total</div>
+                            <div style={{ fontWeight: 600, fontSize: 13 }}>{v.totalText}</div>
+                          </div>
+                          <div>
+                            <div style={miniCap}>Received</div>
+                            <div style={{ fontWeight: 600, fontSize: 13, color: "#1f7a6d" }}>
+                              {v.receivedText}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={miniCap}>Spent</div>
+                            <div style={{ fontWeight: 600, fontSize: 13 }}>{v.spentText}</div>
+                          </div>
+                          <div>
+                            <div style={miniCap}>Balance</div>
+                            <div style={{ fontWeight: 600, fontSize: 13, color: "#c15b4a" }}>
+                              {v.dueText}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={miniCap}>Profit</div>
+                            <div style={{ ...v.profitStyle, fontSize: 13 }}>{v.profitText}</div>
+                          </div>
+                          {v.shared && (
+                            <div>
+                              <div style={miniCap}>Imran 30%</div>
+                              <div style={{ fontWeight: 600, fontSize: 13, color: "#7a4fa0" }}>
+                                {rs(imran)}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 18,
-                    marginTop: 16,
-                    fontSize: 12,
-                    color: "#8b9199",
-                  }}
-                >
-                  <span>
-                    <span style={legendDot("#1f7a6d")} /> Received
-                  </span>
-                  <span>
-                    <span style={legendDot("#c9a94a")} /> Spent
-                  </span>
+                    );
+                  })}
+                  {views.length === 0 && (
+                    <div style={emptyItalic}>No projects to report yet.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -3044,21 +3161,30 @@ const catPill: React.CSSProperties = {
   padding: "2px 8px",
 };
 
-const barTrack: React.CSSProperties = {
-  height: 11,
-  background: "#f0f2f4",
-  borderRadius: 20,
-  overflow: "hidden",
-};
+/** Imran's cut of profit on shared projects. */
+const IMRAN_SHARE = 0.3;
 
-const legendDot = (bg: string): React.CSSProperties => ({
-  display: "inline-block",
-  width: 11,
-  height: 11,
-  borderRadius: 3,
-  background: bg,
-  verticalAlign: "middle",
-});
+/** Start of the current reporting period (null = all time). */
+function periodStart(period: string): Date | null {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  if (period === "week") {
+    const day = (d.getDay() + 6) % 7; // Monday = 0
+    d.setDate(d.getDate() - day);
+    return d;
+  }
+  if (period === "month") return new Date(d.getFullYear(), d.getMonth(), 1);
+  if (period === "quarter")
+    return new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3, 1);
+  if (period === "year") return new Date(d.getFullYear(), 0, 1);
+  return null;
+}
+function inPeriod(dateStr: string, start: Date | null): boolean {
+  if (!start) return true;
+  if (!dateStr) return false;
+  const t = new Date(dateStr.length <= 10 ? dateStr + "T00:00" : dateStr);
+  return !isNaN(t.getTime()) && t >= start;
+}
 
 const darkBtn: React.CSSProperties = {
   border: "none",
