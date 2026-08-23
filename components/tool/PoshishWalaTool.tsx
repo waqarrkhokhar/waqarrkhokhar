@@ -334,6 +334,9 @@ export default function PoshishWalaTool() {
   const [reportPeriod, setReportPeriod] = useState<
     "week" | "month" | "quarter" | "year" | "all"
   >("month");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "progress" | "complete"
+  >("all");
   const role: "admin" | "member" =
     USERS.find((u) => u.username === authUser)?.role ?? "member";
   const isAdmin = role === "admin";
@@ -720,11 +723,13 @@ export default function PoshishWalaTool() {
   }, [visibleClients]);
 
   const q = query.toLowerCase();
+  const byStatus =
+    statusFilter === "all" ? views : views.filter((v) => v.status === statusFilter);
   const filtered = q
-    ? views.filter((v) =>
+    ? byStatus.filter((v) =>
         (v.name + " " + v.area + " " + v.phone).toLowerCase().includes(q)
       )
-    : views;
+    : byStatus;
   const dueList = views.filter((v) => v.hasBalance).sort((a, b) => b.dueAmt - a.dueAmt);
   const current = views.find((v) => v.id === selectedId) || null;
 
@@ -1547,6 +1552,40 @@ export default function PoshishWalaTool() {
                   }}
                 />
               </div>
+              {/* filter by status */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {(
+                  [
+                    ["all", "All"],
+                    ["pending", "Pending"],
+                    ["progress", "In progress"],
+                    ["complete", "Completed"],
+                  ] as ["all" | "pending" | "progress" | "complete", string][]
+                ).map(([k, label]) => {
+                  const count =
+                    k === "all" ? views.length : views.filter((v) => v.status === k).length;
+                  const active = statusFilter === k;
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => setStatusFilter(k)}
+                      style={{
+                        border: active ? "1px solid #1f7a6d" : "1px solid #e2e5e9",
+                        background: active ? "#eaf3f1" : "#fff",
+                        color: active ? "#1f7a6d" : "#5a6069",
+                        fontSize: 13,
+                        fontWeight: active ? 600 : 500,
+                        padding: "7px 13px",
+                        borderRadius: 20,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {label}{" "}
+                      <span style={{ color: active ? "#1f7a6d" : "#9aa0a8" }}>({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
               <div
                 style={{
                   display: "grid",
@@ -1610,7 +1649,7 @@ export default function PoshishWalaTool() {
                   </div>
                 ))}
               </div>
-              {q !== "" && filtered.length === 0 && (
+              {filtered.length === 0 && (
                 <div
                   style={{
                     fontSize: 13,
@@ -1620,7 +1659,11 @@ export default function PoshishWalaTool() {
                     padding: 20,
                   }}
                 >
-                  No clients match &quot;{query}&quot;.
+                  {q !== ""
+                    ? `No clients match "${query}".`
+                    : statusFilter === "all"
+                    ? "No clients yet."
+                    : `No ${STAT[statusFilter].label.toLowerCase()} projects.`}
                 </div>
               )}
             </div>
