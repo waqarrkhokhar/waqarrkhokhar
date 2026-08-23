@@ -1023,6 +1023,144 @@ export default function PoshishWalaTool() {
       ? "Log expense"
       : "Edit details";
 
+  // ---- front-door login gate + account state (client-side) ----
+  const [authUser, setAuthUser] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [loginU, setLoginU] = useState("");
+  const [loginP, setLoginP] = useState("");
+  const [loginErr, setLoginErr] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
+
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("poshishwala:auth");
+    } catch {
+      /* ignore */
+    }
+    if (saved && USERS.some((u) => u.username === saved)) setAuthUser(saved);
+    setAuthReady(true);
+  }, []);
+
+  function doLogin(e: React.FormEvent) {
+    e.preventDefault();
+    const u = loginU.trim().toLowerCase();
+    const match = USERS.find(
+      (x) => x.username.toLowerCase() === u && x.password === loginP
+    );
+    if (!match) {
+      setLoginErr("Wrong username or password.");
+      return;
+    }
+    try {
+      localStorage.setItem("poshishwala:auth", match.username);
+    } catch {
+      /* ignore */
+    }
+    setAuthUser(match.username);
+    setLoginErr("");
+    setLoginU("");
+    setLoginP("");
+  }
+  function doLogout() {
+    try {
+      localStorage.removeItem("poshishwala:auth");
+    } catch {
+      /* ignore */
+    }
+    setAuthUser(null);
+    setAccountOpen(false);
+  }
+  function exportData() {
+    try {
+      const data = localStorage.getItem(KEY) || JSON.stringify(clients);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        "poshishwala-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* ignore */
+    }
+  }
+  function importData(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        if (Array.isArray(parsed)) {
+          mutate(() => parsed as Client[]);
+          setAccountOpen(false);
+          if (typeof window !== "undefined")
+            window.alert("Backup restored — " + parsed.length + " clients loaded.");
+        } else if (typeof window !== "undefined") {
+          window.alert("That file doesn't look like a Poshish Wala backup.");
+        }
+      } catch {
+        if (typeof window !== "undefined") window.alert("Couldn't read that file.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
+  const authName =
+    USERS.find((u) => u.username === authUser)?.name || authUser || "";
+  const authInitial = (authName || "PW").trim().charAt(0).toUpperCase() || "PW";
+
+  if (!authReady)
+    return <div className="pw-app" style={{ minHeight: "100vh", background: "#f4f6f8" }} />;
+
+  if (!authUser) {
+    return (
+      <div className="pw-app" style={loginWrap}>
+        <style dangerouslySetInnerHTML={{ __html: PW_FONT_CSS }} />
+        <form onSubmit={doLogin} style={loginCard}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            <div style={loginLogo}>PW</div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontWeight: 600, fontSize: 18 }}>Poshish Wala</div>
+              <div style={{ fontSize: 12, color: "#8b9199" }}>Business Tool · Lahore</div>
+            </div>
+          </div>
+          <input
+            value={loginU}
+            onChange={(e) => setLoginU(e.target.value)}
+            placeholder="Username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            style={loginInput}
+          />
+          <input
+            type="password"
+            value={loginP}
+            onChange={(e) => setLoginP(e.target.value)}
+            placeholder="Password"
+            style={loginInput}
+          />
+          {loginErr && (
+            <div style={{ color: "#c15b4a", fontSize: 13, textAlign: "center" }}>
+              {loginErr}
+            </div>
+          )}
+          <button type="submit" style={loginBtn}>
+            Sign in
+          </button>
+          <div style={{ fontSize: 11, color: "#a7adb4", textAlign: "center" }}>
+            Access for the Poshish Wala team.
+          </div>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <style
@@ -1037,8 +1175,17 @@ export default function PoshishWalaTool() {
 .pw-app a{color:#1f7a6d;text-decoration:none}
 .pw-app a:hover{color:#155a50}
 .pw-app ::placeholder{color:#a7adb4}
+.pw-topnav{display:flex}
+.pw-bottomnav{display:none}
+.pw-headnew{display:inline-block}
+@media (max-width:640px){
+  .pw-topnav{display:none !important}
+  .pw-headnew{display:none !important}
+  .pw-bottomnav{display:flex !important}
+  .pw-main{padding-bottom:92px !important}
+}
 @media print{
-  .pw-header,.no-print{display:none !important}
+  .pw-header,.pw-bottomnav,.no-print{display:none !important}
   body{background:#fff}
   .pw-main{padding:0 !important;max-width:none !important}
   #invoice-doc{border:none !important;border-radius:0 !important;max-width:none !important}
@@ -1096,7 +1243,7 @@ export default function PoshishWalaTool() {
                 <div style={{ fontSize: 11, color: "#8b9199" }}>× Comfy Club · Lahore</div>
               </div>
             </div>
-            <nav style={{ display: "flex", gap: 4, flexWrap: "wrap", marginLeft: 8 }}>
+            <nav className="pw-topnav" style={{ display: "flex", gap: 4, flexWrap: "wrap", marginLeft: 8 }}>
               {navDef.map(([sc, label]) => {
                 const active =
                   screen === sc || (sc === "customers" && screen === "detail");
@@ -1121,8 +1268,27 @@ export default function PoshishWalaTool() {
               })}
             </nav>
             <div style={{ flex: 1, minWidth: 12 }} />
-            <button onClick={() => setModal("new")} style={primaryBtn}>
+            <button className="pw-headnew" onClick={() => setModal("new")} style={primaryBtn}>
               + New client
+            </button>
+            <button
+              onClick={() => setAccountOpen(true)}
+              aria-label="Account and settings"
+              title={"Signed in as " + authName}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                border: "1px solid #d7dbe0",
+                background: "#e7ece9",
+                color: "#1f7a6d",
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: "pointer",
+                flex: "none",
+              }}
+            >
+              {authInitial}
             </button>
           </div>
         </header>
@@ -2414,6 +2580,20 @@ export default function PoshishWalaTool() {
           )}
         </main>
 
+        {/* ===== MOBILE APP-STYLE BOTTOM NAV ===== */}
+        <nav className="pw-bottomnav" style={bottomNavBar}>
+          {bottomNavDef.map(([sc, label]) => {
+            const active =
+              screen === sc || (sc === "customers" && screen === "detail");
+            return (
+              <button key={sc} onClick={() => go(sc)} style={bottomNavItem(active)}>
+                <NavIcon name={sc} active={active} />
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
         {/* ================= MODAL ================= */}
         {modal && (
           <div
@@ -2649,6 +2829,77 @@ export default function PoshishWalaTool() {
             </div>
           </div>
         )}
+
+        {/* ===== ACCOUNT / SETTINGS SHEET ===== */}
+        {accountOpen && (
+          <div onClick={() => setAccountOpen(false)} style={sheetOverlay}>
+            <div onClick={(e) => e.stopPropagation()} style={sheetCard}>
+              <div style={sheetHeader}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      background: "#e7ece9",
+                      color: "#1f7a6d",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {authInitial}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 15 }}>{authName}</div>
+                    <div style={{ fontSize: 12, color: "#8b9199" }}>Signed in</div>
+                  </div>
+                </div>
+                <button onClick={() => setAccountOpen(false)} style={sheetClose}>
+                  ×
+                </button>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    textTransform: "uppercase",
+                    letterSpacing: ".4px",
+                    color: "#9aa0a8",
+                    fontWeight: 600,
+                  }}
+                >
+                  Your data
+                </div>
+                <button onClick={exportData} style={sheetAction}>
+                  ⬇  Back up my data (save a file)
+                </button>
+                <label style={{ ...sheetAction, display: "block", cursor: "pointer" }}>
+                  ⬆  Restore from a backup file
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    onChange={importData}
+                    style={{ display: "none" }}
+                  />
+                </label>
+                <div style={{ fontSize: 11, color: "#a7adb4", lineHeight: 1.5 }}>
+                  Your records are saved on this device. Back up now and then, and use
+                  the same file to move them to another phone.
+                </div>
+              </div>
+
+              <button
+                onClick={doLogout}
+                style={{ ...loginBtn, background: "#25292e", marginTop: 16 }}
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2827,4 +3078,211 @@ function logoImg(src: string, alt: string, height: number) {
       }}
     />
   );
+}
+
+
+/* --------------------- login + app-shell helpers --------------------- */
+
+/**
+ * Front-door accounts (client-side gate). Edit this list to add or change who
+ * can sign in. NOTE: this keeps casual users out but is not strong security —
+ * the app is public, so anyone technical who opens it could read these. For a
+ * private team tool that is the accepted trade-off.
+ */
+const USERS: { username: string; password: string; name: string }[] = [
+  { username: "poshishwala", password: "poshish2024", name: "Poshish Wala" },
+];
+
+const PW_FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+.pw-app{font-family:'Poppins',system-ui,sans-serif;color:#25292e;-webkit-text-size-adjust:100%}
+.pw-app *{box-sizing:border-box}
+.pw-app input,.pw-app button{font-family:'Poppins',sans-serif}
+.pw-app ::placeholder{color:#a7adb4}`;
+
+const bottomNavDef: [Screen, string][] = [
+  ["dashboard", "Home"],
+  ["customers", "Clients"],
+  ["quote", "Quote"],
+  ["expenses", "Expenses"],
+  ["reports", "Reports"],
+];
+
+const loginWrap: React.CSSProperties = {
+  minHeight: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 20,
+  background: "#f4f6f8",
+};
+const loginCard: React.CSSProperties = {
+  width: "100%",
+  maxWidth: 360,
+  background: "#fff",
+  borderRadius: 16,
+  padding: "28px 24px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  boxShadow: "0 10px 40px rgba(0,0,0,.08)",
+  border: "1px solid #e2e5e9",
+};
+const loginLogo: React.CSSProperties = {
+  width: 56,
+  height: 56,
+  borderRadius: 14,
+  background: "#1f7a6d",
+  color: "#fff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontWeight: 600,
+  fontSize: 20,
+};
+const loginInput: React.CSSProperties = {
+  padding: "12px 13px",
+  border: "1px solid #d7dbe0",
+  borderRadius: 10,
+  fontSize: 14,
+  outline: "none",
+};
+const loginBtn: React.CSSProperties = {
+  border: "none",
+  background: "#1f7a6d",
+  color: "#fff",
+  fontWeight: 600,
+  fontSize: 15,
+  padding: 13,
+  borderRadius: 11,
+  cursor: "pointer",
+};
+
+const sheetOverlay: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(20,30,35,.4)",
+  zIndex: 50,
+  display: "flex",
+  alignItems: "flex-end",
+  justifyContent: "center",
+};
+const sheetCard: React.CSSProperties = {
+  background: "#fff",
+  width: "100%",
+  maxWidth: 460,
+  borderRadius: "16px 16px 0 0",
+  padding: 22,
+  boxShadow: "0 -8px 40px rgba(0,0,0,.18)",
+  maxHeight: "92vh",
+  overflow: "auto",
+};
+const sheetHeader: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 8,
+};
+const sheetClose: React.CSSProperties = {
+  border: "none",
+  background: "none",
+  fontSize: 20,
+  color: "#8b9199",
+  cursor: "pointer",
+  lineHeight: 1,
+};
+const sheetAction: React.CSSProperties = {
+  textAlign: "left",
+  border: "1px solid #e2e5e9",
+  background: "#fafbfc",
+  borderRadius: 10,
+  padding: "12px 14px",
+  fontSize: 14,
+  fontWeight: 500,
+  cursor: "pointer",
+  width: "100%",
+};
+
+const bottomNavBar: React.CSSProperties = {
+  position: "fixed",
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 30,
+  background: "#fff",
+  borderTop: "1px solid #e2e5e9",
+  justifyContent: "space-around",
+  alignItems: "stretch",
+  padding: "6px 4px calc(6px + env(safe-area-inset-bottom))",
+  boxShadow: "0 -2px 10px rgba(0,0,0,.04)",
+};
+const bottomNavItem = (active: boolean): React.CSSProperties => ({
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 3,
+  border: "none",
+  background: "none",
+  cursor: "pointer",
+  fontSize: 10.5,
+  fontWeight: active ? 600 : 500,
+  color: active ? "#1f7a6d" : "#8b9199",
+  padding: "4px 2px",
+});
+
+function NavIcon({ name, active }: { name: Screen; active: boolean }) {
+  const c = active ? "#1f7a6d" : "#8b9199";
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: c,
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  switch (name) {
+    case "dashboard":
+      return (
+        <svg {...common}>
+          <path d="M3 10.5 12 4l9 6.5" />
+          <path d="M5 9.5V20h14V9.5" />
+        </svg>
+      );
+    case "customers":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3" />
+          <path d="M3 20a6 6 0 0 1 12 0" />
+          <path d="M16 5.2a3 3 0 0 1 0 5.6" />
+          <path d="M18 20a6 6 0 0 0-3-5.2" />
+        </svg>
+      );
+    case "quote":
+      return (
+        <svg {...common}>
+          <path d="M6 3h8l4 4v14H6z" />
+          <path d="M9 9h6M9 13h6M9 17h4" />
+        </svg>
+      );
+    case "expenses":
+      return (
+        <svg {...common}>
+          <rect x="3" y="6" width="18" height="12" rx="2" />
+          <circle cx="12" cy="12" r="2.5" />
+        </svg>
+      );
+    case "reports":
+      return (
+        <svg {...common}>
+          <path d="M4 4v16h16" />
+          <rect x="7" y="12" width="3" height="5" />
+          <rect x="12" y="8" width="3" height="9" />
+          <rect x="17" y="14" width="3" height="3" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
