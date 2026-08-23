@@ -59,6 +59,16 @@ JSON-LD, generateMetadata, bulk SEO editor, schema manager) is bundled with the
 storefront in Phase 13 (no public pages exist yet to attach them to).
 Phases 7–12 complete (Homepage, Blog, Reviews, Promotions, WhatsApp Leads, Analytics). Phases 13–16 pending. Scope expanded to include prototype-only extras (Custom Fields, Structure/Metadata/Schema/Sitemap/Robots managers, Header/Footer Builder, Content Blocks, etc.) per owner request.
 
+## Poshish Wala Business Tool notes
+- Route `/tool` (top-level, outside storefront/dashboard route groups; `noindex`).
+- Self-contained client-side SPA: dashboard, clients, client detail, expenses,
+  reports, quotation builder, invoice — all data in `localStorage`
+  (`poshishwala:app`). No server/API/DB; nothing CMS-managed here by design.
+- Component: `components/tool/PoshishWalaTool.tsx`. Logos in `public/tool/`.
+- Faithful port of the Claude Design prototype `PoshishWala.dc.html` (Poppins,
+  teal `#1f7a6d` palette — deliberately its own look, not the ComfyClub brand).
+  Print/PDF via `window.print()` with `@media print` rules scoped to `.pw-app`.
+
 ## Homepage Builder notes (Phase 7)
 - `/api/settings` (GET all / PATCH key) — cap `settings`. `homepage_config`
   key holds section_order, hero_slides, trusted_by, trending/offers
