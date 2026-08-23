@@ -170,18 +170,6 @@ const SEED: Client[] = [
     costs: [],
   },
   {
-    id: "ahmed2",
-    name: "Ahmed Anwaar",
-    area: "Faisal Anwaar",
-    phone: "03124316456",
-    work: "Recliner",
-    brand: "Poshish Wala",
-    total: 36000,
-    status: "pending",
-    payments: [{ label: "Received", amount: 18000 }],
-    costs: [],
-  },
-  {
     id: "sana",
     name: "Miss Sana DC",
     area: "DHA Phase 6",
