@@ -31,6 +31,8 @@ type Client = {
   brand: Brand;
   status?: JobStatus;
   done?: boolean;
+  /** true = visible to member logins (e.g. Imran); admin always sees all. */
+  shared?: boolean;
   payments: Payment[];
   costs: Cost[];
 };
@@ -322,6 +324,16 @@ export default function PoshishWalaTool() {
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState<ModalKind>(null);
   const [docType, setDocType] = useState<"invoice" | "quote">("invoice");
+  // ---- login / role state (declared early so filtering can use it) ----
+  const [authUser, setAuthUser] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [loginU, setLoginU] = useState("");
+  const [loginP, setLoginP] = useState("");
+  const [loginErr, setLoginErr] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const role: "admin" | "member" =
+    USERS.find((u) => u.username === authUser)?.role ?? "member";
+  const isAdmin = role === "admin";
   const [quote, setQuote] = useState<Quote>({
     brand: "Poshish Wala",
     number: "",
@@ -442,6 +454,10 @@ export default function PoshishWalaTool() {
       work: val("nj-work"),
       brand: (val("nj-brand") as Brand) || "Poshish Wala",
       total: numval("nj-total"),
+      // Admin decides via the checkbox; anything a member adds is theirs to see.
+      shared: isAdmin
+        ? !!(document.getElementById("nj-share") as HTMLInputElement | null)?.checked
+        : true,
       payments: adv != null ? [{ label: "Advance", amount: adv }] : [],
       costs: [],
     };
@@ -497,6 +513,10 @@ export default function PoshishWalaTool() {
               work: val("ed-work"),
               brand: (val("ed-brand") as Brand) || j.brand,
               total: numval("ed-total"),
+              // Only admin can change who a project is shared with.
+              shared: isAdmin
+                ? !!(document.getElementById("ed-share") as HTMLInputElement | null)?.checked
+                : j.shared,
             }
           : j
       )
@@ -617,6 +637,7 @@ export default function PoshishWalaTool() {
       totalText: j.total == null ? "not set" : rs(j.total),
       totalNum: j.total == null ? "" : String(j.total),
       brand: j.brand || "Poshish Wala",
+      shared: !!j.shared,
       brandStyle: CSS({
         fontSize: 10,
         fontWeight: 600,
@@ -660,11 +681,17 @@ export default function PoshishWalaTool() {
     };
   }
 
+  // Members (e.g. Imran) only see projects tagged as shared; admin sees all.
+  const visibleClients = useMemo(
+    () => (isAdmin ? clients : clients.filter((j) => j.shared)),
+    [clients, isAdmin]
+  );
+
   const views = useMemo(
-    () => clients.map(view),
-    // `view` is a stable closure over component state; only `clients` matters.
+    () => visibleClients.map(view),
+    // `view` is a stable closure over component state; only visibleClients matters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [clients]
+    [visibleClients]
   );
 
   const totals = useMemo(() => {
@@ -672,7 +699,7 @@ export default function PoshishWalaTool() {
       received = 0,
       outstanding = 0,
       spent = 0;
-    clients.forEach((j) => {
+    visibleClients.forEach((j) => {
       const f = fig(j);
       received += f.received;
       spent += f.spent;
@@ -682,7 +709,7 @@ export default function PoshishWalaTool() {
       }
     });
     return { billed, received, outstanding, spent, inHand: received - spent };
-  }, [clients]);
+  }, [visibleClients]);
 
   const q = query.toLowerCase();
   const filtered = q
@@ -722,7 +749,7 @@ export default function PoshishWalaTool() {
       hasDate: boolean;
       onRemove: () => void;
     }[] = [];
-    clients.forEach((j) => {
+    visibleClients.forEach((j) => {
       (j.costs || []).forEach((c, i) =>
         list.push({
           client: j.name,
@@ -740,7 +767,7 @@ export default function PoshishWalaTool() {
     list.sort((a, b) => b.amount - a.amount);
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clients]);
+  }, [visibleClients]);
 
   const reportRows = useMemo(() => {
     const maxVal = Math.max(1, ...views.map((v) => Math.max(v.received, v.spent)));
@@ -764,7 +791,7 @@ export default function PoshishWalaTool() {
 
   /* ------------------------- invoice (from client) ------------------------- */
 
-  const cj = clients.find((j) => j.id === selectedId) || null;
+  const cj = visibleClients.find((j) => j.id === selectedId) || null;
   const inv = useMemo(() => {
     if (!cj) return null;
     const f = fig(cj);
@@ -1023,14 +1050,7 @@ export default function PoshishWalaTool() {
       ? "Log expense"
       : "Edit details";
 
-  // ---- front-door login gate + account state (client-side) ----
-  const [authUser, setAuthUser] = useState<string | null>(null);
-  const [authReady, setAuthReady] = useState(false);
-  const [loginU, setLoginU] = useState("");
-  const [loginP, setLoginP] = useState("");
-  const [loginErr, setLoginErr] = useState("");
-  const [accountOpen, setAccountOpen] = useState(false);
-
+  // ---- front-door login gate: load saved session ----
   useEffect(() => {
     let saved: string | null = null;
     try {
@@ -1071,15 +1091,19 @@ export default function PoshishWalaTool() {
     setAuthUser(null);
     setAccountOpen(false);
   }
-  function exportData() {
+  function exportData(scope: "all" | "shared" = "all") {
     try {
-      const data = localStorage.getItem(KEY) || JSON.stringify(clients);
-      const blob = new Blob([data], { type: "application/json" });
+      const list = scope === "shared" ? clients.filter((j) => j.shared) : clients;
+      const blob = new Blob([JSON.stringify(list)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download =
-        "poshishwala-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+        "poshishwala-" +
+        (scope === "shared" ? "imran-" : "") +
+        "backup-" +
+        new Date().toISOString().slice(0, 10) +
+        ".json";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -1335,7 +1359,7 @@ export default function PoshishWalaTool() {
                 <div style={{ ...cardBase, padding: "15px 17px" }}>
                   <div style={labelCap}>Active jobs</div>
                   <div style={{ fontSize: 25, fontWeight: 600 }}>
-                    {clients.filter((j) => jobStatus(j) !== "complete").length}
+                    {visibleClients.filter((j) => jobStatus(j) !== "complete").length}
                   </div>
                   <div style={{ fontSize: 11, color: "#8b9199" }}>
                     {dueList.length ? dueList.length + " with balance due" : "all settled"}
@@ -1472,7 +1496,7 @@ export default function PoshishWalaTool() {
                 <div style={{ fontSize: 20, fontWeight: 600 }}>
                   Clients{" "}
                   <span style={{ color: "#9aa0a8", fontWeight: 400, fontSize: 15 }}>
-                    ({clients.length})
+                    ({visibleClients.length})
                   </span>
                 </div>
                 <button
@@ -1542,6 +1566,7 @@ export default function PoshishWalaTool() {
                     >
                       <span style={c.brandStyle}>{c.brand}</span>
                       <span style={c.payStatusStyle}>{c.payStatusText}</span>
+                      {isAdmin && c.shared && <span style={sharedPill}>With Imran</span>}
                     </div>
                     <div
                       style={{
@@ -1618,6 +1643,7 @@ export default function PoshishWalaTool() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <div style={{ fontSize: 20, fontWeight: 600 }}>{current.name}</div>
                     <span style={current.brandStyle}>{current.brand}</span>
+                    {isAdmin && current.shared && <span style={sharedPill}>With Imran</span>}
                   </div>
                   <div style={{ fontSize: 13, color: "#8b9199", marginTop: 2 }}>
                     {current.meta}
@@ -2684,6 +2710,12 @@ export default function PoshishWalaTool() {
                       style={{ ...modalInput, flex: 1 }}
                     />
                   </div>
+                  {isAdmin && (
+                    <label style={shareRow}>
+                      <input id="nj-share" type="checkbox" style={shareBox} />
+                      <span>Share this project with Imran</span>
+                    </label>
+                  )}
                   <button onClick={saveNew} style={modalSaveBtn}>
                     Save client
                   </button>
@@ -2821,6 +2853,17 @@ export default function PoshishWalaTool() {
                     placeholder="Total amount (Rs)"
                     style={modalInput}
                   />
+                  {isAdmin && (
+                    <label style={shareRow}>
+                      <input
+                        id="ed-share"
+                        type="checkbox"
+                        defaultChecked={!!current.raw.shared}
+                        style={shareBox}
+                      />
+                      <span>Share this project with Imran</span>
+                    </label>
+                  )}
                   <button onClick={saveEdit} style={modalSaveBtn}>
                     Save details
                   </button>
@@ -2853,7 +2896,9 @@ export default function PoshishWalaTool() {
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 15 }}>{authName}</div>
-                    <div style={{ fontSize: 12, color: "#8b9199" }}>Signed in</div>
+                    <div style={{ fontSize: 12, color: "#8b9199" }}>
+                      {isAdmin ? "Admin · all projects" : "Team · shared projects"}
+                    </div>
                   </div>
                 </div>
                 <button onClick={() => setAccountOpen(false)} style={sheetClose}>
@@ -2873,9 +2918,14 @@ export default function PoshishWalaTool() {
                 >
                   Your data
                 </div>
-                <button onClick={exportData} style={sheetAction}>
-                  ⬇  Back up my data (save a file)
+                <button onClick={() => exportData("all")} style={sheetAction}>
+                  ⬇  Back up all my data (save a file)
                 </button>
+                {isAdmin && (
+                  <button onClick={() => exportData("shared")} style={sheetAction}>
+                    🤝  Back up only Imran&apos;s shared projects
+                  </button>
+                )}
                 <label style={{ ...sheetAction, display: "block", cursor: "pointer" }}>
                   ⬆  Restore from a backup file
                   <input
@@ -2886,8 +2936,9 @@ export default function PoshishWalaTool() {
                   />
                 </label>
                 <div style={{ fontSize: 11, color: "#a7adb4", lineHeight: 1.5 }}>
-                  Your records are saved on this device. Back up now and then, and use
-                  the same file to move them to another phone.
+                  {isAdmin
+                    ? "Your records live on this device. “Back up only Imran’s shared projects” makes a file with ONLY the shared jobs — give that to Imran so your private work never reaches his phone."
+                    : "Your records are saved on this device. Back up now and then, and use the same file to move them to another phone."}
                 </div>
               </div>
 
@@ -3083,14 +3134,44 @@ function logoImg(src: string, alt: string, height: number) {
 
 /* --------------------- login + app-shell helpers --------------------- */
 
+const shareRow: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 9,
+  fontSize: 14,
+  color: "#25292e",
+  padding: "2px 2px",
+  cursor: "pointer",
+};
+const shareBox: React.CSSProperties = { width: 18, height: 18, accentColor: "#1f7a6d" };
+const sharedPill: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 600,
+  borderRadius: 20,
+  padding: "3px 9px",
+  whiteSpace: "nowrap",
+  color: "#8a6d1f",
+  background: "#f7efd6",
+};
+
+
 /**
  * Front-door accounts (client-side gate). Edit this list to add or change who
  * can sign in. NOTE: this keeps casual users out but is not strong security —
  * the app is public, so anyone technical who opens it could read these. For a
  * private team tool that is the accepted trade-off.
+ *
+ * role "admin" sees every project; role "member" (e.g. Imran) only sees the
+ * projects tagged "Shared with Imran".
  */
-const USERS: { username: string; password: string; name: string }[] = [
-  { username: "poshishwala", password: "poshish2024", name: "Poshish Wala" },
+const USERS: {
+  username: string;
+  password: string;
+  name: string;
+  role: "admin" | "member";
+}[] = [
+  { username: "waqar", password: "waqar786", name: "Waqar", role: "admin" },
+  { username: "imran", password: "imran123", name: "Imran", role: "member" },
 ];
 
 const PW_FONT_CSS = `@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
