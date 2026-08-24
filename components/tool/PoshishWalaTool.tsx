@@ -2043,9 +2043,31 @@ export default function PoshishWalaTool() {
                     {current.profitText}
                   </div>
                 </div>
+                {(() => {
+                  const pocket = current.received - current.spent; // received minus spent
+                  const negative = pocket < 0;
+                  return (
+                    <div>
+                      <div style={miniCap}>
+                        {negative ? "Paid from your account" : "Cash in hand"}
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 17,
+                          color: negative ? "#c15b4a" : "#1f7a6d",
+                        }}
+                      >
+                        {negative ? "− " + rs(Math.abs(pocket)) : rs(pocket)}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               <div style={{ fontSize: 11, color: "#9aa0a8", marginTop: -8 }}>
-                Profit = total amount − all expenses
+                Profit = total amount − all expenses · Cash in hand = received −
+                spent (a minus means you&apos;ve spent from your own pocket, to be
+                recovered when the balance comes in)
               </div>
 
               {/* Partner split — only once the shared project is completed */}
