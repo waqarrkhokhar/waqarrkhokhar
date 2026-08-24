@@ -33,6 +33,8 @@ type Client = {
   done?: boolean;
   /** true = visible to member logins (e.g. Imran); admin always sees all. */
   shared?: boolean;
+  /** expected ready / delivery date, "YYYY-MM-DD". */
+  deliveryDate?: string;
   payments: Payment[];
   costs: Cost[];
 };
@@ -460,6 +462,7 @@ export default function PoshishWalaTool() {
       work: val("nj-work"),
       brand: (val("nj-brand") as Brand) || "Poshish Wala",
       total: numval("nj-total"),
+      deliveryDate: val("nj-delivery") || undefined,
       // Admin decides via the checkbox; anything a member adds is theirs to see.
       shared: isAdmin
         ? !!(document.getElementById("nj-share") as HTMLInputElement | null)?.checked
@@ -521,6 +524,7 @@ export default function PoshishWalaTool() {
               work: val("ed-work"),
               brand: (val("ed-brand") as Brand) || j.brand,
               total: numval("ed-total"),
+              deliveryDate: val("ed-delivery") || undefined,
               status,
               done: status === "complete",
               // Only admin can change who a project is shared with.
@@ -671,6 +675,29 @@ export default function PoshishWalaTool() {
       dueAmt: j.total == null ? 0 : Math.max(f.due ?? 0, 0),
       received: f.received,
       spent: f.spent,
+      ...(() => {
+        const dueNow = j.total == null ? 0 : Math.max(f.due ?? 0, 0);
+        const di = deliveryInfo(j.deliveryDate, st);
+        const reminderMsg =
+          "Assalam-o-alaikum " +
+          (j.name || "") +
+          ", hope you are well. A gentle reminder about the remaining balance of " +
+          rs(dueNow) +
+          " for your " +
+          (j.work || "order") +
+          (j.brand ? " (" + j.brand + ")" : "") +
+          ". Please let us know a convenient time. JazakAllah.";
+        return {
+          hasDelivery: !!di,
+          deliveryText: di ? di.dateText : "",
+          deliveryRel: di ? di.rel : "",
+          deliveryState: di ? di.state : "none",
+          deliveryBadgeStyle: di ? deliveryBadge(di.state) : undefined,
+          deliveryDue: di ? di.state === "overdue" || di.state === "soon" : false,
+          deliverySort: di ? di.time : Number.POSITIVE_INFINITY,
+          reminderHref: waLink(j.phone, reminderMsg),
+        };
+      })(),
       payments: (j.payments || []).map((p, i) => ({
         label: p.label,
         amtText: rs(p.amount),
@@ -731,6 +758,9 @@ export default function PoshishWalaTool() {
       )
     : byStatus;
   const dueList = views.filter((v) => v.hasBalance).sort((a, b) => b.dueAmt - a.dueAmt);
+  const deliveriesDue = views
+    .filter((v) => v.deliveryDue)
+    .sort((a, b) => a.deliverySort - b.deliverySort);
   const current = views.find((v) => v.id === selectedId) || null;
 
   const dateStr = useMemo(() => {
@@ -1473,15 +1503,22 @@ export default function PoshishWalaTool() {
                           <div style={{ fontWeight: 500, fontSize: 14 }}>{c.name}</div>
                           <div style={{ fontSize: 12, color: "#8b9199" }}>{c.meta}</div>
                         </div>
-                        <div
-                          style={{
-                            fontWeight: 600,
-                            fontSize: 13,
-                            color: "#c15b4a",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {rs(c.dueAmt)} due
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: "#c15b4a" }}>
+                            {rs(c.dueAmt)} due
+                          </div>
+                          {c.hasPhone && (
+                            <a
+                              href={c.reminderHref}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              title="Send WhatsApp payment reminder"
+                              style={waMini}
+                            >
+                              <WaIcon />
+                            </a>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1496,6 +1533,73 @@ export default function PoshishWalaTool() {
                     }}
                   >
                     All balances collected. 🎉
+                  </div>
+                )}
+              </div>
+
+              {/* Deliveries due (overdue or within 7 days, not completed) */}
+              <div style={cardBase}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ fontWeight: 600, fontSize: 15 }}>Deliveries due</div>
+                  <button
+                    onClick={() => go("customers")}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "#1f7a6d",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      fontWeight: 500,
+                    }}
+                  >
+                    all clients →
+                  </button>
+                </div>
+                {deliveriesDue.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {deliveriesDue.map((c) => (
+                      <div
+                        key={c.id}
+                        onClick={c.onOpen}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "10px 11px",
+                          border: "1px solid #eceef1",
+                          borderRadius: 10,
+                          cursor: "pointer",
+                          background: "#fafbfc",
+                        }}
+                      >
+                        <div style={avatar(34, 12)}>{c.initials}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 500, fontSize: 14 }}>{c.name}</div>
+                          <div style={{ fontSize: 12, color: "#8b9199" }}>
+                            {c.deliveryText} · {c.meta}
+                          </div>
+                        </div>
+                        <span style={c.deliveryBadgeStyle}>{c.deliveryRel}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "#8b9199",
+                      fontStyle: "italic",
+                      padding: "6px 0",
+                    }}
+                  >
+                    No deliveries due in the next 7 days.
                   </div>
                 )}
               </div>
@@ -1714,8 +1818,30 @@ export default function PoshishWalaTool() {
                         <WaIcon /> WhatsApp
                       </a>
                     )}
+                    {current.hasPhone && current.hasBalance && (
+                      <a
+                        href={current.reminderHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          ...waBtn,
+                          background: "#fff",
+                          color: "#1f7a6d",
+                          border: "1px solid #1f7a6d",
+                        }}
+                      >
+                        🔔 Send reminder
+                      </a>
+                    )}
                     <span style={{ fontSize: 13, color: "#8b9199" }}>{current.phone}</span>
                   </div>
+                  {current.hasDelivery && (
+                    <div style={{ marginTop: 8 }}>
+                      <span style={current.deliveryBadgeStyle}>
+                        📅 Delivery {current.deliveryText} · {current.deliveryRel}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <span style={current.statusStyle}>{current.statusText}</span>
               </div>
@@ -2884,6 +3010,10 @@ export default function PoshishWalaTool() {
                       style={{ ...modalInput, flex: 1 }}
                     />
                   </div>
+                  <label style={dateLabel}>
+                    Expected delivery date (optional)
+                    <input id="nj-delivery" type="date" style={modalInput} />
+                  </label>
                   {isAdmin && (
                     <label style={shareRow}>
                       <input id="nj-share" type="checkbox" style={shareBox} />
@@ -3034,6 +3164,15 @@ export default function PoshishWalaTool() {
                       <option value="progress">In progress</option>
                       <option value="complete">Completed</option>
                     </select>
+                  </label>
+                  <label style={dateLabel}>
+                    Expected delivery date
+                    <input
+                      id="ed-delivery"
+                      type="date"
+                      defaultValue={current.raw.deliveryDate ?? ""}
+                      style={modalInput}
+                    />
                   </label>
                   {isAdmin && (
                     <label style={shareRow}>
@@ -3358,9 +3497,60 @@ function waNumber(phone?: string): string {
   if (d.length === 10 && d.startsWith("3")) return "92" + d;
   return d;
 }
-function waLink(phone?: string): string {
+function waLink(phone?: string, msg?: string): string {
   const n = waNumber(phone);
-  return n ? "https://wa.me/" + n : "";
+  if (!n) return "";
+  return "https://wa.me/" + n + (msg ? "?text=" + encodeURIComponent(msg) : "");
+}
+
+/** Delivery-date status relative to today (null if no date set). */
+function deliveryInfo(
+  dateStr: string | undefined,
+  status: JobStatus
+): { state: "done" | "overdue" | "soon" | "scheduled"; rel: string; dateText: string; time: number } | null {
+  if (!dateStr) return null;
+  const today0 = new Date();
+  today0.setHours(0, 0, 0, 0);
+  const dt = new Date(dateStr.length <= 10 ? dateStr + "T00:00" : dateStr);
+  if (isNaN(dt.getTime())) return null;
+  const diff = Math.round((dt.getTime() - today0.getTime()) / 86400000);
+  let state: "done" | "overdue" | "soon" | "scheduled";
+  let rel: string;
+  if (status === "complete") {
+    state = "done";
+    rel = "delivered";
+  } else if (diff < 0) {
+    state = "overdue";
+    rel = Math.abs(diff) + (Math.abs(diff) === 1 ? " day late" : " days late");
+  } else if (diff === 0) {
+    state = "soon";
+    rel = "due today";
+  } else if (diff <= 7) {
+    state = "soon";
+    rel = "in " + diff + (diff === 1 ? " day" : " days");
+  } else {
+    state = "scheduled";
+    rel = "in " + diff + " days";
+  }
+  return { state, rel, dateText: dateText(dateStr), time: dt.getTime() };
+}
+function deliveryBadge(state: string): React.CSSProperties {
+  const map: Record<string, { bg: string; fg: string }> = {
+    overdue: { bg: "#fbeae7", fg: "#c15b4a" },
+    soon: { bg: "#f7efd6", fg: "#8a6d1f" },
+    scheduled: { bg: "#eef0f2", fg: "#5a6069" },
+    done: { bg: "#e7ece9", fg: "#1f7a6d" },
+  };
+  const c = map[state] || map.scheduled;
+  return {
+    fontSize: 11,
+    fontWeight: 600,
+    borderRadius: 20,
+    padding: "3px 10px",
+    whiteSpace: "nowrap",
+    color: c.fg,
+    background: c.bg,
+  };
 }
 
 const callBtn: React.CSSProperties = {
@@ -3384,6 +3574,17 @@ const waBtn: React.CSSProperties = {
   border: "none",
   borderRadius: 9,
   padding: "7px 12px",
+  textDecoration: "none",
+};
+const waMini: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 30,
+  height: 30,
+  background: "#25D366",
+  borderRadius: "50%",
+  flex: "none",
   textDecoration: "none",
 };
 
