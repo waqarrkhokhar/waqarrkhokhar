@@ -15,6 +15,24 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+/* --------------------------- cloud sync (optional) --------------------------- */
+/**
+ * When these env vars are set (on Vercel), the app syncs through a Supabase
+ * database so every device shares the same live data. When they are absent, the
+ * app runs exactly as before — fully offline, data in the browser only.
+ *
+ * PW_-prefixed names keep this tool's Supabase separate from any other Supabase
+ * used elsewhere (e.g. the main ComfyClub site), so the copy embedded there
+ * never accidentally connects.
+ */
+const PW_SB_URL = process.env.NEXT_PUBLIC_PW_SUPABASE_URL;
+const PW_SB_KEY = process.env.NEXT_PUBLIC_PW_SUPABASE_ANON_KEY;
+const supabase: SupabaseClient | null =
+  PW_SB_URL && PW_SB_KEY ? createClient(PW_SB_URL, PW_SB_KEY) : null;
+const cloudOn = !!supabase;
+const emailFor = (u: string) => u.trim().toLowerCase() + "@poshishwala.local";
 
 /* ----------------------------- types ----------------------------- */
 
@@ -65,6 +83,38 @@ const CSS = (s: React.CSSProperties) => s; // tiny helper for readability
 /* --------------------------- constants --------------------------- */
 
 const KEY = "poshishwala:app";
+
+/* ---- cloud read/write helpers (no-ops when cloud is off) ---- */
+async function cloudPull(): Promise<Client[] | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("clients")
+    .select("data")
+    .order("updated_at", { ascending: true });
+  if (error || !data) return null;
+  return data.map((r: { data: Client }) => r.data);
+}
+async function cloudUpsert(c: Client) {
+  if (!supabase) return;
+  await supabase
+    .from("clients")
+    .upsert({ id: c.id, shared: !!c.shared, data: c, updated_at: new Date().toISOString() });
+}
+async function cloudDelete(id: string) {
+  if (!supabase) return;
+  await supabase.from("clients").delete().eq("id", id);
+}
+/** Push only the rows that changed between prev and next (and delete removed). */
+function cloudSyncDiff(prev: Client[], next: Client[]) {
+  if (!supabase) return;
+  const prevById = new Map(prev.map((c) => [c.id, c] as const));
+  next.forEach((c) => {
+    const p = prevById.get(c.id);
+    if (!p || JSON.stringify(p) !== JSON.stringify(c)) void cloudUpsert(c);
+    prevById.delete(c.id);
+  });
+  prevById.forEach((_v, id) => void cloudDelete(id));
+}
 
 const SEED: Client[] = [
   {
@@ -320,7 +370,10 @@ const jobStatus = (j: Client): JobStatus =>
 /* ----------------------------- component ----------------------------- */
 
 export default function PoshishWalaTool() {
-  const [clients, setClients] = useState<Client[]>(SEED);
+  // In cloud mode the list comes only from the server (empty until the cloud
+  // has data), so members never see the offline sample data. Offline mode keeps
+  // the built-in starter records.
+  const [clients, setClients] = useState<Client[]>(cloudOn ? [] : SEED);
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -339,8 +392,12 @@ export default function PoshishWalaTool() {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "pending" | "progress" | "complete"
   >("all");
-  const role: "admin" | "member" =
-    USERS.find((u) => u.username === authUser)?.role ?? "member";
+  // In cloud mode the role comes from the server (profiles); offline it comes
+  // from the USERS list.
+  const [cloudRole, setCloudRole] = useState<"admin" | "member">("member");
+  const role: "admin" | "member" = cloudOn
+    ? cloudRole
+    : USERS.find((u) => u.username === authUser)?.role ?? "member";
   const isAdmin = role === "admin";
   const [quote, setQuote] = useState<Quote>({
     brand: "Poshish Wala",
@@ -360,9 +417,14 @@ export default function PoshishWalaTool() {
   });
 
   const loaded = useRef(false);
+  // After a local edit, briefly ignore incoming cloud pulls so a slower upsert
+  // can't momentarily revert what you just changed.
+  const pausePullRef = useRef(0);
 
   // Load saved data on the client (guards SSR / avoids hydration mismatch).
+  // Skipped in cloud mode — there the list comes from the server.
   useEffect(() => {
+    if (cloudOn) return;
     if (loaded.current) return;
     loaded.current = true;
     let saved: Client[] | null = null;
@@ -403,6 +465,10 @@ export default function PoshishWalaTool() {
     setClients((prev) => {
       const next = fn(prev);
       persist(next);
+      if (cloudOn) {
+        pausePullRef.current = Date.now() + 4000;
+        cloudSyncDiff(prev, next);
+      }
       return next;
     });
   }
@@ -1096,22 +1162,98 @@ export default function PoshishWalaTool() {
       ? "Log expense"
       : "Edit details";
 
-  // ---- front-door login gate: load saved session ----
+  // ---- login gate: restore an existing session on load ----
   useEffect(() => {
-    let saved: string | null = null;
-    try {
-      saved = localStorage.getItem("poshishwala:auth");
-    } catch {
-      /* ignore */
-    }
-    if (saved && USERS.some((u) => u.username === saved)) setAuthUser(saved);
-    setAuthReady(true);
+    let cancelled = false;
+    (async () => {
+      if (cloudOn && supabase) {
+        try {
+          const { data } = await supabase.auth.getSession();
+          const user = data.session?.user;
+          if (user && !cancelled) {
+            const uname = (user.email || "").split("@")[0];
+            const prof = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", user.id)
+              .single();
+            setCloudRole((prof.data?.role as "admin" | "member") || "member");
+            setAuthUser(uname);
+          }
+        } catch {
+          /* ignore */
+        }
+        if (!cancelled) setAuthReady(true);
+        return;
+      }
+      let saved: string | null = null;
+      try {
+        saved = localStorage.getItem("poshishwala:auth");
+      } catch {
+        /* ignore */
+      }
+      if (saved && USERS.some((u) => u.username === saved)) setAuthUser(saved);
+      setAuthReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  function doLogin(e: React.FormEvent) {
+  // ---- cloud data: initial pull + light polling + refresh on focus ----
+  useEffect(() => {
+    if (!cloudOn || !authUser) return;
+    let stop = false;
+    const refresh = async () => {
+      if (Date.now() < pausePullRef.current) return;
+      const rows = await cloudPull();
+      // Ignore empty results so a first-run/offline blip can't wipe what's shown.
+      if (stop || !rows || rows.length === 0) return;
+      setClients((prev) => {
+        if (JSON.stringify(prev) === JSON.stringify(rows)) return prev;
+        persist(rows);
+        return rows;
+      });
+    };
+    refresh();
+    const iv = setInterval(refresh, 6000);
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      stop = true;
+      clearInterval(iv);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser]);
+
+  async function doLogin(e: React.FormEvent) {
     e.preventDefault();
     const u = loginU.trim().toLowerCase();
     const p = loginP.trim();
+    if (cloudOn && supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailFor(u),
+        password: p,
+      });
+      if (error || !data.user) {
+        setLoginErr("Wrong username or password.");
+        return;
+      }
+      const prof = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+      setCloudRole((prof.data?.role as "admin" | "member") || "member");
+      setAuthUser(u);
+      setLoginErr("");
+      setLoginU("");
+      setLoginP("");
+      return;
+    }
     const match = USERS.find(
       (x) => x.username.toLowerCase() === u && x.password === p
     );
@@ -1130,6 +1272,9 @@ export default function PoshishWalaTool() {
     setLoginP("");
   }
   function doLogout() {
+    if (cloudOn && supabase) {
+      void supabase.auth.signOut();
+    }
     try {
       localStorage.removeItem("poshishwala:auth");
     } catch {
@@ -1137,6 +1282,29 @@ export default function PoshishWalaTool() {
     }
     setAuthUser(null);
     setAccountOpen(false);
+  }
+  async function cloudUploadAll() {
+    if (!supabase) return;
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(
+        "Upload this device's " + clients.length + " projects to the cloud? This becomes the shared copy."
+      )
+    )
+      return;
+    for (const c of clients) await cloudUpsert(c);
+    if (typeof window !== "undefined")
+      window.alert("Uploaded " + clients.length + " projects to the cloud.");
+  }
+  async function cloudRefresh() {
+    const rows = await cloudPull();
+    if (rows) {
+      setClients(rows);
+      persist(rows);
+      setAccountOpen(false);
+      if (typeof window !== "undefined")
+        window.alert("Loaded " + rows.length + " projects from the cloud.");
+    }
   }
   function exportData(scope: "all" | "shared" = "all") {
     try {
@@ -3226,7 +3394,39 @@ export default function PoshishWalaTool() {
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
+              {/* cloud sync status */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 13,
+                  color: cloudOn ? "#1f7a6d" : "#8b9199",
+                  background: cloudOn ? "#eaf3f1" : "#f4f6f8",
+                  border: "1px solid " + (cloudOn ? "#cfe3de" : "#e2e5e9"),
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  marginTop: 6,
+                }}
+              >
+                {cloudOn
+                  ? "☁️ Cloud sync is ON — all devices share the same live data."
+                  : "📴 This device only — cloud sync is not set up yet."}
+              </div>
+              {cloudOn && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+                  <button onClick={cloudRefresh} style={sheetAction}>
+                    🔄  Refresh from cloud now
+                  </button>
+                  {isAdmin && (
+                    <button onClick={cloudUploadAll} style={sheetAction}>
+                      ☁️  Upload this device&apos;s data to the cloud (first-time setup)
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
                 <div
                   style={{
                     fontSize: 11,
@@ -3236,7 +3436,7 @@ export default function PoshishWalaTool() {
                     fontWeight: 600,
                   }}
                 >
-                  Your data
+                  {cloudOn ? "Backups (extra safety)" : "Your data"}
                 </div>
                 <button onClick={() => exportData("all")} style={sheetAction}>
                   ⬇  Back up all my data (save a file)
