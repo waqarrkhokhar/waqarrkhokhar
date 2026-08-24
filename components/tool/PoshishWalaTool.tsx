@@ -1255,7 +1255,6 @@ export default function PoshishWalaTool() {
 .pw-headnew{display:inline-block}
 @media (max-width:640px){
   .pw-topnav{display:none !important}
-  .pw-headnew{display:none !important}
   .pw-bottomnav{display:flex !important}
   .pw-main{padding-bottom:92px !important}
 }
