@@ -308,22 +308,61 @@ export async function getProductDetail(slug: string, preview = false): Promise<P
       .limit(30),
   ]);
 
-  // Related: same category, excluding this product.
-  let related: StoreProduct[] = [];
+  // "You May Also Like": varied products from the same category, then sibling
+  // collections (same parent), then newest — always excluding this product and
+  // never repeating. Shuffled so different pieces surface across products.
+  const relSelect = `id, name, slug, price, sale_price, category_id,
+     category:categories(name, slug),
+     product_images(url, is_primary, sort_order)`;
+  const shuffle = <T,>(a: T[]): T[] => {
+    const arr = [...a];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+  const related: StoreProduct[] = [];
+  const seen = new Set<string>([row.id]);
+  const take = (rows: unknown[]) => {
+    for (const r of shuffle(rows as RawProduct[])) {
+      if (related.length >= 4) break;
+      if (r?.id && !seen.has(r.id)) { seen.add(r.id); related.push(toStoreProduct(r)); }
+    }
+  };
+
   if (row.category_id) {
-    const { data: rel } = await supabase
-      .from("products")
-      .select(
-        `id, name, slug, price, sale_price, category_id,
-         category:categories(name, slug),
-         product_images(url, is_primary, sort_order)`,
-      )
-      .eq("category_id", row.category_id)
-      .eq("status", "published")
-      .is("deleted_at", null)
-      .neq("id", row.id)
-      .limit(4);
-    related = ((rel ?? []) as unknown as RawProduct[]).map((r) => toStoreProduct(r));
+    const { data: sameCat } = await supabase
+      .from("products").select(relSelect)
+      .eq("category_id", row.category_id).eq("status", "published").is("deleted_at", null).neq("id", row.id)
+      .limit(16);
+    take(sameCat ?? []);
+
+    // Not enough? Pull from sibling collections under the same parent category.
+    if (related.length < 4) {
+      const { data: cat } = await supabase.from("categories").select("parent_id").eq("id", row.category_id).maybeSingle();
+      const parentId = (cat as { parent_id?: string } | null)?.parent_id;
+      if (parentId) {
+        const { data: sibs } = await supabase.from("categories").select("id").eq("parent_id", parentId);
+        const sibIds = (sibs ?? []).map((s) => s.id as string).filter((id) => id !== row.category_id);
+        if (sibIds.length) {
+          const { data: sibProducts } = await supabase
+            .from("products").select(relSelect)
+            .in("category_id", sibIds).eq("status", "published").is("deleted_at", null)
+            .limit(16);
+          take(sibProducts ?? []);
+        }
+      }
+    }
+  }
+
+  // Final fallback: newest published products, so the section is never empty.
+  if (related.length < 4) {
+    const { data: newest } = await supabase
+      .from("products").select(relSelect)
+      .eq("status", "published").is("deleted_at", null).neq("id", row.id)
+      .order("created_at", { ascending: false }).limit(16);
+    take(newest ?? []);
   }
 
   // Split the WooCommerce body into the prototype's sections; fall back to the
