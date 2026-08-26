@@ -59,6 +59,7 @@ export function TwoFactorSetup() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -97,9 +98,16 @@ export function TwoFactorSetup() {
             </div>
           )}
           {secret && (
-            <div className="mb-4 rounded-md bg-panel px-3 py-2 text-center">
-              <div className="text-[11px] text-[#8b8fa7]">Can&apos;t scan? Enter this key manually:</div>
-              <div className="mt-0.5 break-all font-mono text-[12px] text-charcoal">{secret}</div>
+            <div className="mb-4 rounded-md bg-panel px-3 py-2.5 text-center">
+              <div className="text-[11px] text-[#8b8fa7]">Can&apos;t scan? In your app choose &ldquo;Enter a setup key&rdquo; and paste this ({secret.length} characters — don&apos;t retype it):</div>
+              <div className="mt-1 break-all font-mono text-[13px] tracking-wide text-charcoal">{secret}</div>
+              <button
+                type="button"
+                onClick={() => { navigator.clipboard?.writeText(secret); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+                className="mt-1.5 text-[12px] font-semibold text-gold"
+              >
+                {copied ? "✓ Copied" : "Copy key"}
+              </button>
             </div>
           )}
           <form onSubmit={confirm}>
