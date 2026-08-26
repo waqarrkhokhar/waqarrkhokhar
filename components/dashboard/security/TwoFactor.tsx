@@ -86,7 +86,16 @@ export function TwoFactorSetup() {
         <p className="text-sm text-[#8b8fa7]">Preparing…</p>
       ) : (
         <>
-          {qr && <div className="mx-auto mb-3 w-[180px] [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr }} />}
+          {qr && (
+            <div className="mx-auto mb-3 w-[210px] rounded-lg bg-white p-3 shadow-card">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qr.startsWith("data:") || qr.startsWith("http") ? qr : `data:image/svg+xml;utf8,${encodeURIComponent(qr)}`}
+                alt="Scan this QR code with your authenticator app"
+                className="h-[186px] w-[186px]"
+              />
+            </div>
+          )}
           {secret && (
             <div className="mb-4 rounded-md bg-panel px-3 py-2 text-center">
               <div className="text-[11px] text-[#8b8fa7]">Can&apos;t scan? Enter this key manually:</div>
