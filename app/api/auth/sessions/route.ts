@@ -107,7 +107,10 @@ export async function DELETE(request: Request) {
   if (!auth.ok) return auth.response;
 
   const supabase = createClient();
-  const rpc = (supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> }).rpc;
+  // Call rpc bound to the client (do NOT extract .rpc into a variable — that
+  // loses `this` and throws).
+  const rpc = (fn: string, args: Record<string, unknown>) =>
+    (supabase as unknown as { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> }).rpc(fn, args);
   const { searchParams } = new URL(request.url);
 
   if (searchParams.get("others") === "1") {
