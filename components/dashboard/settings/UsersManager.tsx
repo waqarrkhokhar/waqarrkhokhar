@@ -44,6 +44,13 @@ export default function UsersManager() {
     load();
   }
 
+  async function logoutEverywhere() {
+    if (!edit) return;
+    const res = await apiSend(`/api/users/${edit.id}/logout`, "POST");
+    if (!res.ok) return toast.error(res.error || "Could not sign this user out");
+    toast.success(`${edit.name} has been signed out of every device`);
+  }
+
   const columns: Column<User>[] = [
     { key: "name", header: "Name", render: (u) => (
       <div className="flex items-center gap-2.5">
@@ -96,6 +103,11 @@ export default function UsersManager() {
                 {["active", "suspended", "invited"].map((s) => <option key={s} value={s}>{s}</option>)}
               </Select>
             </Field>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-500/30 dark:bg-red-500/5">
+              <div className="text-[13px] font-semibold text-charcoal dark:text-cream">Security</div>
+              <div className="mt-0.5 text-[12px] text-muted">Sign this user out of every device — they&apos;ll have to log in again.</div>
+              <Button variant="secondary" onClick={logoutEverywhere} className="mt-2">Log out everywhere</Button>
+            </div>
           </div>
         )}
       </Modal>

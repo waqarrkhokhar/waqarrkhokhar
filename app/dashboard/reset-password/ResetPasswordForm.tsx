@@ -30,11 +30,15 @@ export default function ResetPasswordForm({
     setLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
+    // Security: changing the password signs out every OTHER device/session for
+    // this account, so anyone previously logged in must sign in again.
+    await supabase.auth.signOut({ scope: "others" }).catch(() => {});
+    setLoading(false);
     setDone(true);
     setTimeout(() => router.replace("/dashboard/login"), 1800);
   }
