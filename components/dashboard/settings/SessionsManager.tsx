@@ -72,11 +72,9 @@ export default function SessionsManager() {
       title="Active Login Sessions"
       subtitle="Devices currently signed in to your ComfyClub dashboard"
       actions={
-        others > 0 ? (
-          <DashBtn variant="ghost" size="sm" onClick={() => setConfirmAll(true)} disabled={busy === "others"}>
-            {busy === "others" ? "Signing out…" : "Sign out all other devices"}
-          </DashBtn>
-        ) : undefined
+        <DashBtn variant="ghost" size="sm" onClick={() => setConfirmAll(true)} disabled={busy === "others" || others === 0}>
+          {busy === "others" ? "Signing out…" : others === 0 ? "No other devices" : `Sign out all other devices (${others})`}
+        </DashBtn>
       }
     >
       {sessions === null ? (
