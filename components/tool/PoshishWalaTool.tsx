@@ -87,22 +87,34 @@ const KEY = "poshishwala:app";
 /* ---- cloud read/write helpers (no-ops when cloud is off) ---- */
 async function cloudPull(): Promise<Client[] | null> {
   if (!supabase) return null;
-  const { data, error } = await supabase
-    .from("clients")
-    .select("data")
-    .order("updated_at", { ascending: true });
-  if (error || !data) return null;
-  return data.map((r: { data: Client }) => r.data);
+  try {
+    const { data, error } = await supabase
+      .from("clients")
+      .select("data")
+      .order("updated_at", { ascending: true });
+    if (error || !data) return null;
+    return data.map((r: { data: Client }) => r.data);
+  } catch {
+    return null;
+  }
 }
 async function cloudUpsert(c: Client) {
   if (!supabase) return;
-  await supabase
-    .from("clients")
-    .upsert({ id: c.id, shared: !!c.shared, data: c, updated_at: new Date().toISOString() });
+  try {
+    await supabase
+      .from("clients")
+      .upsert({ id: c.id, shared: !!c.shared, data: c, updated_at: new Date().toISOString() });
+  } catch {
+    /* ignore — offline mode / retry on next change */
+  }
 }
 async function cloudDelete(id: string) {
   if (!supabase) return;
-  await supabase.from("clients").delete().eq("id", id);
+  try {
+    await supabase.from("clients").delete().eq("id", id);
+  } catch {
+    /* ignore */
+  }
 }
 /** Push only the rows that changed between prev and next (and delete removed). */
 function cloudSyncDiff(prev: Client[], next: Client[]) {
