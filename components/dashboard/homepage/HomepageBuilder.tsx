@@ -8,7 +8,7 @@ import { apiGet, apiSend } from "@/lib/api/client";
 import ProductPinPicker from "./ProductPinPicker";
 import ImageField from "@/components/dashboard/shared/ImageField";
 
-type Slide = { image: string; subtitle: string; title: string; desc: string; cta: string; link: string };
+type Slide = { image: string; image_mobile: string; subtitle: string; title: string; desc: string; cta: string; link: string };
 type Client = { name: string; href: string; type: string };
 type WhyItem = { icon: string; title: string; desc: string };
 type HowStep = { step: string; title: string; desc: string };
@@ -47,9 +47,9 @@ const ALL_SECTIONS: { key: string; label: string }[] = [
  * live from each linked collection's banner.
  */
 const DEFAULT_HERO: Slide[] = [
-  { image: "", link: "/sofas/sofa-chair/", subtitle: "COMFYCLUB · LAHORE", title: "Furniture\nWorth Keeping", desc: "Handcrafted sofas & seating, made to order", cta: "Explore Collection" },
-  { image: "", link: "/seater-sofas/2-seater-sofas/", subtitle: "NEW COLLECTION", title: "2 Seater\nSofas", desc: "Compact luxury for every room in your home", cta: "Shop 2 Seaters" },
-  { image: "", link: "/sofas/sofa-come-bed/", subtitle: "VERSATILE LIVING", title: "Sofa Cum\nBeds", desc: "Seating by day, sleeping by night. Made to order", cta: "View Collection" },
+  { image: "", image_mobile: "", link: "/sofas/sofa-chair/", subtitle: "COMFYCLUB · LAHORE", title: "Furniture\nWorth Keeping", desc: "Handcrafted sofas & seating, made to order", cta: "Explore Collection" },
+  { image: "", image_mobile: "", link: "/seater-sofas/2-seater-sofas/", subtitle: "NEW COLLECTION", title: "2 Seater\nSofas", desc: "Compact luxury for every room in your home", cta: "Shop 2 Seaters" },
+  { image: "", image_mobile: "", link: "/sofas/sofa-come-bed/", subtitle: "VERSATILE LIVING", title: "Sofa Cum\nBeds", desc: "Seating by day, sleeping by night. Made to order", cta: "View Collection" },
 ];
 
 const DEFAULT: Config = {
@@ -245,6 +245,8 @@ export default function HomepageBuilder() {
           image, a subtitle, a title, a short description, and a button that links to a sofa
           category. Add as many slides as you like, drag them into order with ▲▼, or remove any.
           For each image you can <strong>choose from the Media Library or upload a new one</strong>.
+          {" "}You can also add a separate <strong>mobile image</strong> per slide (a portrait crop that
+          looks better on phones); leave it blank to reuse the desktop image on phones too.
           {" "}Until you add at least one slide here, the site shows three built-in default slides.
         </p>
         {cfg.hero_slides.length === 0 && (
@@ -261,9 +263,10 @@ export default function HomepageBuilder() {
           items={cfg.hero_slides}
           onChange={(v) => upd("hero_slides", v)}
           addLabel="Add slide"
-          blank={{ image: "", subtitle: "", title: "", desc: "", cta: "", link: "" }}
+          blank={{ image: "", image_mobile: "", subtitle: "", title: "", desc: "", cta: "", link: "" }}
           fields={[
-            { key: "image", label: "Slide Image", image: true },
+            { key: "image", label: "Slide Image (desktop / wide screens)", image: true },
+            { key: "image_mobile", label: "Slide Image — Mobile (optional; falls back to the desktop image)", image: true },
             { key: "link", label: "Button link (e.g. /sofas/sofa-chair/)" },
             { key: "subtitle", label: "Subtitle (small text above title)" },
             { key: "title", label: "Title (big heading)" },

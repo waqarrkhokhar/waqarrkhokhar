@@ -8,6 +8,7 @@ import WhatsAppIcon from "../WhatsAppIcon";
 
 export type Slide = {
   image: string | null;
+  image_mobile?: string | null; // optional portrait image shown on phones
   subtitle: string;
   title: string; // may contain \n
   desc: string;
@@ -35,24 +36,44 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {slides.map((s, i) =>
-        s.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            src={s.image}
-            alt={s.title ? s.title.replace(/\n/g, " ") : "ComfyClub handcrafted furniture"}
-            referrerPolicy="no-referrer"
-            // First slide is the LCP element — load it eagerly at high priority;
-            // defer the rest so they don't compete for bandwidth on first paint.
-            loading={i === 0 ? "eager" : "lazy"}
-            fetchPriority={i === 0 ? "high" : "low"}
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
-            style={{ opacity: i === active ? 1 : 0 }}
-          />
-        ) : null,
-      )}
+      {slides.map((s, i) => {
+        // A separate mobile image is optional — fall back to the desktop image
+        // when it isn't set. When a mobile image exists, show it on phones only
+        // and the desktop image from md up.
+        const mobileSrc = s.image_mobile || s.image;
+        const alt = s.title ? s.title.replace(/\n/g, " ") : "ComfyClub handcrafted furniture";
+        // First slide is the LCP element — load it eagerly at high priority;
+        // defer the rest so they don't compete for bandwidth on first paint.
+        const eager = i === 0;
+        return (
+          <div key={i} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: i === active ? 1 : 0 }}>
+            {mobileSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={mobileSrc}
+                alt={alt}
+                referrerPolicy="no-referrer"
+                loading={eager ? "eager" : "lazy"}
+                fetchPriority={eager ? "high" : "low"}
+                decoding="async"
+                className={`h-full w-full object-cover ${s.image && s.image_mobile ? "md:hidden" : ""}`}
+              />
+            ) : null}
+            {s.image && s.image_mobile ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={s.image}
+                alt={alt}
+                referrerPolicy="no-referrer"
+                loading={eager ? "eager" : "lazy"}
+                fetchPriority={eager ? "high" : "low"}
+                decoding="async"
+                className="hidden h-full w-full object-cover md:block"
+              />
+            ) : null}
+          </div>
+        );
+      })}
 
       {/* Scrim: keeps the furniture image vivid while text stays readable */}
       <div
