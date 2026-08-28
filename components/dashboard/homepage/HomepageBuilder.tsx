@@ -39,6 +39,19 @@ const ALL_SECTIONS: { key: string; label: string }[] = [
   { key: "how_it_works", label: "How It Works" },
 ];
 
+/**
+ * The three slides the storefront shows out-of-the-box (defined in code as a
+ * fallback in app/(storefront)/page.tsx). The "Load the slides currently on
+ * the homepage" button seeds the editor with these so the owner can edit what
+ * they actually see, instead of starting from an empty list. Images are pulled
+ * live from each linked collection's banner.
+ */
+const DEFAULT_HERO: Slide[] = [
+  { image: "", link: "/sofas/sofa-chair/", subtitle: "COMFYCLUB · LAHORE", title: "Furniture\nWorth Keeping", desc: "Handcrafted sofas & seating, made to order", cta: "Explore Collection" },
+  { image: "", link: "/seater-sofas/2-seater-sofas/", subtitle: "NEW COLLECTION", title: "2 Seater\nSofas", desc: "Compact luxury for every room in your home", cta: "Shop 2 Seaters" },
+  { image: "", link: "/sofas/sofa-come-bed/", subtitle: "VERSATILE LIVING", title: "Sofa Cum\nBeds", desc: "Seating by day, sleeping by night. Made to order", cta: "View Collection" },
+];
+
 const DEFAULT: Config = {
   section_order: ALL_SECTIONS.map((s) => s.key),
   hero_slides: [],
@@ -157,6 +170,24 @@ export default function HomepageBuilder() {
 
   const upd = <K extends keyof Config>(k: K, v: Config[K]) => setCfg((c) => ({ ...c, [k]: v }));
 
+  const [loadingHero, setLoadingHero] = useState(false);
+  // Fill the Hero Slides editor with the three slides currently shown on the
+  // live homepage (text + button + link from DEFAULT_HERO, images from each
+  // linked collection's banner). Lets the owner edit what they see instead of
+  // building from scratch.
+  async function loadCurrentHero() {
+    setLoadingHero(true);
+    const r = await apiGet<{ data: { collections: { slug: string; banner_image: string | null }[] } }>("/api/catalog");
+    setLoadingHero(false);
+    if (!r.ok) return toast.error(r.error);
+    const bySlug = new Map(r.data.data.collections.map((c) => [c.slug, c.banner_image]));
+    upd(
+      "hero_slides",
+      DEFAULT_HERO.map((s) => ({ ...s, image: bySlug.get(s.link) ?? "" })),
+    );
+    toast.success("Loaded the current homepage slides — edit, replace or reorder them, then Save changes");
+  }
+
   const visible = cfg.section_order.filter((k) => ALL_SECTIONS.some((s) => s.key === k));
   const hidden = ALL_SECTIONS.filter((s) => !visible.includes(s.key));
   const label = (key: string) => ALL_SECTIONS.find((s) => s.key === key)?.label ?? key;
@@ -208,7 +239,24 @@ export default function HomepageBuilder() {
         )}
       </Section>
 
-      <Section title="Hero Slides">
+      <Section title="Hero Slider (top of homepage)">
+        <p className="mb-3 text-xs leading-relaxed text-charcoal/60 dark:text-cream/60">
+          These are the big sliding banners at the very top of the homepage. Each slide has an
+          image, a subtitle, a title, a short description, and a button that links to a sofa
+          category. Add as many slides as you like, drag them into order with ▲▼, or remove any.
+          For each image you can <strong>choose from the Media Library or upload a new one</strong>.
+          {" "}Until you add at least one slide here, the site shows three built-in default slides.
+        </p>
+        {cfg.hero_slides.length === 0 && (
+          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-gold/40 bg-gold/5 p-3">
+            <span className="text-xs text-charcoal/70 dark:text-cream/70">
+              The slider is currently using the built-in default slides.
+            </span>
+            <Button size="sm" variant="secondary" loading={loadingHero} onClick={loadCurrentHero}>
+              Load the slides currently on the homepage
+            </Button>
+          </div>
+        )}
         <ListEditor
           items={cfg.hero_slides}
           onChange={(v) => upd("hero_slides", v)}
@@ -216,11 +264,11 @@ export default function HomepageBuilder() {
           blank={{ image: "", subtitle: "", title: "", desc: "", cta: "", link: "" }}
           fields={[
             { key: "image", label: "Slide Image", image: true },
-            { key: "link", label: "Link (e.g. /sofas/sofa-chair/)" },
-            { key: "subtitle", label: "Subtitle" },
-            { key: "title", label: "Title" },
-            { key: "desc", label: "Description", textarea: true },
-            { key: "cta", label: "Button text" },
+            { key: "link", label: "Button link (e.g. /sofas/sofa-chair/)" },
+            { key: "subtitle", label: "Subtitle (small text above title)" },
+            { key: "title", label: "Title (big heading)" },
+            { key: "desc", label: "Description (one short line)", textarea: true },
+            { key: "cta", label: "Button text (e.g. Explore Collection)" },
           ]}
         />
       </Section>

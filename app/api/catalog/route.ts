@@ -19,7 +19,7 @@ export async function GET() {
       .order("sort_order"),
     supabase
       .from("categories")
-      .select("id, name, slug, parent_id, sort_order, status")
+      .select("id, name, slug, parent_id, sort_order, status, banner_image")
       .is("deleted_at", null)
       .order("sort_order"),
   ]);
