@@ -65,7 +65,7 @@ type Screen =
   | "reports"
   | "quote"
   | "invoice";
-type ModalKind = "new" | "pay" | "cost" | "edit" | null;
+type ModalKind = "new" | "pay" | "cost" | "edit" | "editpay" | "editcost" | null;
 type QuoteItem = { desc: string; unitPrice: string; qty: string };
 type Quote = {
   brand: Brand;
@@ -390,6 +390,11 @@ export default function PoshishWalaTool() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState<ModalKind>(null);
+  const [editLine, setEditLine] = useState<{
+    id: string;
+    kind: "pay" | "cost";
+    idx: number;
+  } | null>(null);
   const [docType, setDocType] = useState<"invoice" | "quote">("invoice");
   // ---- login / role state (declared early so filtering can use it) ----
   const [authUser, setAuthUser] = useState<string | null>(null);
@@ -625,6 +630,38 @@ export default function PoshishWalaTool() {
       })
     );
   }
+  function openEditLine(id: string, kind: "pay" | "cost", idx: number) {
+    setEditLine({ id, kind, idx });
+    setModal(kind === "pay" ? "editpay" : "editcost");
+  }
+  function saveLineEdit() {
+    if (!editLine) return;
+    const a = numval("el-amt");
+    if (a == null) {
+      document.getElementById("el-amt")?.focus();
+      return;
+    }
+    const { id, kind, idx } = editLine;
+    const label = val("el-label");
+    const date = val("el-date") || undefined;
+    const cat = kind === "cost" ? val("el-cat") || undefined : undefined;
+    const key = kind === "pay" ? "payments" : "costs";
+    mutate((c) =>
+      c.map((j) => {
+        if (j.id !== id) return j;
+        const arr = [...j[key]];
+        const cur = arr[idx];
+        if (!cur) return j;
+        arr[idx] =
+          kind === "pay"
+            ? { ...cur, label: label || cur.label, amount: a, date }
+            : { ...cur, label: label || cur.label, amount: a, category: cat, date };
+        return { ...j, [key]: arr };
+      })
+    );
+    setModal(null);
+    setEditLine(null);
+  }
   function del(id: string | null) {
     if (id == null) return;
     if (
@@ -781,6 +818,7 @@ export default function PoshishWalaTool() {
         amtText: rs(p.amount),
         dateText: dateText(p.date),
         hasDate: !!p.date,
+        onEdit: () => openEditLine(j.id, "pay", i),
         onRemove: () => removeLine(j.id, "pay", i),
       })),
       costs: (j.costs || []).map((c, i) => ({
@@ -790,6 +828,7 @@ export default function PoshishWalaTool() {
         hasCat: !!c.category,
         dateText: dateText(c.date),
         hasDate: !!c.date,
+        onEdit: () => openEditLine(j.id, "cost", i),
         onRemove: () => removeLine(j.id, "cost", i),
       })),
       onOpen: () => openDetail(j.id),
@@ -868,6 +907,7 @@ export default function PoshishWalaTool() {
       hasCat: boolean;
       dateText: string;
       hasDate: boolean;
+      onEdit: () => void;
       onRemove: () => void;
     }[] = [];
     visibleClients.forEach((j) => {
@@ -881,6 +921,7 @@ export default function PoshishWalaTool() {
           hasCat: !!c.category,
           dateText: dateText(c.date),
           hasDate: !!c.date,
+          onEdit: () => openEditLine(j.id, "cost", i),
           onRemove: () => removeLine(j.id, "cost", i),
         })
       );
@@ -1172,6 +1213,10 @@ export default function PoshishWalaTool() {
       ? "Record payment"
       : modal === "cost"
       ? "Log expense"
+      : modal === "editpay"
+      ? "Edit payment"
+      : modal === "editcost"
+      ? "Edit expense"
       : "Edit details";
 
   // ---- login gate: restore an existing session on load ----
@@ -2158,6 +2203,9 @@ export default function PoshishWalaTool() {
                             )}
                           </span>
                           <span style={{ fontWeight: 600 }}>{p.amtText}</span>
+                          <button onClick={p.onEdit} style={editBtn}>
+                            edit
+                          </button>
                           <button onClick={p.onRemove} style={removeBtn}>
                             remove
                           </button>
@@ -2197,6 +2245,9 @@ export default function PoshishWalaTool() {
                           </span>
                           {c.hasCat && <span style={catPill}>{c.catText}</span>}
                           <span style={{ fontWeight: 600 }}>{c.amtText}</span>
+                          <button onClick={c.onEdit} style={editBtn}>
+                            edit
+                          </button>
                           <button onClick={c.onRemove} style={removeBtn}>
                             remove
                           </button>
@@ -2298,6 +2349,9 @@ export default function PoshishWalaTool() {
                     </div>
                     {e.hasCat && <span style={{ ...catPill, padding: "3px 9px" }}>{e.catText}</span>}
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{e.amtText}</div>
+                    <button onClick={e.onEdit} style={editBtn}>
+                      edit
+                    </button>
                     <button onClick={e.onRemove} style={removeBtn}>
                       remove
                     </button>
@@ -3391,6 +3445,99 @@ export default function PoshishWalaTool() {
                   </button>
                 </div>
               )}
+
+              {/* edit an existing payment line */}
+              {modal === "editpay" &&
+                editLine &&
+                (() => {
+                  const j = clients.find((c) => c.id === editLine.id);
+                  const line = j?.payments[editLine.idx];
+                  if (!line) return null;
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+                      <input
+                        id="el-label"
+                        defaultValue={line.label}
+                        placeholder="Note, e.g. second instalment"
+                        style={modalInput}
+                      />
+                      <input
+                        id="el-amt"
+                        type="number"
+                        inputMode="numeric"
+                        defaultValue={line.amount}
+                        placeholder="Amount received (Rs)"
+                        style={modalInput}
+                      />
+                      <label style={dateLabel}>
+                        Date &amp; time received
+                        <input
+                          id="el-date"
+                          type="datetime-local"
+                          defaultValue={
+                            line.date && line.date.length > 10 ? line.date : todayStr()
+                          }
+                          style={modalInput}
+                        />
+                      </label>
+                      <button onClick={saveLineEdit} style={modalSaveBtn}>
+                        Save changes
+                      </button>
+                    </div>
+                  );
+                })()}
+
+              {/* edit an existing expense line */}
+              {modal === "editcost" &&
+                editLine &&
+                (() => {
+                  const j = clients.find((c) => c.id === editLine.id);
+                  const line = j?.costs[editLine.idx];
+                  if (!line) return null;
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+                      <select
+                        id="el-cat"
+                        defaultValue={line.category || "Material"}
+                        style={modalSelect}
+                      >
+                        {CATEGORY_OPTS.map((o) => (
+                          <option key={o} value={o}>
+                            {o}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        id="el-label"
+                        defaultValue={line.label}
+                        placeholder="Note, e.g. velvet fabric"
+                        style={modalInput}
+                      />
+                      <input
+                        id="el-amt"
+                        type="number"
+                        inputMode="numeric"
+                        defaultValue={line.amount}
+                        placeholder="Amount (Rs)"
+                        style={modalInput}
+                      />
+                      <label style={dateLabel}>
+                        Date &amp; time paid
+                        <input
+                          id="el-date"
+                          type="datetime-local"
+                          defaultValue={
+                            line.date && line.date.length > 10 ? line.date : todayStr()
+                          }
+                          style={modalInput}
+                        />
+                      </label>
+                      <button onClick={saveLineEdit} style={modalSaveBtn}>
+                        Save changes
+                      </button>
+                    </div>
+                  );
+                })()}
             </div>
           </div>
         )}
@@ -3556,6 +3703,15 @@ const removeBtn: React.CSSProperties = {
   border: "none",
   background: "none",
   color: "#c15b4a",
+  fontSize: 11,
+  cursor: "pointer",
+  textDecoration: "underline",
+};
+
+const editBtn: React.CSSProperties = {
+  border: "none",
+  background: "none",
+  color: "#1f7a6d",
   fontSize: 11,
   cursor: "pointer",
   textDecoration: "underline",
